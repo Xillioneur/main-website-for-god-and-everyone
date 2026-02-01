@@ -103,16 +103,15 @@ function App() {
       ) : (
         <div className="game-cards-container">
           {games.map((game) => (
-            <div key={game.id} className="game-card">
+            <div key={game.id} className="game-card" onClick={() => viewGameDetails(game)}>
               <img
                 src={game.previewImageUrl}
                 alt={`Preview of ${game.name}`}
                 className="game-preview-image"
-                onClick={() => viewGameDetails(game)}
               />
               <h3>{game.name}</h3>
               <p>{game.description}</p>
-              <button onClick={() => viewGameDetails(game)}>Details</button>
+              <button onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>Play</button>
             </div>
           ))}
         </div>

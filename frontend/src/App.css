@@ -1,11 +1,13 @@
 :root {
-  --primary-bg: #1a1a2e; /* Dark blue background */
-  --secondary-bg: #16213e; /* Slightly lighter dark blue */
-  --card-bg: #0f3460; /* Even lighter blue for cards */
-  --text-color: #e0e0e0; /* Light gray text */
-  --accent-color: #e94560; /* Vibrant red/pink accent */
-  --highlight-color: #61dafb; /* React blue, for subtle highlights */
-  --shadow-color: rgba(0, 0, 0, 0.4);
+  --primary-bg: #1a1a1a; /* Darkest background */
+  --secondary-bg: #2a2a2a; /* Slightly lighter dark for app container */
+  --card-bg: #3a3a3a; /* Dark gray for cards */
+  --text-color: #f0f0f0; /* Light gray text */
+  --light-text-color: #cccccc; /* Slightly darker light gray for less emphasis */
+  --accent-color: #ffffff; /* Pure white for primary elements/text */
+  --highlight-color: #888888; /* Medium gray for subtle highlights */
+  --border-color: #555555; /* Gray for borders */
+  --shadow-color: rgba(0, 0, 0, 0.6); /* Darker, more pronounced shadows */
 }
 
 body {
@@ -16,205 +18,213 @@ body {
   min-height: 100vh;
   background-color: var(--primary-bg);
   color: var(--text-color);
-  font-family: 'Poppins', sans-serif; /* Use the new font */
+  font-family: 'Inter', sans-serif; /* Changed to a more modern, clean font */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
-  max-width: 1400px; /* Increased max-width for more space */
+  max-width: 1200px; /* Adjusted max-width for cleaner layout */
   margin: 0 auto;
-  padding: 3rem; /* Increased padding */
+  padding: 2rem; /* Adjusted padding */
   text-align: center;
   width: 100%;
 }
 
 .App {
-  font-family: 'Poppins', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  background: linear-gradient(145deg, var(--secondary-bg), var(--primary-bg)); /* Subtle gradient */
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px var(--shadow-color); /* More prominent shadow */
-  transition: all 0.3s ease;
+  background-color: var(--secondary-bg); /* Use solid color for professional feel */
+  padding: 40px;
+  border-radius: 8px; /* Slightly less rounded */
+  box-shadow: 0 8px 25px var(--shadow-color);
+  transition: all 0.3s ease-in-out;
 }
 
 .App:hover {
-  box-shadow: 0 15px 40px var(--shadow-color);
+  box-shadow: 0 12px 35px var(--shadow-color);
 }
 
 h1 {
-  color: var(--accent-color); /* Vibrant accent color */
-  margin-bottom: 30px;
-  font-size: 3em;
+  color: var(--accent-color);
+  margin-bottom: 35px;
+  font-size: 2.8em; /* Slightly reduced font size */
   font-weight: 700;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.05em; /* Added letter spacing */
 }
 
 h2 {
-  color: var(--highlight-color); /* Highlight color */
-  margin-top: 25px;
-  margin-bottom: 20px;
-  font-size: 2em;
+  color: var(--accent-color);
+  margin-top: 30px;
+  margin-bottom: 25px;
+  font-size: 2.2em;
   font-weight: 600;
 }
 
 h3 {
-  color: var(--text-color);
-  font-size: 1.5em;
+  color: var(--light-text-color);
+  font-size: 1.4em;
   font-weight: 500;
   margin-bottom: 10px;
 }
 
 p {
   color: var(--text-color);
-  line-height: 1.6;
+  line-height: 1.7; /* Increased line height for readability */
+  font-size: 1em;
 }
 
 .error-message {
-  color: var(--accent-color);
-  background-color: rgba(233, 69, 96, 0.1);
-  border: 1px solid var(--accent-color);
+  color: var(--accent-color); /* White text on dark background for errors */
+  background-color: #4a0000; /* Dark red background for errors */
+  border: 1px solid #7a0000;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 4px;
   font-weight: bold;
   margin-bottom: 25px;
 }
 
 .game-cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  margin-top: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjusted card size */
+  gap: 25px; /* Adjusted gap */
+  margin-top: 35px;
   justify-content: center;
 }
 
 .game-card {
   background-color: var(--card-bg);
-  border: 1px solid var(--secondary-bg);
-  border-radius: 12px;
-  padding: 25px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px; /* Less rounded corners */
+  padding: 20px;
   text-align: left;
-  box-shadow: 0 5px 15px var(--shadow-color);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease;
+  box-shadow: 0 4px 15px var(--shadow-color);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
   overflow: hidden;
+  cursor: pointer; /* Indicate clickable area */
 }
 
 .game-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 25px var(--shadow-color);
-  background-color: var(--secondary-bg);
+  transform: translateY(-5px) scale(1.01); /* Subtle hover effect */
+  box-shadow: 0 8px 20px var(--shadow-color);
+  background-color: #4a4a4a; /* Slightly lighter on hover */
 }
 
 .game-preview-image {
   width: 100%;
-  height: 180px;
+  height: 160px; /* Adjusted image height */
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 4px; /* Less rounded image corners */
   margin-bottom: 15px;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.game-preview-image:hover {
-  transform: scale(1.05);
+  border: 1px solid var(--border-color); /* Subtle image border */
+  transition: transform 0.2s ease;
 }
 
 .game-card h3 {
   margin-top: 0;
-  color: var(--highlight-color);
+  color: var(--accent-color);
 }
 
 .game-card p {
-  font-size: 0.95em;
+  font-size: 0.9em;
+  color: var(--light-text-color);
   flex-grow: 1;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .game-card button {
-  background-color: var(--accent-color);
-  color: var(--text-color);
+  background-color: var(--highlight-color); /* Neutral button color */
+  color: var(--primary-bg); /* Dark text on button */
   border: none;
-  padding: 12px 25px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 1.1em;
+  font-size: 0.95em;
   font-weight: 600;
   margin-top: auto;
   transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  align-self: center;
-  width: 100%; /* Make button full width in card */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  align-self: flex-start; /* Align button to start (left) */
+  max-width: fit-content; /* Only take necessary width */
 }
 
 .game-card button:hover {
-  background-color: #c73752;
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  background-color: #666666; /* Darker gray on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .game-details-view {
-  background: linear-gradient(145deg, var(--card-bg), var(--secondary-bg));
-  border-radius: 15px;
-  box-shadow: 0 10px 30px var(--shadow-color);
-  padding: 30px;
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  box-shadow: 0 8px 25px var(--shadow-color);
+  padding: 35px;
   margin-top: 40px;
-  text-align: center;
-  max-width: 800px;
+  text-align: left; /* Aligned left for professionalism */
+  max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+}
+
+.game-details-view h2 {
+  text-align: center; /* Center title */
+  margin-bottom: 30px;
+  font-size: 2.5em;
 }
 
 .game-details-image {
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
+  border-radius: 6px;
   margin-bottom: 25px;
-  box-shadow: 0 8px 20px var(--shadow-color);
+  box-shadow: 0 6px 18px var(--shadow-color);
+  border: 1px solid var(--border-color);
 }
 
 .game-details-view p {
-  font-size: 1.1em;
-  margin-bottom: 30px;
-  text-align: left;
+  font-size: 1.05em;
+  margin-bottom: 35px;
+  color: var(--light-text-color);
 }
 
 .game-details-actions {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 15px; /* Smaller gap */
   margin-top: 30px;
 }
 
 .game-details-actions button {
-  background-color: var(--accent-color);
-  color: var(--text-color);
+  background-color: var(--accent-color); /* White button for main actions */
+  color: var(--primary-bg); /* Dark text on white button */
   border: none;
-  padding: 15px 30px;
-  border-radius: 8px;
+  padding: 12px 25px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 1.2em;
+  font-size: 1em;
   font-weight: 700;
   transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .game-details-actions button:hover {
-  background-color: #c73752;
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  background-color: var(--highlight-color); /* Gray on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .game-container {
   margin-top: 40px;
   padding: 30px;
-  background: linear-gradient(145deg, var(--card-bg), var(--secondary-bg));
-  border-radius: 15px;
-  box-shadow: 0 10px 30px var(--shadow-color);
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+.game-container h2 {
+    text-align: center;
 }
 
 .game-container button {
@@ -224,43 +234,43 @@ p {
 }
 
 .game-container button:hover {
-  background-color: #4dc2ed;
+  background-color: #666666;
   color: var(--primary-bg);
 }
 
 pre {
-  background-color: var(--secondary-bg);
+  background-color: #222222; /* Darker pre background */
+  color: #dddddd; /* Lighter text for pre */
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 6px;
   white-space: pre-wrap;
   word-wrap: break-word;
   text-align: left;
-  border: 1px dashed var(--highlight-color);
+  border: 1px solid var(--border-color);
   font-family: 'Fira Code', monospace;
-  font-size: 0.9em;
+  font-size: 0.85em;
   margin-top: 20px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   #root {
-    padding: 1.5rem;
+    padding: 1rem;
   }
 
   .App {
-    padding: 20px;
+    padding: 25px;
   }
 
   h1 {
-    font-size: 2.2em;
+    font-size: 2em;
   }
 
   h2 {
-    font-size: 1.6em;
+    font-size: 1.8em;
   }
 
   .game-cards-container {
     grid-template-columns: 1fr;
   }
 }
-
