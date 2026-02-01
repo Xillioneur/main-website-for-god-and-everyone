@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>WASM Game Loader</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Hide scrollbars if canvas is larger than body */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000; /* Black background for games */
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            /* Make canvas fill iframe, preserving aspect ratio as needed by game */
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="emscripten-canvas" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+
+    <script type="text/javascript">
+        // Global Module object that Emscripten glue code will use
+        var Module = {
+            preRun: [],
+            postRun: [],
+            print: (function() {
+                // Capture output and send to parent
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text); // Also log to iframe console
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'wasm_output', payload: text }, '*');
+                    }
+                };
+            })(),
+            printErr: (function() {
+                // Capture error output and send to parent
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.error(text); // Also log to iframe console
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'wasm_error', payload: text }, '*');
+                    }
+                };
+            })(),
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                // As a default, draw big.
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                return canvas;
+            })(),
+            setStatus: function(text) {
+                if (text) {
+                    console.log('[WASM Status]', text);
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'wasm_status', payload: text }, '*');
+                    }
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                this.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+
+        // Function to load the Emscripten-generated JS glue code
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.body.appendChild(script);
+            });
+        }
+
+                // Directly define the game URL using a relative path
+                const gameUrl = './wasm/raylib_example.js'; // Path relative to wasm_loader.html
+        
+                loadScript(gameUrl)
+                    .then(() => console.log('WASM glue code loaded:', gameUrl))
+                    .catch(error => {
+                        console.error('Failed to load WASM glue code:', gameUrl, error);
+                        if (window.parent) {
+                            window.parent.postMessage({ type: 'wasm_error', payload: 'Failed to load WASM glue code: ' + gameUrl + ' - ' + error.message }, '*');
+                        }
+                    });    </script>
+</body>
+</html>
