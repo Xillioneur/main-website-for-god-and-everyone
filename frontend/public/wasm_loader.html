@@ -84,16 +84,25 @@
             });
         }
 
-                // Directly define the game URL using a relative path
-                const gameUrl = './wasm/raylib_example.js'; // Path relative to wasm_loader.html
-        
-                loadScript(gameUrl)
-                    .then(() => console.log('WASM glue code loaded:', gameUrl))
-                    .catch(error => {
-                        console.error('Failed to load WASM glue code:', gameUrl, error);
-                        if (window.parent) {
-                            window.parent.postMessage({ type: 'wasm_error', payload: 'Failed to load WASM glue code: ' + gameUrl + ' - ' + error.message }, '*');
-                        }
-                    });    </script>
+        // Get gameUrl from query parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameUrl = urlParams.get('gameUrl'); // This will be like '/wasm/raylib_example.js' or './wasm/raylib_example.js'
+
+        if (gameUrl) {
+            loadScript(gameUrl)
+                .then(() => console.log('WASM glue code loaded:', gameUrl))
+                .catch(error => {
+                    console.error('Failed to load WASM glue code:', gameUrl, error);
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'wasm_error', payload: 'Failed to load WASM glue code: ' + gameUrl + ' - ' + error.message }, '*');
+                    }
+                });
+        } else {
+            console.error('No gameUrl parameter found in URL.');
+            if (window.parent) {
+                window.parent.postMessage({ type: 'wasm_error', payload: 'No gameUrl parameter found in URL.' }, '*');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,60 +1,78 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
+import { promisify } from 'util';
+
+const readdir = promisify(fs.readdir);
+const readFile = promisify(fs.readFile);
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Directory where WASM files are located in the built frontend
+const wasmDir = path.join(__dirname, '../../frontend/dist/wasm');
 
 // API routes
 app.get('/api', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
-app.get('/api/games', (req, res) => {
-  const games = [
-    {
-      id: 'hello-wasm',
-      name: 'Hello WebAssembly',
-      description: 'A simple C++ program compiled to WebAssembly that prints a greeting.',
-      wasmPath: '/wasm/hello.js', // Path to Emscripten-generated JS glue code
-    },
-    {
-      id: 'sdl2-example',
-      name: 'SDL2 WebAssembly Example',
-      description: 'A simple C++ SDL2 application showing a red rectangle on a canvas.',
-      wasmPath: '/wasm/sdl2_example.js', // Path to Emscripten-generated JS glue code
-    },
-    {
-      id: 'raylib-example',
-      name: 'raylib WebAssembly Example',
-      description: 'A simple C++ raylib application showing a moving circle and color changes.',
-      wasmPath: '/wasm/raylib_example.js', // Path to Emscripten-generated JS glue code
-    },
-    // Add more games here in the future
-  ];
+// Function to dynamically get the list of games
+async function getGames() {
+  try {
+    const games: any[] = [];
+    const gameSubdirs = await readdir(wasmDir, { withFileTypes: true });
+
+    for (const dirent of gameSubdirs) {
+      if (dirent.isDirectory()) {
+        const gameName = dirent.name; // e.g., 'hello', 'main'
+        const gameFolderPath = path.join(wasmDir, gameName);
+        const gameFiles = await readdir(gameFolderPath);
+
+        // Assuming the main game file is named after the folder
+        const jsFile = `${gameName}.js`;
+        const wasmFile = `${gameName}.wasm`;
+        const descriptionMd = 'description.md';
+        const previewImage = 'preview.svg'; // or .png
+
+        const jsFileExists = gameFiles.includes(jsFile);
+        const wasmFileExists = gameFiles.includes(wasmFile);
+
+        if (jsFileExists && wasmFileExists) {
+          let fullDescription = "No description provided.";
+          try {
+            const mdContent = await readFile(path.join(gameFolderPath, descriptionMd), 'utf8');
+            fullDescription = mdContent;
+          } catch (error) {
+            console.warn(`No description.md found for ${gameName}`);
+          }
+
+          games.push({
+            id: gameName,
+            name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()), // e.g., Hello, Main
+            description: fullDescription.substring(0, 100) + '...', // Short description
+            fullDescription: fullDescription,
+            wasmPath: `/wasm/${gameName}/${jsFile}`,
+            previewImageUrl: `/wasm/${gameName}/${previewImage}`,
+          });
+        }
+      }
+    }
+
+    return games;
+  } catch (error) {
+    console.error('Failed to read WASM directory:', error);
+    return [];
+  }
+}
+
+app.get('/api/games', async (req, res) => {
+  const games = await getGames();
   res.json(games);
 });
 
-// Explicitly serve WASM glue code and WASM modules with correct MIME types
-app.get('/wasm/hello.js', (req, res) => {
-  res.type('application/javascript').sendFile(path.join(__dirname, '../../frontend/dist/wasm/hello.js'));
-});
-app.get('/wasm/hello.wasm', (req, res) => {
-  res.type('application/wasm').sendFile(path.join(__dirname, '../../frontend/dist/wasm/hello.wasm'));
-});
-
-app.get('/wasm/sdl2_example.js', (req, res) => {
-  res.type('application/javascript').sendFile(path.join(__dirname, '../../frontend/dist/wasm/sdl2_example.js'));
-});
-app.get('/wasm/sdl2_example.wasm', (req, res) => {
-  res.type('application/wasm').sendFile(path.join(__dirname, '../../frontend/dist/wasm/sdl2_example.wasm'));
-});
-
-app.get('/wasm/raylib_example.js', (req, res) => {
-  res.type('application/javascript').sendFile(path.join(__dirname, '../../frontend/dist/wasm/raylib_example.js'));
-});
-app.get('/wasm/raylib_example.wasm', (req, res) => {
-  res.type('application/wasm').sendFile(path.join(__dirname, '../../frontend/dist/wasm/raylib_example.wasm'));
-});
+// Serve WASM glue code and WASM modules dynamically from the wasmDir
+app.use('/wasm', express.static(wasmDir));
 
 // Serve other static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
