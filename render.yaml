@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: the-divine-code
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install --prefix backend
+    startCommand: node backend/dist/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.0.0

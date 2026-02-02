@@ -11,6 +11,13 @@ const readdir = (0, util_1.promisify)(fs_1.default.readdir);
 const readFile = (0, util_1.promisify)(fs_1.default.readFile);
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
+// Divine Security & Multithreading Headers (COOP/COEP)
+// These are required to enable SharedArrayBuffer for multithreaded WASM.
+app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    next();
+});
 // POINT OF TRUTH: Source directory for games and their metadata
 const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
 // Helper to get all game metadata
@@ -46,7 +53,11 @@ async function getGamesMetadata() {
                         id: gameName,
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                         shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-                        fullDescription: `By the grace of the Almighty Creator, this game manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
+                        fullDescription: `By the grace of the Almighty Creator, this game manifests. 
+
+ ${fullDescription} 
+
+ A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
                     });
@@ -135,7 +146,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
     }
     </script>
     `;
-        // Inject into the <head> using a more robust regex to handle minified HTML
+        // Inject into the <head> using a case-insensitive match
         html = html.replace(/<head>/i, `<head>${divineMeta}`);
         res.send(html);
     }
@@ -152,8 +163,8 @@ app.use('/wasm/:gameId', (req, res, next) => {
 });
 // Serve static files from the built frontend
 app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist')));
-// SPA fallback
-app.get('*', (req, res) => {
+// SPA fallback using use() instead of get('*') for Express 5 compatibility
+app.use((req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../../frontend/dist/index.html'));
 });
 app.listen(port, () => {
