@@ -9,22 +9,43 @@ const readFile = promisify(fs.readFile);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// DIVINE PATH CONFIGURATION
+// In production (Vercel), we look for the built assets in the frontend distribution.
+// Locally, we might look at the source 'games' folder for real-time updates.
+let wasmGamesRoot: string;
+
+// Check if we are running in a built environment (like Vercel or local dist)
+const distWasmPath = path.join(__dirname, '../../frontend/dist/wasm');
+const sourceGamesPath = path.join(__dirname, '../../games');
+
+if (fs.existsSync(distWasmPath)) {
+  console.log('Divine Backend: Serving games from BUILT artifacts (Production/Dist Mode)');
+  wasmGamesRoot = distWasmPath;
+} else {
+  console.log('Divine Backend: Serving games from SOURCE (Development Mode)');
+  wasmGamesRoot = sourceGamesPath;
+}
+
 // Divine Security & Multithreading Headers (COOP/COEP)
-// These are required to enable SharedArrayBuffer for multithreaded WASM.
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   next();
 });
 
-// POINT OF TRUTH: Source directory for games and their metadata
-const wasmGamesRoot = path.join(__dirname, '../../games');
+// API routes
+app.get('/api', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
 
 // Helper to get all game metadata
 async function getGamesMetadata() {
   try {
     const games: any[] = [];
-    if (!fs.existsSync(wasmGamesRoot)) return [];
+    if (!fs.existsSync(wasmGamesRoot)) {
+      console.error(`Games directory not found at: ${wasmGamesRoot}`);
+      return [];
+    }
     
     const gameSubdirs = await readdir(wasmGamesRoot, { withFileTypes: true });
 
@@ -32,8 +53,14 @@ async function getGamesMetadata() {
       if (dirent.isDirectory()) {
         const gameName = dirent.name;
         const gameFolderPath = path.join(wasmGamesRoot, gameName);
+        
+        // In dist mode, file structure is flat inside the game folder
+        // In source mode, it's also flat.
         const gameFiles = await readdir(gameFolderPath);
 
+        // We look for the game's main HTML file
+        // Note: In source 'games/', it's gameName.html
+        // In 'frontend/dist/wasm/', copy-games.js ensures it's also gameName/gameName.html
         const gameHtml = `${gameName}.html`;
         const jsFile = `${gameName}.js`;
         const wasmFile = `${gameName}.wasm`;
@@ -50,18 +77,14 @@ async function getGamesMetadata() {
             const mdContent = await readFile(path.join(gameFolderPath, descriptionMd), 'utf8');
             fullDescription = mdContent;
           } catch (error) {
-            console.warn(`No description.md found for ${gameName}`);
+            // Description might be missing, that's okay
           }
 
           games.push({
             id: gameName,
             name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-            fullDescription: `By the grace of the Almighty Creator, this game manifests. 
-
- ${fullDescription} 
-
- A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
+            fullDescription: `By the grace of the Almighty Creator, this game manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
             wasmPath: `/wasm/${gameName}/`,
             previewImageUrl: `/wasm/${gameName}/${previewImage}`,
           });
@@ -162,7 +185,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
     </script>
     `;
 
-    // Inject into the <head> using a case-insensitive match
+    // Inject into the <head>
     html = html.replace(/<head>/i, `<head>${divineMeta}`);
     
     res.send(html);
@@ -180,13 +203,21 @@ app.use('/wasm/:gameId', (req, res, next) => {
 });
 
 // Serve static files from the built frontend
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+// Use a robust path resolution that works in Vercel structure too
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
 
-// SPA fallback using use() instead of get('*') for Express 5 compatibility
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
-app.listen(port, () => {
-  console.log(`Backend server listening on http://localhost:${port}`);
-});
+// Vercel Serverless Check: Only listen if running directly
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Backend server listening on http://localhost:${port}`);
+  });
+}
+
+// Export for Vercel
+export default app;
