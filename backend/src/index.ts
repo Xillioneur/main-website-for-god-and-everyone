@@ -56,11 +56,7 @@ async function getGamesMetadata() {
             id: gameName,
             name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-            fullDescription: `By the grace of the Almighty Creator, this game manifests. 
-
- ${fullDescription} 
-
- A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
+            fullDescription: `By the grace of the Almighty Creator, this game manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
             wasmPath: `/wasm/${gameName}/`,
             previewImageUrl: `/wasm/${gameName}/${previewImage}`,
           });
@@ -74,15 +70,64 @@ async function getGamesMetadata() {
   }
 }
 
+// --- HOME PAGE SEO INJECTION ---
+// This MUST be defined before any static middleware to intercept the root request
+app.get('/', async (req, res) => {
+  console.log('Manifesting the Divine Index at /');
+  const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
+  
+  if (!fs.existsSync(indexPath)) {
+    console.error('Sacred Index missing at:', indexPath);
+    return res.status(404).send('Sacred Index not found. Please build the frontend.');
+  }
+
+  try {
+    let html = await readFile(indexPath, 'utf8');
+    const host = req.get('host');
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+    const previewImage = `${baseUrl}/placeholder-game-preview.png`;
+
+    const homeMeta = `
+    <!-- PRIMARY META -->
+    <title>The Divine Code | WebAssembly Manifestations</title>
+    <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
+
+    <!-- OPEN GRAPH / FACEBOOK / X -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${baseUrl}/">
+    <meta property="og:title" content="The Divine Code | WASM Manifestations">
+    <meta property="og:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="og:image" content="${previewImage}">
+
+    <!-- X (TWITTER) -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${baseUrl}/">
+    <meta property="twitter:title" content="The Divine Code | WebAssembly Manifestations">
+    <meta property="twitter:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="twitter:image" content="${previewImage}">
+    `;
+
+    // Inject into the <head> and remove the default title
+    html = html.replace(/<title>.*?<\/title>/i, ''); // Purge the default title
+    html = html.replace(/<head>/i, `<head>${homeMeta}`);
+    
+    console.log('Divine Metadata successfully injected.');
+    res.send(html);
+  } catch (error) {
+    console.error('Home SEO Injection failed:', error);
+    res.sendFile(indexPath);
+  }
+});
+
 app.get('/api/games', async (req, res) => {
   const games = await getGamesMetadata();
   res.json(games);
 });
 
-// SEO: Dynamic Sitemap Route (Refined for Google and Render)
+// SEO: Dynamic Sitemap Route
 app.get('/sitemap.xml', async (req, res) => {
   const games = await getGamesMetadata();
-  // Force HTTPS for production reliability
   const host = req.get('host');
   const protocol = host?.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
@@ -90,22 +135,20 @@ app.get('/sitemap.xml', async (req, res) => {
   let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
+  sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+`;
   
-  // Add main page
-  sitemap += `  <url>\n    <loc>${baseUrl}/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
-  
-  // Add every game page
   games.forEach(game => {
-    sitemap += `  <url>\n    <loc>${baseUrl}${game.wasmPath}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    sitemap += `  <url><loc>${baseUrl}${game.wasmPath}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+`;
   });
   
   sitemap += `</urlset>`;
-  
   res.header('Content-Type', 'application/xml; charset=utf-8');
   res.send(sitemap);
 });
 
-// --- DIVINE SEO INJECTION ROUTE ---
+// --- DIVINE SEO INJECTION ROUTE FOR GAMES ---
 app.get('/wasm/:gameId/', async (req, res) => {
   const { gameId } = req.params;
   const gameHtmlPath = path.join(wasmGamesRoot, gameId, `${gameId}.html`);
@@ -183,52 +226,8 @@ app.use('/wasm/:gameId', (req, res, next) => {
 });
 
 // Serve static files from the built frontend
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
-
-// --- HOME PAGE SEO INJECTION ---
-app.get('/', async (req, res) => {
-  const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
-  
-  if (!fs.existsSync(indexPath)) {
-    return res.status(404).send('Sacred Index not found. Please build the frontend.');
-  }
-
-  try {
-    let html = await readFile(indexPath, 'utf8');
-    const host = req.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
-    const previewImage = `${baseUrl}/placeholder-game-preview.png`;
-
-    const homeMeta = `
-    <!-- PRIMARY META -->
-    <title>The Divine Code | WebAssembly Manifestations</title>
-    <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
-
-    <!-- OPEN GRAPH / FACEBOOK / X -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="${baseUrl}/">
-    <meta property="og:title" content="The Divine Code | WASM Manifestations">
-    <meta property="og:description" content="A professional platform for high-performance WebAssembly games and divine code.">
-    <meta property="og:image" content="${previewImage}">
-
-    <!-- X (TWITTER) -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="${baseUrl}/">
-    <meta property="twitter:title" content="The Divine Code | WebAssembly Manifestations">
-    <meta property="twitter:description" content="A professional platform for high-performance WebAssembly games and divine code.">
-    <meta property="twitter:image" content="${previewImage}">
-    `;
-
-    // Inject into the <head>
-    html = html.replace(/<head>/i, `<head>${homeMeta}`);
-    
-    res.send(html);
-  } catch (error) {
-    console.error('Home SEO Injection failed:', error);
-    res.sendFile(indexPath);
-  }
-});
+// We use a middleware to ensure we don't accidentally serve index.html for root requests here
+app.use(express.static(path.join(__dirname, '../../frontend/dist'), { index: false }));
 
 // SPA fallback
 app.use((req, res) => {
