@@ -10,7 +10,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Divine Security & Multithreading Headers (COOP/COEP)
-// These are required to enable SharedArrayBuffer for multithreaded WASM.
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
@@ -80,24 +79,29 @@ app.get('/api/games', async (req, res) => {
   res.json(games);
 });
 
-// SEO: Dynamic Sitemap Route
+// SEO: Dynamic Sitemap Route (Refined for Google and Render)
 app.get('/sitemap.xml', async (req, res) => {
   const games = await getGamesMetadata();
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  // Force HTTPS for production reliability
+  const host = req.get('host');
+  const protocol = host?.includes('localhost') ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
   
   let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
-  sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-`;
   
+  // Add main page
+  sitemap += `  <url>\n    <loc>${baseUrl}/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
+  
+  // Add every game page
   games.forEach(game => {
-    sitemap += `  <url><loc>${baseUrl}${game.wasmPath}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-`;
+    sitemap += `  <url>\n    <loc>${baseUrl}${game.wasmPath}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
   });
   
   sitemap += `</urlset>`;
-  res.header('Content-Type', 'application/xml');
+  
+  res.header('Content-Type', 'application/xml; charset=utf-8');
   res.send(sitemap);
 });
 
@@ -120,10 +124,11 @@ app.get('/wasm/:gameId/', async (req, res) => {
       return res.send(html);
     }
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const host = req.get('host');
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
 
-    // Prepare Divine Meta Tags
     const divineMeta = `
     <!-- PRIMARY META -->
     <title>${game.name} | The Divine Code</title>
@@ -162,9 +167,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
     </script>
     `;
 
-    // Inject into the <head> using a case-insensitive match
     html = html.replace(/<head>/i, `<head>${divineMeta}`);
-    
     res.send(html);
   } catch (error) {
     console.error('SEO Injection failed:', error);
@@ -182,7 +185,7 @@ app.use('/wasm/:gameId', (req, res, next) => {
 // Serve static files from the built frontend
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
-// SPA fallback using use() instead of get('*') for Express 5 compatibility
+// SPA fallback
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
 });
