@@ -12,17 +12,18 @@ const readFile = (0, util_1.promisify)(fs_1.default.readFile);
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 // Divine Security & Multithreading Headers (COOP/COEP)
+// Updated to 'credentialless' to allow Google Analytics while maintaining multithreading support.
 app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
     next();
 });
 // POINT OF TRUTH: Source directory for games and their metadata
 const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
-// Google Analytics Tag
+// Google Analytics Tag (Updated with crossorigin attribute)
 const googleAnalyticsTag = `
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
