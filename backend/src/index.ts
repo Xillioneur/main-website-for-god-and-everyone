@@ -86,7 +86,7 @@ app.get('/', async (req, res) => {
     const host = req.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
-    const previewImage = `${baseUrl}/placeholder-game-preview.png`;
+    const previewImage = `${baseUrl}/homepage-preview.svg`;
 
     const homeMeta = `
     <!-- PRIMARY META -->

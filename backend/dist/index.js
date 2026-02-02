@@ -12,7 +12,6 @@ const readFile = (0, util_1.promisify)(fs_1.default.readFile);
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 // Divine Security & Multithreading Headers (COOP/COEP)
-// These are required to enable SharedArrayBuffer for multithreaded WASM.
 app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
@@ -53,11 +52,7 @@ async function getGamesMetadata() {
                         id: gameName,
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                         shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-                        fullDescription: `By the grace of the Almighty Creator, this game manifests. 
-
- ${fullDescription} 
-
- A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
+                        fullDescription: `By the grace of the Almighty Creator, this game manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
                     });
@@ -71,6 +66,51 @@ async function getGamesMetadata() {
         return [];
     }
 }
+// --- HOME PAGE SEO INJECTION ---
+// This MUST be defined before any static middleware to intercept the root request
+app.get('/', async (req, res) => {
+    console.log('Manifesting the Divine Index at /');
+    const indexPath = path_1.default.join(__dirname, '../../frontend/dist/index.html');
+    if (!fs_1.default.existsSync(indexPath)) {
+        console.error('Sacred Index missing at:', indexPath);
+        return res.status(404).send('Sacred Index not found. Please build the frontend.');
+    }
+    try {
+        let html = await readFile(indexPath, 'utf8');
+        const host = req.get('host');
+        const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
+        const baseUrl = `${protocol}://${host}`;
+        const previewImage = `${baseUrl}/homepage-preview.svg`;
+        const homeMeta = `
+    <!-- PRIMARY META -->
+    <title>The Divine Code | WebAssembly Manifestations</title>
+    <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
+
+    <!-- OPEN GRAPH / FACEBOOK / X -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${baseUrl}/">
+    <meta property="og:title" content="The Divine Code | WASM Manifestations">
+    <meta property="og:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="og:image" content="${previewImage}">
+
+    <!-- X (TWITTER) -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${baseUrl}/">
+    <meta property="twitter:title" content="The Divine Code | WebAssembly Manifestations">
+    <meta property="twitter:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="twitter:image" content="${previewImage}">
+    `;
+        // Inject into the <head> and remove the default title
+        html = html.replace(/<title>.*?<\/title>/i, ''); // Purge the default title
+        html = html.replace(/<head>/i, `<head>${homeMeta}`);
+        console.log('Divine Metadata successfully injected.');
+        res.send(html);
+    }
+    catch (error) {
+        console.error('Home SEO Injection failed:', error);
+        res.sendFile(indexPath);
+    }
+});
 app.get('/api/games', async (req, res) => {
     const games = await getGamesMetadata();
     res.json(games);
@@ -78,7 +118,9 @@ app.get('/api/games', async (req, res) => {
 // SEO: Dynamic Sitemap Route
 app.get('/sitemap.xml', async (req, res) => {
     const games = await getGamesMetadata();
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const host = req.get('host');
+    const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
@@ -89,10 +131,10 @@ app.get('/sitemap.xml', async (req, res) => {
 `;
     });
     sitemap += `</urlset>`;
-    res.header('Content-Type', 'application/xml');
+    res.header('Content-Type', 'application/xml; charset=utf-8');
     res.send(sitemap);
 });
-// --- DIVINE SEO INJECTION ROUTE ---
+// --- DIVINE SEO INJECTION ROUTE FOR GAMES ---
 app.get('/wasm/:gameId/', async (req, res) => {
     const { gameId } = req.params;
     const gameHtmlPath = path_1.default.join(wasmGamesRoot, gameId, `${gameId}.html`);
@@ -106,9 +148,10 @@ app.get('/wasm/:gameId/', async (req, res) => {
         if (!game) {
             return res.send(html);
         }
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const host = req.get('host');
+        const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
+        const baseUrl = `${protocol}://${host}`;
         const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
-        // Prepare Divine Meta Tags
         const divineMeta = `
     <!-- PRIMARY META -->
     <title>${game.name} | The Divine Code</title>
@@ -146,7 +189,6 @@ app.get('/wasm/:gameId/', async (req, res) => {
     }
     </script>
     `;
-        // Inject into the <head> using a case-insensitive match
         html = html.replace(/<head>/i, `<head>${divineMeta}`);
         res.send(html);
     }
@@ -162,8 +204,9 @@ app.use('/wasm/:gameId', (req, res, next) => {
     express_1.default.static(gameFolderPath)(req, res, next);
 });
 // Serve static files from the built frontend
-app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist')));
-// SPA fallback using use() instead of get('*') for Express 5 compatibility
+// We use a middleware to ensure we don't accidentally serve index.html for root requests here
+app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist'), { index: false }));
+// SPA fallback
 app.use((req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../../frontend/dist/index.html'));
 });
