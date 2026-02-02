@@ -19,6 +19,17 @@ app.use((req, res, next) => {
 });
 // POINT OF TRUTH: Source directory for games and their metadata
 const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
+// Google Analytics Tag
+const googleAnalyticsTag = `
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LFWV3YSBMT');
+</script>
+`;
 // Helper to get all game metadata
 async function getGamesMetadata() {
     try {
@@ -67,12 +78,9 @@ async function getGamesMetadata() {
     }
 }
 // --- HOME PAGE SEO INJECTION ---
-// This MUST be defined before any static middleware to intercept the root request
 app.get('/', async (req, res) => {
-    console.log('Manifesting the Divine Index at /');
     const indexPath = path_1.default.join(__dirname, '../../frontend/dist/index.html');
     if (!fs_1.default.existsSync(indexPath)) {
-        console.error('Sacred Index missing at:', indexPath);
         return res.status(404).send('Sacred Index not found. Please build the frontend.');
     }
     try {
@@ -82,6 +90,7 @@ app.get('/', async (req, res) => {
         const baseUrl = `${protocol}://${host}`;
         const previewImage = `${baseUrl}/homepage-preview.svg`;
         const homeMeta = `
+    ${googleAnalyticsTag}
     <!-- PRIMARY META -->
     <title>The Divine Code | WebAssembly Manifestations</title>
     <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
@@ -100,10 +109,8 @@ app.get('/', async (req, res) => {
     <meta property="twitter:description" content="A professional platform for high-performance WebAssembly games and divine code.">
     <meta property="twitter:image" content="${previewImage}">
     `;
-        // Inject into the <head> and remove the default title
-        html = html.replace(/<title>.*?<\/title>/i, ''); // Purge the default title
+        html = html.replace(/<title>.*?<\/title>/i, '');
         html = html.replace(/<head>/i, `<head>${homeMeta}`);
-        console.log('Divine Metadata successfully injected.');
         res.send(html);
     }
     catch (error) {
@@ -153,6 +160,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
         const baseUrl = `${protocol}://${host}`;
         const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
         const divineMeta = `
+    ${googleAnalyticsTag}
     <!-- PRIMARY META -->
     <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
@@ -204,7 +212,6 @@ app.use('/wasm/:gameId', (req, res, next) => {
     express_1.default.static(gameFolderPath)(req, res, next);
 });
 // Serve static files from the built frontend
-// We use a middleware to ensure we don't accidentally serve index.html for root requests here
 app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist'), { index: false }));
 // SPA fallback
 app.use((req, res) => {
