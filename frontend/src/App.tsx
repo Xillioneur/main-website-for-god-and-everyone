@@ -19,6 +19,59 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  // Theme switching state
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Initialize from localStorage or default to dark mode
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'light' ? false : true;
+  });
+
+  // Track fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Effect to apply theme class to body
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.remove('light-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.add('light-mode');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  // Effect to handle fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (iframeRef.current) {
+      if (!document.fullscreenElement) {
+        iframeRef.current.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+          setError(`Fullscreen not supported or allowed by your browser. Error: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -97,9 +150,9 @@ function App() {
 
   const renderGameList = () => (
     <div className="game-list">
-      <h2>Available Games</h2>
+      <h2>AVAILABLE MANIFESTATIONS</h2>
       {games.length === 0 && !error ? (
-        <p>Loading games...</p>
+        <p>Awaiting divine revelations of code...</p>
       ) : (
         <div className="game-cards-container">
           {games.map((game) => (
@@ -111,7 +164,7 @@ function App() {
               />
               <h3>{game.name}</h3>
               <p>{game.description}</p>
-              <button onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>Play</button>
+              <button onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>INITIATE DIVINE PLAY</button>
             </div>
           ))}
         </div>
@@ -121,7 +174,7 @@ function App() {
 
   const renderGameDetails = () => (
     <div className="game-details-view">
-      <h2>{selectedGameDetails?.name}</h2>
+      <h2>{selectedGameDetails?.name} - DIVINE EDICT</h2>
       <img
         src={selectedGameDetails?.previewImageUrl}
         alt={`Preview of ${selectedGameDetails?.name}`}
@@ -129,18 +182,23 @@ function App() {
       />
       <p>{selectedGameDetails?.fullDescription}</p>
       <div className="game-details-actions">
-        <button onClick={() => selectedGameDetails && loadAndRunWasm(selectedGameDetails)}>Play Now</button>
-        <button onClick={backToList}>Back to List</button>
+        <button onClick={() => selectedGameDetails && loadAndRunWasm(selectedGameDetails)}>INITIATE DIVINE PLAY</button>
+        <button onClick={backToList}>RETURN TO THE SANCTUARY</button>
       </div>
     </div>
   );
 
   const renderPlayingGame = () => (
-    <div className="game-container">
-      <h2>Now Playing: {selectedGame?.name}</h2>
-      <button onClick={backToList}>Back to Game List</button>
-      {loadingWasm && <p>Loading WebAssembly module for {selectedGame?.name}...</p>}
-      <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 150px)', border: 'none' }}>
+    <div className="game-playing-container">
+      {/* Game controls will now overlay or be minimal */}
+      <div className="game-controls-overlay">
+        <button onClick={backToList} className="control-button">BACK TO THE CREATION</button>
+        <button onClick={toggleFullscreen} className="control-button">
+          {isFullscreen ? 'EXIT FULLSCREEN' : 'ENTER THE VOID'}
+        </button>
+      </div>
+      {loadingWasm && <p className="loading-message">Summoning {selectedGame?.name} from the aether...</p>}
+      <div className="iframe-wrapper">
         <iframe
           ref={iframeRef}
           key={selectedGame?.id}
@@ -150,9 +208,9 @@ function App() {
         ></iframe>
       </div>
       {selectedGame?.id !== 'sdl2-example' && (
-        <div>
-          <h3>Game Output:</h3>
-          <pre>{gameOutput || 'No output from game.'}</pre>
+        <div className="game-output-console">
+          <h3>ORACULAR TRACERIES:</h3>
+          <pre>{gameOutput || 'Awaiting divine whispers from the depths...'}</pre>
         </div>
       )}
     </div>
@@ -160,17 +218,25 @@ function App() {
 
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>WebAssembly Game Platform</h1>
-      </header>
-
-      {error && <p className="error-message">Error: {error}</p>}
-
-      {!selectedGame && !selectedGameDetails && renderGameList()}
-      {!selectedGame && selectedGameDetails && renderGameDetails()}
-      {selectedGame && renderPlayingGame()}
-    </div>
+    <>
+      {selectedGame ? (
+        <div className="App playing-game">
+          {renderPlayingGame()}
+        </div>
+      ) : (
+        <div className="App" >
+          <header className="App-header">
+            <h1>THE DIVINE CODE: WASM MANIFESTATIONS</h1>
+            <button className="theme-toggle-button" onClick={() => setIsDarkMode(!isDarkMode)}>
+              {isDarkMode ? 'LIGHT MODE' : 'DARK MODE'}
+            </button>
+          </header>
+          {error && <p className="error-message">MANIFESTATION ERROR: {error}</p>}
+          {!selectedGameDetails && renderGameList()}
+          {selectedGameDetails && renderGameDetails()}
+        </div>
+      )}
+    </>
   )
 }
 

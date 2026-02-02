@@ -51,7 +51,7 @@ async function getGames() {
             id: gameName,
             name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()), // e.g., Hello, Main
             description: fullDescription.substring(0, 100) + '...', // Short description
-            fullDescription: fullDescription,
+            fullDescription: `By the grace of the Almighty Creator, this game manifests. ${fullDescription} A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
             wasmPath: `/wasm/${gameName}/${jsFile}`,
             previewImageUrl: `/wasm/${gameName}/${previewImage}`,
           });
