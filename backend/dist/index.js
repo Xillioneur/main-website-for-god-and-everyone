@@ -12,7 +12,6 @@ const readFile = (0, util_1.promisify)(fs_1.default.readFile);
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 // Divine Security & Multithreading Headers (COOP/COEP)
-// Updated to 'credentialless' to allow Google Analytics while maintaining multithreading support.
 app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
@@ -20,9 +19,8 @@ app.use((req, res, next) => {
 });
 // POINT OF TRUTH: Source directory for games and their metadata
 const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
-// Google Analytics Tag (Updated with crossorigin attribute)
+// Google Analytics Tag - Purged of comments for absolute clarity
 const googleAnalyticsTag = `
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -90,8 +88,7 @@ app.get('/', async (req, res) => {
         const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
         const baseUrl = `${protocol}://${host}`;
         const previewImage = `${baseUrl}/homepage-preview.svg`;
-        const homeMeta = `
-    ${googleAnalyticsTag}
+        const homeMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
     <title>The Divine Code | WebAssembly Manifestations</title>
     <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
@@ -160,8 +157,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
         const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
         const baseUrl = `${protocol}://${host}`;
         const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
-        const divineMeta = `
-    ${googleAnalyticsTag}
+        const divineMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
     <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
