@@ -185,6 +185,51 @@ app.use('/wasm/:gameId', (req, res, next) => {
 // Serve static files from the built frontend
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
+// --- HOME PAGE SEO INJECTION ---
+app.get('/', async (req, res) => {
+  const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
+  
+  if (!fs.existsSync(indexPath)) {
+    return res.status(404).send('Sacred Index not found. Please build the frontend.');
+  }
+
+  try {
+    let html = await readFile(indexPath, 'utf8');
+    const host = req.get('host');
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+    const previewImage = `${baseUrl}/placeholder-game-preview.png`;
+
+    const homeMeta = `
+    <!-- PRIMARY META -->
+    <title>The Divine Code | WebAssembly Manifestations</title>
+    <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
+
+    <!-- OPEN GRAPH / FACEBOOK / X -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${baseUrl}/">
+    <meta property="og:title" content="The Divine Code | WASM Manifestations">
+    <meta property="og:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="og:image" content="${previewImage}">
+
+    <!-- X (TWITTER) -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${baseUrl}/">
+    <meta property="twitter:title" content="The Divine Code | WebAssembly Manifestations">
+    <meta property="twitter:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="twitter:image" content="${previewImage}">
+    `;
+
+    // Inject into the <head>
+    html = html.replace(/<head>/i, `<head>${homeMeta}`);
+    
+    res.send(html);
+  } catch (error) {
+    console.error('Home SEO Injection failed:', error);
+    res.sendFile(indexPath);
+  }
+});
+
 // SPA fallback
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
