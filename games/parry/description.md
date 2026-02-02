@@ -1,21 +1,12 @@
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. This is the main game: Parry the Storm – Ashes of the Bullet (Dark Souls Edition).
+# Ashes of the Bullet (Dark Souls Edition)
 
-## Gameplay
+**Ashes of the Bullet** is a punishing Bullet Hell Arena manifestation that merges rapid-fire projectiles with the high-stakes risk/reward cycle of a Soulslike journey.
 
-```cpp
-int main(void) {
-    printf("Hello, Markdown");
-}
-```
+### Technical Manifestation
+- **Reflective Parry System**: The core ritual involves a timing-based parry window that transforms enemy threats into player assets, deflecting bullets with a `PERFECT_PARRY_BONUS` multiplier.
+- **Sacred RPG Stats**: Implements a persistent soul-collection loop. Gathered essence is sacrificed at "Sites of Grace" to augment Vitality, Endurance, Strength, and Dexterity via a custom upgrade logic.
+- **Bullet Patterns**: Sophisticated procedural spawning of complex projectile matrices, including Archimedean spirals and directional walls.
+- **Dynamic Camera**: A 3D orbital camera system featuring smooth lerp following and intensity-based trauma (shake) during high-impact events.
+- **Boss Phase Logic**: Features the "Bullet Lord" manifestation, utilizing a multi-phase state machine that adapts its attack patterns based on health thresholds.
 
-### Markdown
-
-Yes, indeed.
-
-#### Markdown 1.1
-
-Done.
-
----
-
-Cool now I know.
+Git Gud. The code demands nothing less. Selah.
