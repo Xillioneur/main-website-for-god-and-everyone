@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     region: oregon
-    buildCommand: npm install --prefix backend
+    buildCommand: npm install --prefix backend && npm run build --prefix backend
     startCommand: node backend/dist/index.js
     envVars:
       - key: NODE_VERSION
