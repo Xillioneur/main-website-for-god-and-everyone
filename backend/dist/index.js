@@ -5,59 +5,155 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const util_1 = require("util");
+const readdir = (0, util_1.promisify)(fs_1.default.readdir);
+const readFile = (0, util_1.promisify)(fs_1.default.readFile);
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
-// API routes
-app.get('/api', (req, res) => {
-    res.json({ message: 'API is working!' });
-});
-app.get('/api/games', (req, res) => {
-    const games = [
-        {
-            id: 'hello-wasm',
-            name: 'Hello WebAssembly',
-            description: 'A simple C++ program compiled to WebAssembly that prints a greeting.',
-            wasmPath: '/wasm/hello.js', // Path to Emscripten-generated JS glue code
-        },
-        {
-            id: 'sdl2-example',
-            name: 'SDL2 WebAssembly Example',
-            description: 'A simple C++ SDL2 application showing a red rectangle on a canvas.',
-            wasmPath: '/wasm/sdl2_example.js', // Path to Emscripten-generated JS glue code
-        },
-        {
-            id: 'raylib-example',
-            name: 'raylib WebAssembly Example',
-            description: 'A simple C++ raylib application showing a moving circle and color changes.',
-            wasmPath: '/wasm/raylib_example.js', // Path to Emscripten-generated JS glue code
-        },
-        // Add more games here in the future
-    ];
+// POINT OF TRUTH: Source directory for games and their metadata
+const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
+// Helper to get all game metadata
+async function getGamesMetadata() {
+    try {
+        const games = [];
+        if (!fs_1.default.existsSync(wasmGamesRoot))
+            return [];
+        const gameSubdirs = await readdir(wasmGamesRoot, { withFileTypes: true });
+        for (const dirent of gameSubdirs) {
+            if (dirent.isDirectory()) {
+                const gameName = dirent.name;
+                const gameFolderPath = path_1.default.join(wasmGamesRoot, gameName);
+                const gameFiles = await readdir(gameFolderPath);
+                const gameHtml = `${gameName}.html`;
+                const jsFile = `${gameName}.js`;
+                const wasmFile = `${gameName}.wasm`;
+                const descriptionMd = 'description.md';
+                const previewImage = 'preview.svg';
+                const gameHtmlExists = gameFiles.includes(gameHtml);
+                const jsFileExists = gameFiles.includes(jsFile);
+                const wasmFileExists = gameFiles.includes(wasmFile);
+                if (gameHtmlExists && jsFileExists && wasmFileExists) {
+                    let fullDescription = "No description provided.";
+                    try {
+                        const mdContent = await readFile(path_1.default.join(gameFolderPath, descriptionMd), 'utf8');
+                        fullDescription = mdContent;
+                    }
+                    catch (error) {
+                        console.warn(`No description.md found for ${gameName}`);
+                    }
+                    games.push({
+                        id: gameName,
+                        name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
+                        fullDescription: `By the grace of the Almighty Creator, this game manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
+                        wasmPath: `/wasm/${gameName}/`,
+                        previewImageUrl: `/wasm/${gameName}/${previewImage}`,
+                    });
+                }
+            }
+        }
+        return games;
+    }
+    catch (error) {
+        console.error('Failed to read games directory:', error);
+        return [];
+    }
+}
+app.get('/api/games', async (req, res) => {
+    const games = await getGamesMetadata();
     res.json(games);
 });
-// Explicitly serve WASM glue code and WASM modules with correct MIME types
-app.get('/wasm/hello.js', (req, res) => {
-    res.type('application/javascript').sendFile(path_1.default.join(__dirname, '../../frontend/dist/wasm/hello.js'));
+// SEO: Dynamic Sitemap Route
+app.get('/sitemap.xml', async (req, res) => {
+    const games = await getGamesMetadata();
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+`;
+    sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+`;
+    games.forEach(game => {
+        sitemap += `  <url><loc>${baseUrl}${game.wasmPath}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+`;
+    });
+    sitemap += `</urlset>`;
+    res.header('Content-Type', 'application/xml');
+    res.send(sitemap);
 });
-app.get('/wasm/hello.wasm', (req, res) => {
-    res.type('application/wasm').sendFile(path_1.default.join(__dirname, '../../frontend/dist/wasm/hello.wasm'));
+// --- DIVINE SEO INJECTION ROUTE ---
+app.get('/wasm/:gameId/', async (req, res) => {
+    const { gameId } = req.params;
+    const gameHtmlPath = path_1.default.join(wasmGamesRoot, gameId, `${gameId}.html`);
+    if (!fs_1.default.existsSync(gameHtmlPath)) {
+        return res.status(404).send('Divine Manifestation not found.');
+    }
+    try {
+        const games = await getGamesMetadata();
+        const game = games.find(g => g.id === gameId);
+        let html = await readFile(gameHtmlPath, 'utf8');
+        if (!game) {
+            return res.send(html);
+        }
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
+        // Prepare Divine Meta Tags
+        const divineMeta = `
+    <!-- PRIMARY META -->
+    <title>${game.name} | The Divine Code</title>
+    <meta name="description" content="${game.shortDescription}">
+
+    <!-- OPEN GRAPH / FACEBOOK / X -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
+    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
+    <meta property="og:description" content="${game.shortDescription}">
+    <meta property="og:image" content="${absoluteImageUrl}">
+
+    <!-- X (TWITTER) -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="${baseUrl}/wasm/${game.id}/">
+    <meta property="twitter:title" content="${game.name} | The Divine Code">
+    <meta property="twitter:description" content="${game.shortDescription}">
+    <meta property="twitter:image" content="${absoluteImageUrl}">
+
+    <!-- JSON-LD STRUCTURED DATA -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "${game.name}",
+      "operatingSystem": "Web Browser",
+      "applicationCategory": "GameApplication",
+      "description": "${game.shortDescription}",
+      "image": "${absoluteImageUrl}",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    `;
+        // Inject into the <head> using a more robust regex to handle minified HTML
+        html = html.replace(/<head>/i, `<head>${divineMeta}`);
+        res.send(html);
+    }
+    catch (error) {
+        console.error('SEO Injection failed:', error);
+        res.sendFile(gameHtmlPath);
+    }
 });
-app.get('/wasm/sdl2_example.js', (req, res) => {
-    res.type('application/javascript').sendFile(path_1.default.join(__dirname, '../../frontend/dist/wasm/sdl2_example.js'));
+// Serve other static game assets
+app.use('/wasm/:gameId', (req, res, next) => {
+    const { gameId } = req.params;
+    const gameFolderPath = path_1.default.join(wasmGamesRoot, gameId);
+    express_1.default.static(gameFolderPath)(req, res, next);
 });
-app.get('/wasm/sdl2_example.wasm', (req, res) => {
-    res.type('application/wasm').sendFile(path_1.default.join(__dirname, '../../frontend/dist/wasm/sdl2_example.wasm'));
-});
-app.get('/wasm/raylib_example.js', (req, res) => {
-    res.type('application/javascript').sendFile(path_1.default.join(__dirname, '../../frontend/dist/wasm/raylib_example.js'));
-});
-app.get('/wasm/raylib_example.wasm', (req, res) => {
-    res.type('application/wasm').sendFile(path_1.default.join(__dirname, '../../frontend/dist/wasm/raylib_example.wasm'));
-});
-// Serve other static files from the React app
+// Serve static files from the built frontend
 app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist')));
-// All other unhandled requests will return the React app's index.html
-app.use((req, res) => {
+// SPA fallback
+app.get('*', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../../frontend/dist/index.html'));
 });
 app.listen(port, () => {
