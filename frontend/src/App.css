@@ -1,50 +1,51 @@
 html, body {
-  height: 100%; /* Make html and body take full viewport height */
-  width: 100%;  /* Make html and body take full viewport width */
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
-  /* Removed overflow: hidden from here, as it's the culprit for disabling scrolling */
 }
 
 body {
-  min-height: 100vh; /* Ensure body always stretches to at least viewport height */
-  display: flex; /* Use flex to center the content vertically and horizontally */
+  min-height: 100vh;
+  display: flex;
   justify-content: center;
-  align-items: flex-start; /* Align to the top by default, so header is not pushed off */
-  font-family: 'Inter', sans-serif;
+  align-items: flex-start;
+  font-family: 'Inter', sans-serif; /* Modern, clean sans-serif */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  background-color: var(--primary-bg); /* Set primary background here */
-  color: var(--text-color); /* Set default text color */
-  overflow-y: auto; /* Allow vertical scrolling for the body if content overflows */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  transition: background-color 0.4s ease, color 0.4s ease; /* Smoother theme transition */
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* Dark Mode Variables (Default) */
+/* Dark Mode Variables (Default - iOS Dark Mode inspired) */
 body {
-  --primary-bg: #000000;
-  --secondary-bg: rgba(17, 17, 17, 0.7);
-  --card-bg: rgba(34, 34, 34, 0.6);
-  --text-color: #FFFFFF;
-  --light-text-color: #CCCCCC;
-  --accent-color: #FFFFFF;
-  --highlight-color: #AAAAAA;
-  --border-color: #666666;
-  --shadow-color: rgba(0, 0, 0, 0.9);
+  --primary-bg: #000000; /* True black for background */
+  --secondary-bg: rgba(28, 28, 30, 0.8); /* iOS dark mode material background, with transparency */
+  --card-bg: rgba(44, 44, 46, 0.7); /* Slightly lighter card background, with transparency */
+  --text-color: #FFFFFF; /* Pure white text */
+  --light-text-color: #E0E0E0; /* Slightly off-white for secondary text */
+  --accent-color: #FFFFFF; /* White for primary accents/buttons */
+  --highlight-color: rgba(255, 255, 255, 0.15); /* Subtle white highlight for borders/hover */
+  --border-color: rgba(255, 255, 255, 0.1); /* Very subtle white border */
+  --shadow-color: rgba(0, 0, 0, 0.7); /* Deep, crisp shadow */
+  --glow-color: rgba(255, 255, 255, 0.1); /* Subtle white glow */
 }
 
-/* Light Mode Variables */
+/* Light Mode Variables (iOS Light Mode inspired) */
 body.light-mode {
-  --primary-bg: #FFFFFF;
-  --secondary-bg: rgba(240, 240, 240, 0.7);
-  --card-bg: rgba(220, 220, 220, 0.6);
-  --text-color: #111111;
-  --light-text-color: #444444;
-  --accent-color: #111111;
-  --highlight-color: #555555;
-  --border-color: #999999;
-  --shadow-color: rgba(0, 0, 0, 0.3);
+  --primary-bg: #FFFFFF; /* Pure white for background */
+  --secondary-bg: rgba(242, 242, 247, 0.8); /* iOS light mode material background, with transparency */
+  --card-bg: rgba(229, 229, 234, 0.7); /* Slightly darker card background, with transparency */
+  --text-color: #000000; /* Pure black text */
+  --light-text-color: #3C3C43; /* Dark gray for secondary text */
+  --accent-color: #000000; /* Black for primary accents/buttons */
+  --highlight-color: rgba(0, 0, 0, 0.1); /* Subtle black highlight for borders/hover */
+  --border-color: rgba(0, 0, 0, 0.1); /* Very subtle black border */
+  --shadow-color: rgba(0, 0, 0, 0.2); /* Lighter, crisp shadow */
+  --glow-color: rgba(0, 0, 0, 0.05); /* Subtle black glow */
 }
 
 #root {
@@ -53,31 +54,32 @@ body.light-mode {
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column; /* Arrange header and app content vertically */
-  align-items: center; /* Center content horizontally within root */
-  min-height: 100vh; /* Allow root to grow if content is larger than viewport */
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .App {
   background-color: var(--secondary-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  padding: 60px;
-  border-radius: 18px;
-  box-shadow: 0 20px 50px var(--shadow-color);
-  transition: all 0.5s ease-in-out;
-  border: 2px solid var(--border-color);
-  width: 90%;
-  max-width: 1600px;
-  min-height: 80vh;
+  backdrop-filter: blur(25px) saturate(180%); /* Stronger, more refined glassy effect */
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  padding: 70px; /* Increased padding for spacious feel */
+  border-radius: 24px; /* More pronounced rounded corners (iOS-like) */
+  box-shadow: 0 25px 60px var(--shadow-color); /* Deeper, more diffused shadow */
+  transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother, spring-like transition */
+  border: 1px solid var(--border-color); /* Thin, subtle border */
+  width: 95%; /* Occupy even more width */
+  max-width: 1800px; /* Allow wider content */
+  min-height: 85vh; /* Occupy more height */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box; /* Include padding in width/height calculations */
+  justify-content: flex-start; /* Align content to top */
+  box-sizing: border-box;
+  position: relative; /* For absolute positioning of header elements */
 }
 
 .App:hover {
-  box-shadow: 0 30px 70px var(--shadow-color);
+  box-shadow: 0 35px 80px var(--shadow-color);
 }
 
 .App.playing-game {
@@ -97,11 +99,11 @@ body.light-mode {
   justify-content: flex-start;
   align-items: center;
   z-index: 9999;
-  overflow: hidden; /* This correctly hides scrollbars for the game iframe */
+  overflow: hidden;
 }
 
 .App-header {
-  position: relative;
+  position: relative; /* Adjusted to relative for internal layout */
   width: 100%;
   padding: 0;
   margin: 0;
@@ -112,7 +114,8 @@ body.light-mode {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  padding-top: 30px; /* Space for the theme toggle button */
+  padding-top: 40px; /* More space for the toggle */
+  padding-bottom: 20px; /* Space below header */
 }
 
 .App.playing-game .App-header {
@@ -121,68 +124,68 @@ body.light-mode {
 
 h1 {
   color: var(--accent-color);
-  margin-bottom: 50px;
-  font-size: 4em;
+  margin-bottom: 60px; /* More space below H1 */
+  font-size: 5em; /* Bold, impactful H1 */
   font-weight: 900;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em; /* Increased letter spacing */
   text-transform: uppercase;
-  text-shadow: 0 0 25px rgba(255, 255, 255, 0.3), 0 0 50px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 0 30px var(--glow-color), 0 0 60px rgba(255, 255, 255, 0.05); /* Enhanced glow */
 }
 
 h2 {
   color: var(--accent-color);
-  margin-top: 50px;
-  margin-bottom: 40px;
-  font-size: 3em;
+  margin-top: 60px;
+  margin-bottom: 45px;
+  font-size: 3.5em; /* Larger H2 */
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 h3 {
   color: var(--light-text-color);
-  font-size: 1.8em;
+  font-size: 1.9em;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 p {
   color: var(--text-color);
-  line-height: 1.9;
-  font-size: 1.2em;
+  line-height: 2.0; /* Increased line height for readability */
+  font-size: 1.25em; /* Larger paragraph text */
 }
 
 .error-message {
   color: #FF3333;
   background-color: rgba(255, 51, 51, 0.2);
   border: 2px solid #FF3333;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 22px;
+  border-radius: 12px;
   font-weight: bold;
-  margin-bottom: 40px;
+  margin-bottom: 45px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .game-cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 50px;
-  margin-top: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); /* Even larger cards */
+  gap: 60px; /* Larger gap */
+  margin-top: 60px;
   justify-content: center;
   flex-grow: 1;
 }
 
 .game-card {
   background-color: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 35px;
+  backdrop-filter: blur(18px) saturate(180%); /* Stronger glass effect */
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid var(--border-color);
+  border-radius: 16px; /* More rounded */
+  padding: 40px; /* Increased padding */
   text-align: left;
-  box-shadow: 0 8px 30px var(--shadow-color);
-  transition: transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out, background-color 0.4s ease;
+  box-shadow: 0 10px 35px var(--shadow-color);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.4s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -192,17 +195,17 @@ p {
 }
 
 .game-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 16px 40px var(--shadow-color);
-  background-color: var(--highlight-color);
+  transform: translateY(-15px) scale(1.03); /* More pronounced lift and scale */
+  box-shadow: 0 20px 50px var(--shadow-color), 0 0 30px var(--glow-color); /* Added subtle glow */
+  background-color: rgba(var(--text-color-rgb), 0.1); /* Subtle highlight from text color */
 }
 
 .game-preview-image {
   width: 100%;
-  height: 250px;
+  height: 280px; /* Even larger image height */
   object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
   border: 1px solid var(--border-color);
   transition: transform 0.4s ease;
 }
@@ -211,28 +214,28 @@ p {
   margin-top: 0;
   color: var(--accent-color);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .game-card p {
-  font-size: 1em;
+  font-size: 1.05em;
   color: var(--light-text-color);
   flex-grow: 1;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
 .game-card button {
   background-color: var(--accent-color);
   color: var(--primary-bg);
   border: 2px solid var(--accent-color);
-  padding: 16px 35px;
-  border-radius: 10px;
+  padding: 16px 38px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 1.1em;
+  font-size: 1.15em;
   font-weight: 800;
   margin-top: auto;
   transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.4s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
   align-self: flex-start;
   max-width: fit-content;
   letter-spacing: 0.08em;
@@ -242,67 +245,67 @@ p {
 .game-card button:hover {
   background-color: var(--primary-bg);
   color: var(--accent-color);
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px var(--shadow-color), 0 0 20px var(--glow-color);
 }
 
 .game-details-view {
   background-color: var(--secondary-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-radius: 18px;
-  box-shadow: 0 10px 30px var(--shadow-color);
-  padding: 50px;
-  margin-top: 60px;
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px var(--shadow-color);
+  padding: 60px;
+  margin-top: 70px;
   text-align: left;
-  max-width: 1200px;
+  max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   flex-grow: 1;
 }
 
 .game-details-view h2 {
   text-align: center;
-  margin-bottom: 50px;
-  font-size: 3.5em;
-  letter-spacing: 0.1em;
+  margin-bottom: 60px;
+  font-size: 4em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
 .game-details-image {
   max-width: 100%;
   height: auto;
-  border-radius: 10px;
-  margin-bottom: 35px;
-  box-shadow: 0 10px 30px var(--shadow-color);
+  border-radius: 16px;
+  margin-bottom: 40px;
+  box-shadow: 0 12px 35px var(--shadow-color);
   border: 1px solid var(--border-color);
 }
 
 .game-details-view p {
-  font-size: 1.2em;
-  margin-bottom: 50px;
+  font-size: 1.3em;
+  margin-bottom: 60px;
   color: var(--light-text-color);
 }
 
 .game-details-actions {
   display: flex;
   justify-content: center;
-  gap: 25px;
-  margin-top: 50px;
+  gap: 30px;
+  margin-top: 60px;
 }
 
 .game-details-actions button {
   background-color: var(--accent-color);
   color: var(--primary-bg);
   border: 2px solid var(--accent-color);
-  padding: 18px 40px;
-  border-radius: 10px;
+  padding: 20px 45px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 1.2em;
+  font-size: 1.3em;
   font-weight: 800;
   transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.4s ease;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -310,10 +313,11 @@ p {
 .game-details-actions button:hover {
   background-color: var(--primary-bg);
   color: var(--accent-color);
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+  transform: translateY(-8px);
+  box-shadow: 0 18px 45px var(--shadow-color), 0 0 25px var(--glow-color);
 }
 
+/* Game Playing Mode specific styles */
 .game-playing-container {
   width: 100%;
   height: 100%;
@@ -327,56 +331,58 @@ p {
 }
 
 .iframe-wrapper {
-  position: relative;
   flex-grow: 1;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative; /* Needed for absolute children positioning */
 }
 
 .iframe-wrapper iframe {
   width: 100%;
   height: 100%;
   display: block;
+  border-radius: 0; /* Ensure no rounded corners on iframe itself */
 }
 
 .game-controls-overlay {
   position: absolute;
-  top: 20px;
+  top: 30px; /* Adjusted position */
   left: 50%;
   transform: translateX(-50%);
   z-index: 10000;
   display: flex;
-  gap: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 10px 20px;
-  border-radius: 8px;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  gap: 25px; /* Larger gap */
+  background-color: rgba(0, 0, 0, 0.6); /* Slightly more opaque */
+  padding: 15px 30px; /* More padding */
+  border-radius: 12px; /* More rounded */
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
   border: 1px solid var(--border-color);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
 }
 
 .control-button {
   background-color: var(--accent-color);
   color: var(--primary-bg);
   border: 1px solid var(--accent-color);
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 12px 25px; /* Larger buttons */
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 0.9em;
+  font-size: 1em;
   font-weight: 700;
   transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
 }
 
 .control-button:hover {
   background-color: var(--primary-bg);
   color: var(--accent-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px var(--glow-color);
 }
 
 .loading-message {
@@ -385,38 +391,44 @@ p {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 9999;
-  font-size: 2em;
+  font-size: 2.5em; /* Larger loading message */
   color: var(--accent-color);
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 20px 40px;
-  border-radius: 10px;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.8); /* More opaque background */
+  padding: 25px 50px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
   border: 1px solid var(--border-color);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .game-output-console {
-  position: relative;
+  position: absolute; /* Changed to absolute to float over game */
+  bottom: 0;
+  left: 0;
   width: 100%;
-  max-height: 20vh;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  max-height: 25vh; /* Allow more height */
+  background-color: rgba(0, 0, 0, 0.7); /* More opaque */
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
   border-top: 1px solid var(--border-color);
   color: var(--light-text-color);
-  padding: 15px;
+  padding: 20px;
   overflow-y: auto;
   z-index: 9998;
   box-sizing: border-box;
-  flex-shrink: 0;
+  text-align: left;
 }
 
 .game-output-console h3 {
   margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.2em;
+  margin-bottom: 15px;
+  font-size: 1.4em;
   color: var(--accent-color);
   text-align: left;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .game-output-console pre {
@@ -425,25 +437,26 @@ p {
   border: none;
   padding: 0;
   margin: 0;
-  font-size: 0.8em;
+  font-size: 0.9em;
   color: var(--light-text-color);
   text-align: left;
+  line-height: 1.6;
 }
 
 .theme-toggle-button {
   background-color: var(--accent-color);
   color: var(--primary-bg);
   border: 2px solid var(--accent-color);
-  padding: 12px 25px;
-  border-radius: 8px;
+  padding: 14px 30px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1em;
+  font-size: 1.1em;
   font-weight: 700;
   position: absolute;
-  top: 30px;
-  right: 30px;
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  top: 40px; /* Adjusted position */
+  right: 40px;
+  transition: background-color 0.4s ease, color 0.4s ease, transform 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -451,58 +464,116 @@ p {
 .theme-toggle-button:hover {
   background-color: var(--primary-bg);
   color: var(--accent-color);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px var(--glow-color);
 }
 
 /* Responsive adjustments */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .App {
-    padding: 40px;
+    padding: 60px;
     width: 95%;
   }
+}
+
+@media (max-width: 1024px) {
+  .App {
+    padding: 50px;
+  }
   h1 {
-    font-size: 3.5em;
+    font-size: 4em;
+    margin-bottom: 40px;
   }
   h2 {
-    font-size: 2.5em;
+    font-size: 3em;
+    margin-top: 40px;
+    margin-bottom: 30px;
   }
   .game-cards-container {
-    gap: 30px;
+    gap: 40px;
+  }
+  .game-card {
+    padding: 35px;
+  }
+  .game-card h3 {
+    font-size: 1.5em;
+  }
+  .game-card p {
+    font-size: 0.95em;
+  }
+  .game-card button {
+    padding: 14px 30px;
+    font-size: 1.05em;
+  }
+  .game-details-view {
+    padding: 40px;
+  }
+  .game-details-view h2 {
+    font-size: 3.5em;
+  }
+  .game-details-actions button {
+    padding: 16px 35px;
+    font-size: 1.15em;
+  }
+  .theme-toggle-button {
+    top: 30px;
+    right: 30px;
+    padding: 12px 25px;
+    font-size: 1em;
+  }
+  .game-controls-overlay {
+    top: 20px;
+    gap: 20px;
+    padding: 12px 25px;
+  }
+  .control-button {
+    padding: 10px 20px;
+    font-size: 0.9em;
   }
 }
 
 @media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+  body {
+    align-items: flex-start; /* Ensure body aligns to top for smaller screens too */
+  }
   .App {
-    padding: 25px;
-    min-height: 90vh;
+    padding: 30px;
+    width: 95%;
+    min-height: auto; /* Allow App to be natural height */
+    margin-top: 20px; /* Add some top margin to prevent sticking to top */
+    margin-bottom: 20px;
   }
   h1 {
-    font-size: 2.5em;
+    font-size: 3em;
     margin-bottom: 30px;
+    letter-spacing: 0.1em;
   }
   h2 {
-    font-size: 2em;
+    font-size: 2.5em;
     margin-top: 30px;
+    margin-bottom: 25px;
   }
   h3 {
-    font-size: 1.4em;
+    font-size: 1.6em;
   }
   p {
-    font-size: 1em;
+    font-size: 1.1em;
   }
   .game-cards-container {
     grid-template-columns: 1fr;
-    gap: 25px;
+    gap: 30px;
   }
   .game-preview-image {
-    height: 180px;
+    height: 220px;
   }
   .theme-toggle-button {
-    top: 15px;
-    right: 15px;
+    top: 20px;
+    right: 20px;
     padding: 10px 18px;
-    font-size: 0.8em;
+    font-size: 0.85em;
   }
   .game-controls-overlay {
     flex-direction: column;
@@ -510,24 +581,57 @@ p {
     top: 10px;
   }
   .loading-message {
-    font-size: 1.5em;
-    padding: 15px 30px;
+    font-size: 1.8em;
+    padding: 18px 35px;
+  }
+  .game-output-console {
+    max-height: 30vh; /* More space for console on small screens */
   }
 }
 
 @media (max-width: 480px) {
   .App {
-    padding: 15px;
+    padding: 20px;
   }
   h1 {
-    font-size: 1.8em;
+    font-size: 2em;
     letter-spacing: 0.08em;
   }
   h2 {
-    font-size: 1.6em;
+    font-size: 1.8em;
   }
   .game-details-actions button {
     padding: 12px 20px;
     font-size: 0.9em;
+  }
+  .game-cards-container {
+    gap: 20px;
+  }
+  .game-card {
+    padding: 25px;
+  }
+  .game-card button {
+    padding: 12px 25px;
+    font-size: 1em;
+  }
+  .theme-toggle-button {
+    font-size: 0.8em;
+    padding: 8px 15px;
+  }
+  .game-controls-overlay {
+    gap: 8px;
+  }
+  .loading-message {
+    font-size: 1.3em;
+    padding: 15px 25px;
+  }
+  .game-output-console {
+    padding: 10px;
+  }
+  .game-output-console h3 {
+    font-size: 1em;
+  }
+  .game-output-console pre {
+    font-size: 0.75em;
   }
 }

@@ -1,0 +1,153 @@
+/* Professional, iOS-inspired, Bold Black & White Shell CSS */
+
+:root {
+    --primary-bg: #000000;
+    --secondary-bg: rgba(28, 28, 30, 0.8);
+    --accent-color: #FFFFFF;
+    --text-color: #FFFFFF;
+    --light-text-color: #E0E0E0;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --glow-color: rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode {
+    --primary-bg: #FFFFFF;
+    --secondary-bg: rgba(242, 242, 247, 0.8);
+    --accent-color: #000000;
+    --text-color: #000000;
+    --light-text-color: #3C3C43;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --glow-color: rgba(0, 0, 0, 0.05);
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--primary-bg);
+}
+
+#game-container-wrapper {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: var(--primary-bg);
+    overflow: hidden;
+}
+
+.game-playing-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+#game-canvas-wrapper {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background-color: #000; /* Games usually want black bg */
+}
+
+canvas.emscripten {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    border: none;
+}
+
+.game-controls-overlay {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    gap: 20px;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 12px 24px;
+    border-radius: 100px; /* Fully rounded iOS-style */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.control-button {
+    background-color: var(--accent-color);
+    color: var(--primary-bg);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 100px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.control-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--glow-color);
+}
+
+.loading-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    font-size: 1.5em;
+    color: #FFF;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px 40px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.game-output-console {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 15vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-color);
+    color: #AAA;
+    padding: 15px 30px;
+    overflow-y: auto;
+    z-index: 9998;
+    box-sizing: border-box;
+    font-family: 'Fira Code', monospace;
+}
+
+.game-output-console h3 {
+    margin: 0 0 8px 0;
+    font-size: 0.8em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.game-output-console pre {
+    margin: 0;
+    font-size: 0.85em;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

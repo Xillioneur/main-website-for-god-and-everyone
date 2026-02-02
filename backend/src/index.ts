@@ -9,8 +9,8 @@ const readFile = promisify(fs.readFile);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Directory where WASM files are located in the built frontend
-const wasmDir = path.join(__dirname, '../../frontend/dist/wasm');
+// Base directory where WASM game folders are located in the built frontend
+const wasmGamesRoot = path.join(__dirname, '../../frontend/dist/wasm');
 
 // API routes
 app.get('/api', (req, res) => {
@@ -21,24 +21,27 @@ app.get('/api', (req, res) => {
 async function getGames() {
   try {
     const games: any[] = [];
-    const gameSubdirs = await readdir(wasmDir, { withFileTypes: true });
+    const gameSubdirs = await readdir(wasmGamesRoot, { withFileTypes: true });
 
     for (const dirent of gameSubdirs) {
       if (dirent.isDirectory()) {
         const gameName = dirent.name; // e.g., 'hello', 'main'
-        const gameFolderPath = path.join(wasmDir, gameName);
+        const gameFolderPath = path.join(wasmGamesRoot, gameName);
         const gameFiles = await readdir(gameFolderPath);
 
         // Assuming the main game file is named after the folder
+        const gameHtml = `${gameName}.html`;
         const jsFile = `${gameName}.js`;
         const wasmFile = `${gameName}.wasm`;
         const descriptionMd = 'description.md';
         const previewImage = 'preview.svg'; // or .png
 
+        const gameHtmlExists = gameFiles.includes(gameHtml);
         const jsFileExists = gameFiles.includes(jsFile);
         const wasmFileExists = gameFiles.includes(wasmFile);
 
-        if (jsFileExists && wasmFileExists) {
+
+        if (gameHtmlExists && jsFileExists && wasmFileExists) {
           let fullDescription = "No description provided.";
           try {
             const mdContent = await readFile(path.join(gameFolderPath, descriptionMd), 'utf8');
@@ -52,7 +55,7 @@ async function getGames() {
             name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()), // e.g., Hello, Main
             description: fullDescription.substring(0, 100) + '...', // Short description
             fullDescription: `By the grace of the Almighty Creator, this game manifests. ${fullDescription} A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
-            wasmPath: `/wasm/${gameName}/${jsFile}`,
+            wasmPath: `/wasm/${gameName}/`, // Added trailing slash for correct relative path resolution in browser
             previewImageUrl: `/wasm/${gameName}/${previewImage}`,
           });
         }
@@ -71,8 +74,24 @@ app.get('/api/games', async (req, res) => {
   res.json(games);
 });
 
-// Serve WASM glue code and WASM modules dynamically from the wasmDir
-app.use('/wasm', express.static(wasmDir));
+// Route to serve the game's HTML file directly for cleaner URLs (e.g., /wasm/hello/)
+app.get('/wasm/:gameId/', (req, res) => {
+  const { gameId } = req.params;
+  const filePath = path.join(wasmGamesRoot, gameId, `${gameId}.html`);
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    res.status(404).send('Game not found or HTML file missing.');
+  }
+});
+
+// Serve other static game assets (JS, WASM, MD, SVG, PNG) from within game folders
+app.use('/wasm/:gameId', (req, res, next) => {
+  const { gameId } = req.params;
+  const gameFolderPath = path.join(wasmGamesRoot, gameId);
+  express.static(gameFolderPath)(req, res, next);
+});
+
 
 // Serve other static files from the React app
 app.use(express.static(path.join(__dirname, '../../frontend/dist')));

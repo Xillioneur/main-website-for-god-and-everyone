@@ -10,4 +10,14 @@ export default defineConfig({
       allow: ['./public'], // Allow serving files from the public directory
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'index.css') return 'assets/main-theme.css';
+          return 'assets/[name]-[hash][extname]';
+        },
+      },
+    },
+  },
 })

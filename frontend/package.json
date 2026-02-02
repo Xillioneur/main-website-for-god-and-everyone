@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node copy-games.js",
+    "prebuild-copy-games": "node copy-games.js",
     "build": "tsc -b && vite build",
+    "postbuild": "node copy-games.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
