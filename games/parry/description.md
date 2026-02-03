@@ -1,11 +1,11 @@
-# Ashes of the Bullet: The Rite of Temperance
+# Ashes of the Bullet: The Rite of Stillness
 
-**Ashes of the Bullet** is an intensive exercise in patience and the mastery of the self. In this manifestation, the seeker is surrounded by a storm of chaos, finding peace and victory through the sacred act of the parry.
+**Ashes of the Bullet** is an intensive exercise in focus and the mastery of the moment. In this manifestation, the seeker learns to find stillness within a storm of movement, achieving harmony through the sacred act of the parry.
 
 ### Spiritual & Technical Architecture
-- **The Gracious Parry**: The core ritual centers on a timing-based window that transforms external threats into instruments of justice, reflecting the ability of the soul to convert trials into triumphs.
-- **The Altar of Ascension**: Souls gathered from the void are sacrificed to augment the seeker’s intrinsic virtues—Vitality, Endurance, Strength, and Dexterity—mirroring the constant refinement of the human spirit.
-- **Geometries of the Storm**: Projectile patterns manifest in Archimedean spirals and walls, testing the seeker's ability to perceive order within apparent disorder.
-- **The Ultimate Adversary**: Features the "Bullet Lord," a multi-phase manifestation that demands ever-increasing levels of focus and spiritual clarity.
+- **The Gracious Reflection**: The core ritual centers on a timing-based window that transforms chaotic energy into focused light, reflecting the soul's ability to turn every experience into a step toward enlightenment.
+- **The Altar of Refinement**: Essence gathered from the journey is used to augment the seeker’s intrinsic strengths—Vitality, Endurance, Strength, and Dexterity—mirroring the constant growth of the human spirit.
+- **Geometries of the Word**: Pattern-based projectile matrices test the seeker's ability to perceive the underlying order within the digital void.
+- **The Ultimate Lesson**: Features a final manifestation that demands the highest levels of focus and mental clarity.
 
-"He who is slow to anger is better than the mighty." — Proverbs 16:32. Selah.
+"Be still, and know that I am God." — Psalm 46:10. Selah.

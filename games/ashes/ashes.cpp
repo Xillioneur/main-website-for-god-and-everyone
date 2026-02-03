@@ -52,7 +52,7 @@ const float JUMP_VELOCITY = 14.0f;
 // ======================================================================
 // Enums
 // ======================================================================
-enum GameState { TITLE_SCREEN, PLAYING, PAUSED, DEAD, VICTORY };
+enum GameState { TITLE_SCREEN, PLAYING, PAUSED, RENEWAL, VICTORY };
 enum EnemyType { GRUNT, TANK, AGILE, BOSS };
 enum EnemyState { PATROL, ALERT, CHASE, SEARCH, STAGGERED };
 enum AttackType { LIGHT_1, LIGHT_2, LIGHT_3, HEAVY, DASH_ATTACK };
@@ -118,9 +118,9 @@ struct Player {
     float swingYaw = 30.0f;
     float swingPitch = -30.0f;
     float shakeTimer = 0.0f;
-    bool isDead = false;
-    float deathTimer = 0.0f;
-    float deathFallAngle = 0.0f;
+    bool isRenewing = false;
+    float renewalTimer = 0.0f;
+    float renewalAngle = 0.0f;
     bool isHealing = false;
     float healTimer = 0.0f;
     float perfectRollTimer = 0.0f;
@@ -190,12 +190,12 @@ std::vector<TrailPoint> weaponTrail;
 Camera3D camera = { 0 };
 Vector3 camPos = {0, CAMERA_HEIGHT, CAMERA_DISTANCE};
 float hitStopTimer = 0.0f;
-std::vector<std::string> deathMessages = {
+std::vector<std::string> renewalMessages = {
     "Skill Issue", "Git Gud", "Just Roll", "You Got Parried", "Touch Grass",
     "Ratio + L", "Downvoted to Oblivion", "Engagement Farm Failed",
     "Praise the Algorithm", "Try Tongue But Hole", "404 – Skill Not Found"
 };
-const char* currentDeathMessage = "Git Gud";
+const char* currentRenewalMessage = "Git Gud";
 
 // ======================================================================
 // Function Prototypes
@@ -212,7 +212,7 @@ void DrawPlayer();
 void DrawEnemy(const Enemy& e, int index);
 void DrawHUD();
 void DrawTitleScreen();
-void DrawDeathScreen();
+void DrawRenewalScreen();
 void DrawVictoryScreen();
 void SpawnBloodParticles(Vector3 pos, int count = 12);
 void SpawnHitSparks(Vector3 pos, int count = 8);
@@ -257,16 +257,16 @@ int main() {
                 }
 
                 // Death check
-                if (player.health <= 0 && !player.isDead) {
-                    player.isDead = true;
-                    player.deathTimer = 3.2f;
-                    player.deathFallAngle = 0.0f;
-                    gameState = DEAD;
-                    currentDeathMessage = deathMessages[GetRandomValue(0, (int)deathMessages.size()-1)].c_str();
+                if (player.health <= 0 && !player.isRenewing) {
+                    player.isRenewing = true;
+                    player.renewalTimer = 3.2f;
+                    player.renewalAngle = 0.0f;
+                    gameState = RENEWAL;
+                    currentRenewalMessage = renewalMessages[GetRandomValue(0, (int)renewalMessages.size()-1)].c_str();
                 }
             }
         }
-        else if (gameState == DEAD) {
+        else if (gameState == RENEWAL) {
             if (IsKeyPressed(KEY_R)) {
                 ResetLevel();
                 gameState = PLAYING;
@@ -286,7 +286,7 @@ int main() {
         DrawHUD();
 
         if (gameState == TITLE_SCREEN) DrawTitleScreen();
-        if (gameState == DEAD) DrawDeathScreen();
+        if (gameState == RENEWAL) DrawRenewalScreen();
         if (gameState == VICTORY) DrawVictoryScreen();
         if (gameState == PAUSED) {
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, Fade(BLACK, 0.65f));
@@ -529,9 +529,9 @@ void UpdatePlayer(float dt) {
     player.perfectRollTimer = std::max(0.0f, player.perfectRollTimer - dt);
     player.riposteTimer = std::max(0.0f, player.riposteTimer - dt);
 
-    if (player.isDead) {
-        player.deathTimer -= dt;
-        player.deathFallAngle = Lerp(player.deathFallAngle, 90.0f, 5.0f * dt);
+    if (player.isRenewing) {
+        player.renewalTimer -= dt;
+        player.renewalAngle = Lerp(player.renewalAngle, 90.0f, 5.0f * dt);
         return;
     }
 
@@ -1400,8 +1400,8 @@ void DrawPlayer() {
     rlPushMatrix();
     rlTranslatef(player.position.x, player.position.y, player.position.z);
     rlRotatef(player.rotation, 0,1,0);
-    if (player.isDead) {
-        rlRotatef(player.deathFallAngle, 1,0,0);
+    if (player.isRenewing) {
+        rlRotatef(player.renewalAngle, 1,0,0);
     }
 
     Color bodyColor = {60, 80, 140, 255};
@@ -1614,11 +1614,11 @@ void DrawTitleScreen() {
              SCREEN_HEIGHT - 140, 50, WHITE);
 }
 
-void DrawDeathScreen() {
+void DrawRenewalScreen() {
     DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT, Fade(BLACK, 0.9f));
-    DrawText("YOU DIED", SCREEN_WIDTH/2 - MeasureText("YOU DIED", 140)/2,
+    DrawText("SOUL ASCENDED", SCREEN_WIDTH/2 - MeasureText("SOUL ASCENDED", 140)/2,
              SCREEN_HEIGHT/2 - 140, 140, RED);
-    DrawText(currentDeathMessage, SCREEN_WIDTH/2 - MeasureText(currentDeathMessage, 60)/2,
+    DrawText(currentRenewalMessage, SCREEN_WIDTH/2 - MeasureText(currentRenewalMessage, 60)/2,
              SCREEN_HEIGHT/2 + 20, 60, ORANGE);
     DrawText("Press R to Try Again", SCREEN_WIDTH/2 - MeasureText("Press R to Try Again", 50)/2,
              SCREEN_HEIGHT/2 + 140, 50, WHITE);
@@ -1627,7 +1627,7 @@ void DrawDeathScreen() {
 void DrawVictoryScreen() {
     DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT, Fade(BLACK, 0.8f));
     if (currentLevel == 2) {
-        DrawText("THE SCROLLKEEPER DEFEATED!", SCREEN_WIDTH/2 - MeasureText("THE SCROLLKEEPER DEFEATED!", 80)/2,
+        DrawText("THE SCROLLKEEPER HARMONIZED!", SCREEN_WIDTH/2 - MeasureText("THE SCROLLKEEPER HARMONIZED!", 80)/2,
                  SCREEN_HEIGHT/2 - 140, 80, GOLD);
         DrawText("THE SCROLL IS ASHES", SCREEN_WIDTH/2 - MeasureText("THE SCROLL IS ASHES", 60)/2,
                  SCREEN_HEIGHT/2 - 20, 60, LIME);

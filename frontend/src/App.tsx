@@ -84,7 +84,7 @@ function App() {
   const renderGameList = () => (
     <div className="game-list">
       <div className="section-header">
-        <h2>SACRED MANIFESTATIONS</h2>
+        <h2>SACRED HARMONIES</h2>
         <div className="divider"></div>
       </div>
       {games.length === 0 && !error ? (
@@ -100,7 +100,7 @@ function App() {
                   className="game-preview-image"
                 />
                 <div className="card-overlay">
-                   <button className="card-play-button" onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>ENTER MYSTERY</button>
+                   <button className="card-play-button" onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>ASCEND</button>
                 </div>
               </div>
               <div className="card-content">
@@ -117,7 +117,7 @@ function App() {
   const renderGameDetails = () => (
     <div className="game-details-view animate-in">
       <div className="details-header">
-        <button className="back-button-top" onClick={backToList}>← RETURN TO THE CATHEDRAL</button>
+        <button className="back-button-top" onClick={backToList}>← RETURN TO THE SANCTUARY</button>
         <h2>{selectedGameDetails?.name}</h2>
       </div>
       <div className="details-layout">
@@ -130,29 +130,39 @@ function App() {
         </div>
         <div className="details-info">
           <div className="details-edict">
-            <h3>THE DOCTRINE OF THE CODE</h3>
+            <h3>THE LIGHT OF THE WORD</h3>
             <div className="markdown-content">
               <ReactMarkdown>{selectedGameDetails?.fullDescription || ''}</ReactMarkdown>
             </div>
           </div>
           <div className="game-details-actions">
-            <button className="action-play-button" onClick={() => selectedGameDetails && loadAndRunWasm(selectedGameDetails)}>INITIATE SACRED PLAY</button>
+            <button className="action-play-button" onClick={() => selectedGameDetails && loadAndRunWasm(selectedGameDetails)}>INITIATE SACRED JOURNEY</button>
           </div>
         </div>
       </div>
     </div>
   );
 
+  const CodexIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+      <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
   return (
     <div className="main-canvas">
       <header className="site-header">
-        <div className="logo" onClick={backToList}>AD MAJOREM DEI GLORIAM</div>
+        <div className="logo" onClick={backToList} style={{ display: 'flex', alignItems: 'center' }}>
+          <CodexIcon />
+          <span>DIVINE CODEX</span>
+        </div>
         <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
           {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
         </button>
       </header>
       
-      {error && <div className="error-banner">TRIAL ENCOUNTERED: {error}</div>}
+      {error && <div className="error-banner">AWAITING CLARITY: {error}</div>}
 
       <main className="content-area">
         {!selectedGameDetails ? (

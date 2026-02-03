@@ -102,7 +102,7 @@ enum GameScreen {
   SCREEN_BOOT,
   SCREEN_PLAYING,
   SCREEN_UPGRADE,
-  SCREEN_GAMEOVER,
+  SCREEN_RENEWAL,
   SCREEN_VICTORY
 };
 
@@ -215,7 +215,7 @@ struct GameData {
   Sound sfxHit;
   Sound sfxPowerup;
   Sound sfxExplosion;
-  Sound sfxEnemyDeath;
+  Sound sfxEnemyAscension;
   Music musicGameplay;
   Music musicMenu;
   Sound sfxBonus;
@@ -409,7 +409,7 @@ int main() {
   game.sfxHit = GenerateSynthSound(NOISE, 1000.0f, 100.0f, 0.05f, 0.3f);
   game.sfxExplosion = GenerateSynthSound(NOISE, 200.0f, 50.0f, 0.4f, 0.6f);
   game.sfxPowerup = GenerateSynthSound(TRIANGLE, 440.0f, 1760.0f, 0.3f, 0.5f);
-  game.sfxEnemyDeath = GenerateSynthSound(SAW, 330.0f, 110.0f, 0.2f, 0.4f);
+  game.sfxEnemyAscension = GenerateSynthSound(SAW, 330.0f, 110.0f, 0.2f, 0.4f);
   game.sfxLevelUp = GenerateSynthSound(SQUARE, 220.0f, 880.0f, 0.5f, 0.6f);
   game.sfxVictory = GenerateSynthSound(SINE, 110.0f, 1760.0f, 1.0f, 0.7f);
   game.sfxLowHealth = GenerateSynthSound(SINE, 100.0f, 100.0f, 0.1f, 0.5f);
@@ -733,7 +733,7 @@ void UpdateGame() {
         b.active = false;
     }
     return;
-  } else if (game.currentScreen == SCREEN_GAMEOVER) {
+  } else if (game.currentScreen == SCREEN_RENEWAL) {
     if (IsKeyPressed(KEY_R))
       game.currentScreen = SCREEN_MENU;
     return;
@@ -980,7 +980,7 @@ void UpdateGame() {
               b.active = false;
               QueueExplosion(game.player.position, RED);
               if (game.player.health <= 0)
-                game.currentScreen = (int)SCREEN_GAMEOVER;
+                game.currentScreen = (int)SCREEN_RENEWAL;
             }
           }
         }
@@ -1292,7 +1292,7 @@ void UpdateGame() {
               }
 
               if (game.player.health <= 0)
-                game.currentScreen = (int)SCREEN_GAMEOVER;
+                game.currentScreen = (int)SCREEN_RENEWAL;
             } else if (game.player.dashTimer > 0.0f && e.type != 2) {
               // Dashing through kills weak enemies
               game.player.xp += (e.type == 3 ? 100 : 25);
@@ -1605,9 +1605,9 @@ void DrawGame() {
     DrawText("> F - MULTITHREAD (FIRE RATE++)", 150, 350, 20, WHITE);
     DrawText("PRESS ENTER TO CONTINUE (PLACEHOLDER)", 150, 500, 20, GRAY);
 
-  } else if (game.currentScreen == SCREEN_GAMEOVER) {
+  } else if (game.currentScreen == SCREEN_RENEWAL) {
     ClearBackground(BLACK);
-    DrawText("FATAL SYSTEM ERROR", SCREEN_WIDTH / 2 - 150,
+    DrawText("SYSTEM HARMONIZATION REQUIRED", SCREEN_WIDTH / 2 - 150,
              SCREEN_HEIGHT / 2 - 50, 30, RED);
     DrawText(TextFormat("FINAL SCORE: %i", (int)game.score),
              SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 + 50, 25, GREEN);

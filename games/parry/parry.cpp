@@ -16,7 +16,7 @@
 const int SCREEN_WIDTH = 1440;
 const int SCREEN_HEIGHT = 810;
 
-// Tuned for punishing difficulty
+// Tuned for elevated focus
 const float PLAYER_BASE_SPEED = 8.2f;
 const float SPRINT_MULTIPLIER = 1.65f;
 const float ROLL_SPEED = 22.0f;
@@ -49,7 +49,7 @@ const int UPGRADE_COST_MULTIPLIER = 180;
 // ======================================================================
 // Enums & Structs
 // ======================================================================
-enum GameState { TITLE, PLAYING, BONFIRE, PAUSED, DEAD, VICTORY };
+enum GameState { TITLE, PLAYING, BONFIRE, PAUSED, RENEWAL, VICTORY };
 enum EnemyType { GRUNT, SPIRAL, WALL, RAPID, SHIELDED, BOSS };
 
 struct Bullet {
@@ -136,10 +136,10 @@ float accuracy = 0.0f;
 
 Vector3 bonfirePos = {0, 0, 0};
 
-std::vector<std::string> deathQuotes = {
+std::vector<std::string> renewalQuotes = {
     "Bullet Issue", "Git Gud @ Dodging", "Parry Failed", "Souls Lost Forever",
     "Accuracy = 0%", "Try Shooting Them", "Flask Harder", "Roll Punished",
-    "Combo Lost", "Bonfire Denied", "Humanity Drained", "You Died... Again"
+    "Combo Lost", "Bonfire Denied", "Humanity Drained", "A New Beginning Awaits"
 };
 
 // ======================================================================
@@ -166,7 +166,7 @@ void DrawCrosshairAndAimMarker();
 void DrawHUD();
 void DrawBonfireMenu();
 void DrawTitle();
-void DrawDeath();
+void DrawRenewal();
 void DrawVictory();
 Vector3 GetAimPoint();
 
@@ -227,7 +227,7 @@ int main() {
                     state = PLAYING;
                 }
             }
-        } else if (state == DEAD) {
+        } else if (state == RENEWAL) {
             if (IsKeyPressed(KEY_R)) {
                 wave = 1;
                 ResetWave(true);
@@ -245,7 +245,7 @@ int main() {
         DrawCrosshairAndAimMarker();
         DrawHUD();
         if (state == TITLE) DrawTitle();
-        if (state == DEAD) DrawDeath();
+        if (state == RENEWAL) DrawRenewal();
         if (state == VICTORY) DrawVictory();
         if (state == BONFIRE) DrawBonfireMenu();
         if (state == PAUSED) {
@@ -721,7 +721,7 @@ void UpdateGame(float dt) {
     }
 
     if (player.health <= 0) {
-        state = DEAD;
+        state = RENEWAL;
     }
 }
 
@@ -878,14 +878,14 @@ void DrawTitle() {
     DrawText("PARRY THE STORM", SCREEN_WIDTH/2 - MeasureText("PARRY THE STORM", 100)/2, 150, 100, GOLD);
     DrawText("Ashes of the Bullet - Dark Souls Edition", SCREEN_WIDTH/2 - MeasureText("Ashes of the Bullet - Dark Souls Edition", 50)/2, 270, 50, YELLOW);
     DrawText("WASD Move • Mouse Aim/Shoot • SPACE Parry • SHIFT Roll • E Flask", 200, 420, 36, LIGHTGRAY);
-    DrawText("Die and lose everything. Git Gud eternally.", 200, 480, 36, ORANGE);
+    DrawText("Return to the start and grow. Git Gud eternally.", 200, 480, 36, ORANGE);
     DrawText("Click or ENTER to begin the trial", SCREEN_WIDTH/2 - MeasureText("Click or ENTER to begin the trial", 40)/2, SCREEN_HEIGHT - 120, 40, WHITE);
 }
 
-void DrawDeath() {
+void DrawRenewal() {
     DrawRectangle(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,Fade(BLACK,0.9f));
-    DrawText("YOU DIED", SCREEN_WIDTH/2 - MeasureText("YOU DIED", 140)/2, SCREEN_HEIGHT/2 - 100, 140, RED);
-    const char* quote = deathQuotes[GetRandomValue(0, deathQuotes.size()-1)].c_str();
+    DrawText("SOUL ASCENDED", SCREEN_WIDTH/2 - MeasureText("SOUL ASCENDED", 140)/2, SCREEN_HEIGHT/2 - 100, 140, RED);
+    const char* quote = renewalQuotes[GetRandomValue(0, renewalQuotes.size()-1)].c_str();
     DrawText(quote, SCREEN_WIDTH/2 - MeasureText(quote, 60)/2, SCREEN_HEIGHT/2 + 40, 60, ORANGE);
     DrawText("All souls and upgrades lost...", SCREEN_WIDTH/2 - MeasureText("All souls and upgrades lost...", 50)/2, SCREEN_HEIGHT/2 + 120, 50, DARKGRAY);
     if (totalEnemyBullets > 0) {
