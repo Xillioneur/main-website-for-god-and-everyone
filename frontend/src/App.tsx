@@ -64,16 +64,16 @@ function App() {
   const Hero = () => (
     <section className="hero-section">
       <div className="hero-content">
-        <h1>THE ETERNAL MANUSCRIPT</h1>
+        <h1>THE ETERNAL CODE</h1>
         <p className="hero-subtitle">
           "All things were made through Him, and without Him was not anything made that was made." 
           <br /><br />
-          Open the volumes of digital manifestations where logic serves beauty, and every script of code is a pilgrimage toward the Infinite.
+          Explore high-performance digital manifestations where logic serves beauty, and every line of code is a pilgrimage toward the Infinite.
         </p>
         <div className="hero-cta">
           {games.length > 0 && (
             <button className="hero-button" onClick={() => viewGameDetails(games[0])}>
-              OPEN THE FIRST VOLUME
+              EXPLORE THE CODEBASE
             </button>
           )}
         </div>
@@ -84,7 +84,7 @@ function App() {
   const renderGameList = () => (
     <div className="game-list">
       <div className="section-header">
-        <h2>SACRED HARMONIES</h2>
+        <h2>SACRED LOGIC</h2>
         <div className="divider"></div>
       </div>
       {games.length === 0 && !error ? (
@@ -130,7 +130,7 @@ function App() {
         </div>
         <div className="details-info">
           <div className="details-edict">
-            <h3>THE LIGHT OF THE WORD</h3>
+            <h3>THE LOGIC OF THE WORD</h3>
             <div className="markdown-content">
               <ReactMarkdown>{selectedGameDetails?.fullDescription || ''}</ReactMarkdown>
             </div>
@@ -145,8 +145,9 @@ function App() {
 
   const CodexIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
-      <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16 18L22 12L16 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 6L2 12L8 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 4L10 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 
@@ -155,7 +156,7 @@ function App() {
       <header className="site-header">
         <div className="logo" onClick={backToList} style={{ display: 'flex', alignItems: 'center' }}>
           <CodexIcon />
-          <span>DIVINE MANUSCRIPT</span>
+          <span>THE DIVINE CODE</span>
         </div>
         <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
           {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
