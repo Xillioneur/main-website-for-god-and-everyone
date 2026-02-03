@@ -64,16 +64,16 @@ function App() {
   const Hero = () => (
     <section className="hero-section">
       <div className="hero-content">
-        <h1>THE DIVINE LOGOS</h1>
+        <h1>THE ETERNAL CODEX</h1>
         <p className="hero-subtitle">
           "All things were made through Him, and without Him was not anything made that was made." 
           <br /><br />
-          Explore digital manifestations where logic serves beauty, and every line of code is a pilgrimage toward the Infinite.
+          Open the volumes of digital manifestations where logic serves beauty, and every script of code is a pilgrimage toward the Infinite.
         </p>
         <div className="hero-cta">
           {games.length > 0 && (
             <button className="hero-button" onClick={() => viewGameDetails(games[0])}>
-              BEGIN THE PILGRIMAGE
+              OPEN THE FIRST VOLUME
             </button>
           )}
         </div>
