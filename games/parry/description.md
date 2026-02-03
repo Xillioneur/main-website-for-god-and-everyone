@@ -1,12 +1,11 @@
-# Ashes of the Bullet (Dark Souls Edition)
+# Ashes of the Bullet: The Rite of Temperance
 
-**Ashes of the Bullet** is a punishing Bullet Hell Arena manifestation that merges rapid-fire projectiles with the high-stakes risk/reward cycle of a Soulslike journey.
+**Ashes of the Bullet** is an intensive exercise in patience and the mastery of the self. In this manifestation, the seeker is surrounded by a storm of chaos, finding peace and victory through the sacred act of the parry.
 
-### Technical Manifestation
-- **Reflective Parry System**: The core ritual involves a timing-based parry window that transforms enemy threats into player assets, deflecting bullets with a `PERFECT_PARRY_BONUS` multiplier.
-- **Sacred RPG Stats**: Implements a persistent soul-collection loop. Gathered essence is sacrificed at "Sites of Grace" to augment Vitality, Endurance, Strength, and Dexterity via a custom upgrade logic.
-- **Bullet Patterns**: Sophisticated procedural spawning of complex projectile matrices, including Archimedean spirals and directional walls.
-- **Dynamic Camera**: A 3D orbital camera system featuring smooth lerp following and intensity-based trauma (shake) during high-impact events.
-- **Boss Phase Logic**: Features the "Bullet Lord" manifestation, utilizing a multi-phase state machine that adapts its attack patterns based on health thresholds.
+### Spiritual & Technical Architecture
+- **The Gracious Parry**: The core ritual centers on a timing-based window that transforms external threats into instruments of justice, reflecting the ability of the soul to convert trials into triumphs.
+- **The Altar of Ascension**: Souls gathered from the void are sacrificed to augment the seeker’s intrinsic virtues—Vitality, Endurance, Strength, and Dexterity—mirroring the constant refinement of the human spirit.
+- **Geometries of the Storm**: Projectile patterns manifest in Archimedean spirals and walls, testing the seeker's ability to perceive order within apparent disorder.
+- **The Ultimate Adversary**: Features the "Bullet Lord," a multi-phase manifestation that demands ever-increasing levels of focus and spiritual clarity.
 
-Git Gud. The code demands nothing less. Selah.
+"He who is slow to anger is better than the mighty." — Proverbs 16:32. Selah.

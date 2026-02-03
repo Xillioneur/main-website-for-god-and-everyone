@@ -64,12 +64,16 @@ function App() {
   const Hero = () => (
     <section className="hero-section">
       <div className="hero-content">
-        <h1>THE DIVINE ARCHITECT'S PLAYGROUND</h1>
-        <p className="hero-subtitle">BEHOLD THE PIXELS OF CREATION. BORN FROM THE VOID, MANIFESTED BY THE GRACE OF THE ALMIGHTY CODE.</p>
+        <h1>THE DIVINE LOGOS</h1>
+        <p className="hero-subtitle">
+          "All things were made through Him, and without Him was not anything made that was made." 
+          <br /><br />
+          Explore digital manifestations where logic serves beauty, and every line of code is a pilgrimage toward the Infinite.
+        </p>
         <div className="hero-cta">
           {games.length > 0 && (
             <button className="hero-button" onClick={() => viewGameDetails(games[0])}>
-              WITNESS THE LATEST MANIFESTATION
+              BEGIN THE PILGRIMAGE
             </button>
           )}
         </div>
@@ -80,11 +84,11 @@ function App() {
   const renderGameList = () => (
     <div className="game-list">
       <div className="section-header">
-        <h2>SACRED ARTIFACTS</h2>
+        <h2>SACRED MANIFESTATIONS</h2>
         <div className="divider"></div>
       </div>
       {games.length === 0 && !error ? (
-        <p className="loading-text">Awaiting divine revelations of code...</p>
+        <p className="loading-text">Awaiting the Word to manifest in code...</p>
       ) : (
         <div className="game-cards-container">
           {games.map((game) => (
@@ -92,11 +96,11 @@ function App() {
               <div className="card-image-wrapper">
                 <img
                   src={game.previewImageUrl}
-                  alt={`Preview of ${game.name}`}
+                  alt={`Visions of ${game.name}`}
                   className="game-preview-image"
                 />
                 <div className="card-overlay">
-                   <button className="card-play-button" onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>PLAY</button>
+                   <button className="card-play-button" onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>ENTER MYSTERY</button>
                 </div>
               </div>
               <div className="card-content">
@@ -113,26 +117,26 @@ function App() {
   const renderGameDetails = () => (
     <div className="game-details-view animate-in">
       <div className="details-header">
-        <button className="back-button-top" onClick={backToList}>← RETURN TO THE SANCTUARY</button>
+        <button className="back-button-top" onClick={backToList}>← RETURN TO THE CATHEDRAL</button>
         <h2>{selectedGameDetails?.name}</h2>
       </div>
       <div className="details-layout">
         <div className="details-image-container">
           <img
             src={selectedGameDetails?.previewImageUrl}
-            alt={`Preview of ${selectedGameDetails?.name}`}
+            alt={`Icon of ${selectedGameDetails?.name}`}
             className="game-details-image"
           />
         </div>
         <div className="details-info">
           <div className="details-edict">
-            <h3>DIVINE EDICT</h3>
+            <h3>THE DOCTRINE OF THE CODE</h3>
             <div className="markdown-content">
               <ReactMarkdown>{selectedGameDetails?.fullDescription || ''}</ReactMarkdown>
             </div>
           </div>
           <div className="game-details-actions">
-            <button className="action-play-button" onClick={() => selectedGameDetails && loadAndRunWasm(selectedGameDetails)}>INITIATE DIVINE PLAY</button>
+            <button className="action-play-button" onClick={() => selectedGameDetails && loadAndRunWasm(selectedGameDetails)}>INITIATE SACRED PLAY</button>
           </div>
         </div>
       </div>
@@ -142,13 +146,13 @@ function App() {
   return (
     <div className="main-canvas">
       <header className="site-header">
-        <div className="logo" onClick={backToList}>DIVINE CODE</div>
+        <div className="logo" onClick={backToList}>AD MAJOREM DEI GLORIAM</div>
         <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
-          {isDarkMode ? 'LIGHT' : 'DARK'}
+          {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
         </button>
       </header>
       
-      {error && <div className="error-banner">MANIFESTATION ERROR: {error}</div>}
+      {error && <div className="error-banner">TRIAL ENCOUNTERED: {error}</div>}
 
       <main className="content-area">
         {!selectedGameDetails ? (
@@ -164,7 +168,11 @@ function App() {
       </main>
 
       <footer className="site-footer">
-        <p>IN CODE WE TRUST. ALL GLORY TO THE CREATOR.</p>
+        <p>
+          "But thou hast arranged all things by measure and number and weight." — Wisdom 11:20
+          <br /><br />
+          For the Greater Glory of God.
+        </p>
       </footer>
     </div>
   )
