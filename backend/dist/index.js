@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 });
 // POINT OF TRUTH: Source directory for games and their metadata
 const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
-// Google Analytics Tag - Purged of comments for absolute clarity
+// Google Analytics Tag
 const googleAnalyticsTag = `
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
 <script>
@@ -90,21 +90,21 @@ app.get('/', async (req, res) => {
         const previewImage = `${baseUrl}/homepage-preview.svg`;
         const homeMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
-    <title>The Divine Code | WebAssembly Manifestations</title>
-    <meta name="description" content="Behold the pixels of creation. Explore high-performance C++ games manifested through the power of WebAssembly. All glory to the Divine Architect.">
+    <title>The Divine Codex | WebAssembly Manifestations</title>
+    <meta name="description" content="A digital book of pixels and code. Explore high-performance manifestations through the power of WebAssembly. All glory to the Divine Architect.">
 
     <!-- OPEN GRAPH / FACEBOOK / X -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/">
-    <meta property="og:title" content="The Divine Code | WASM Manifestations">
-    <meta property="og:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="og:title" content="The Divine Codex | WASM Manifestations">
+    <meta property="og:description" content="A sacred digital collection of high-performance WebAssembly games and divine code.">
     <meta property="og:image" content="${previewImage}">
 
     <!-- X (TWITTER) -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${baseUrl}/">
-    <meta property="twitter:title" content="The Divine Code | WebAssembly Manifestations">
-    <meta property="twitter:description" content="A professional platform for high-performance WebAssembly games and divine code.">
+    <meta property="twitter:title" content="The Divine Codex | WASM Manifestations">
+    <meta property="twitter:description" content="A sacred digital collection of high-performance WebAssembly games and divine code.">
     <meta property="twitter:image" content="${previewImage}">
     `;
         html = html.replace(/<title>.*?<\/title>/i, '');
@@ -159,20 +159,20 @@ app.get('/wasm/:gameId/', async (req, res) => {
         const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
         const divineMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
-    <title>${game.name} | The Divine Code</title>
+    <title>${game.name} | The Divine Codex</title>
     <meta name="description" content="${game.shortDescription}">
 
     <!-- OPEN GRAPH / FACEBOOK / X -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
-    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
+    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Codex">
     <meta property="og:description" content="${game.shortDescription}">
     <meta property="og:image" content="${absoluteImageUrl}">
 
     <!-- X (TWITTER) -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${baseUrl}/wasm/${game.id}/">
-    <meta property="twitter:title" content="${game.name} | The Divine Code">
+    <meta property="twitter:title" content="${game.name} | The Divine Codex">
     <meta property="twitter:description" content="${game.shortDescription}">
     <meta property="twitter:image" content="${absoluteImageUrl}">
 
