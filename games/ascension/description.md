@@ -1,6 +1,6 @@
-# Cursor: The Light of Logic
+# Ascension: The Light of Logic
 
-**Cursor** represents the pinnacle of digital harmony, a manifestation where thousands of individual threads work together in a single, unified act of creation. It is a meditation on the intelligence and order behind all existence.
+**Ascension** (formerly Cursor) represents the pinnacle of digital harmony, a manifestation where thousands of individual threads work together in a single, unified act of creation. It is a meditation on the intelligence and order behind all existence.
 
 ### Spiritual & Technical Architecture
 - **The Threads of Creation**: Utilizes a custom ThreadPool to distribute complex tasks across the CPU, mirroring the interconnected and purposeful nature of Divine Design.

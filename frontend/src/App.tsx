@@ -64,7 +64,7 @@ function App() {
   const Hero = () => (
     <section className="hero-section">
       <div className="hero-content">
-        <h1>THE ETERNAL CODEX</h1>
+        <h1>THE ETERNAL MANUSCRIPT</h1>
         <p className="hero-subtitle">
           "All things were made through Him, and without Him was not anything made that was made." 
           <br /><br />
@@ -155,7 +155,7 @@ function App() {
       <header className="site-header">
         <div className="logo" onClick={backToList} style={{ display: 'flex', alignItems: 'center' }}>
           <CodexIcon />
-          <span>DIVINE CODEX</span>
+          <span>DIVINE MANUSCRIPT</span>
         </div>
         <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
           {isDarkMode ? 'CLARITY' : 'OBSCURITY'}

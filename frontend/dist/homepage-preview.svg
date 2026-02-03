@@ -11,19 +11,19 @@
   </defs>
   <rect width="1200" height="630" fill="url(#glow)"/>
   
-  <!-- Book Motif Borders -->
-  <path d="M 100 100 L 1100 100 M 100 530 L 1100 530" stroke="#333333" stroke-width="1" fill="none"/>
-  <path d="M 100 100 L 100 530 M 1100 100 L 1100 530" stroke="#333333" stroke-width="1" fill="none"/>
+  <!-- Manuscript Motif Borders -->
+  <path d="M 150 100 L 1050 100 M 150 530 L 1050 530" stroke="#444444" stroke-width="1" fill="none" stroke-dasharray="5,5"/>
+  <path d="M 150 100 L 150 530 M 1050 100 L 1050 530" stroke="#444444" stroke-width="1" fill="none" stroke-dasharray="5,5"/>
   
   <!-- Corner Ornaments -->
-  <circle cx="100" cy="100" r="3" fill="#ffffff" fill-opacity="0.5"/>
-  <circle cx="1100" cy="100" r="3" fill="#ffffff" fill-opacity="0.5"/>
-  <circle cx="100" cy="530" r="3" fill="#ffffff" fill-opacity="0.5"/>
-  <circle cx="1100" cy="530" r="3" fill="#ffffff" fill-opacity="0.5"/>
+  <path d="M 130 80 L 170 80 M 150 60 L 150 100" stroke="#ffffff" stroke-width="1" fill="none" stroke-opacity="0.3"/>
+  <path d="M 1030 80 L 1070 80 M 1050 60 L 1050 100" stroke="#ffffff" stroke-width="1" fill="none" stroke-opacity="0.3"/>
+  <path d="M 130 550 L 170 550 M 150 530 L 150 570" stroke="#ffffff" stroke-width="1" fill="none" stroke-opacity="0.3"/>
+  <path d="M 1030 550 L 1070 550 M 1050 530 L 1050 570" stroke="#ffffff" stroke-width="1" fill="none" stroke-opacity="0.3"/>
 
   <!-- Main Title -->
-  <text x="50%" y="48%" font-family="Inter, -apple-system, sans-serif" font-size="100" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.25em" dominant-baseline="middle">THE DIVINE CODEX</text>
+  <text x="50%" y="48%" font-family="Inter, -apple-system, sans-serif" font-size="80" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="0.3em" dominant-baseline="middle">THE DIVINE MANUSCRIPT</text>
   
   <!-- Subtitle / Manifestation Tag -->
-  <text x="50%" y="60%" font-family="Inter, -apple-system, sans-serif" font-size="24" font-weight="400" fill="#888888" text-anchor="middle" letter-spacing="0.5em" dominant-baseline="middle">SACRED MANIFESTATIONS</text>
+  <text x="50%" y="60%" font-family="Inter, -apple-system, sans-serif" font-size="22" font-weight="400" fill="#888888" text-anchor="middle" letter-spacing="0.6em" dominant-baseline="middle">SACRED MANIFESTATIONS</text>
 </svg>
