@@ -62,11 +62,7 @@ async function getGamesMetadata() {
                         id: gameName,
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                         shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-                        fullDescription: `By the grace of the Almighty Creator, this game manifests. 
-
- ${fullDescription} 
-
- A divine journey awaits those who dare to seek the truth within the code. Let His light guide your path, and may your pixels be blessed.`,
+                        fullDescription: `By the grace of the Almighty Creator, this code manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
                     });
@@ -94,21 +90,21 @@ app.get('/', async (req, res) => {
         const previewImage = `${baseUrl}/homepage-preview.svg`;
         const homeMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
-    <title>The Divine Manuscript | WebAssembly Manifestations</title>
-    <meta name="description" content="A digital book of pixels and code. Explore high-performance manifestations through the power of WebAssembly. All glory to the Divine Architect.">
+    <title>The Divine Code | High-Performance WebAssembly Codebase</title>
+    <meta name="description" content="Explore The Divine Codebase. A collection of high-performance C++ games and logic manifested through WebAssembly. Witness the beauty of sacred code.">
 
     <!-- OPEN GRAPH / FACEBOOK / X -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/">
-    <meta property="og:title" content="The Divine Manuscript | WASM Manifestations">
-    <meta property="og:description" content="A sacred digital collection of high-performance WebAssembly games and divine code.">
+    <meta property="og:title" content="The Divine Code | Sacred WASM Codebase">
+    <meta property="og:description" content="A professional digital sanctuary featuring high-performance WebAssembly code manifestations and divine logic.">
     <meta property="og:image" content="${previewImage}">
 
     <!-- X (TWITTER) -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${baseUrl}/">
-    <meta property="twitter:title" content="The Divine Manuscript | WASM Manifestations">
-    <meta property="twitter:description" content="A sacred digital collection of high-performance WebAssembly games and divine code.">
+    <meta property="twitter:title" content="The Divine Code | Sacred WebAssembly Codebase">
+    <meta property="twitter:description" content="High-performance C++ codebases manifested through the power of WebAssembly. All glory to the Divine Architect.">
     <meta property="twitter:image" content="${previewImage}">
     `;
         html = html.replace(/<title>.*?<\/title>/i, '');
@@ -163,20 +159,20 @@ app.get('/wasm/:gameId/', async (req, res) => {
         const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
         const divineMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
-    <title>${game.name} | The Divine Manuscript</title>
+    <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
 
     <!-- OPEN GRAPH / FACEBOOK / X -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
-    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Manuscript">
+    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
     <meta property="og:description" content="${game.shortDescription}">
     <meta property="og:image" content="${absoluteImageUrl}">
 
     <!-- X (TWITTER) -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${baseUrl}/wasm/${game.id}/">
-    <meta property="twitter:title" content="${game.name} | The Divine Manuscript">
+    <meta property="twitter:title" content="${game.name} | The Divine Code">
     <meta property="twitter:description" content="${game.shortDescription}">
     <meta property="twitter:image" content="${absoluteImageUrl}">
 
