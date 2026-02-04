@@ -45,7 +45,15 @@ async function getGamesMetadata() {
                 const jsFile = `${gameName}.js`;
                 const wasmFile = `${gameName}.wasm`;
                 const descriptionMd = 'description.md';
-                const previewImage = 'preview.svg';
+                // Supported preview formats in order of preference
+                const previewFormats = ['preview.png', 'preview.jpg', 'preview.jpeg', 'preview.gif', 'preview.svg'];
+                let previewImage = 'preview.svg'; // Default
+                for (const format of previewFormats) {
+                    if (gameFiles.includes(format)) {
+                        previewImage = format;
+                        break;
+                    }
+                }
                 const gameHtmlExists = gameFiles.includes(gameHtml);
                 const jsFileExists = gameFiles.includes(jsFile);
                 const wasmFileExists = gameFiles.includes(wasmFile);
@@ -91,7 +99,9 @@ app.get('/', async (req, res) => {
         const host = req.get('host');
         const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
         const baseUrl = `${protocol}://${host}`;
-        const previewImage = `${baseUrl}/homepage-preview.svg`;
+        // Prioritize PNG for social sharing compatibility
+        const hasPngPreview = fs_1.default.existsSync(path_1.default.join(__dirname, '../../frontend/dist/homepage-preview.png'));
+        const previewImage = `${baseUrl}/${hasPngPreview ? 'homepage-preview.png' : 'homepage-preview.svg'}`;
         const homeMeta = `${googleAnalyticsTag}
     <!-- PRIMARY META -->
     <title>The Divine Code | High-Performance WebAssembly Codebase</title>
