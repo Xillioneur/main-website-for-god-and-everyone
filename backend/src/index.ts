@@ -67,7 +67,11 @@ async function getGamesMetadata() {
             id: gameName,
             name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
             shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-            fullDescription: `By the grace of the Almighty Creator, this code manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
+            fullDescription: `By the grace of the Almighty Creator, this code manifests. 
+
+ ${fullDescription} 
+
+ A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
             wasmPath: `/wasm/${gameName}/`,
             previewImageUrl: `/wasm/${gameName}/${previewImage}`,
           });
@@ -114,6 +118,26 @@ app.get('/', async (req, res) => {
     <meta property="twitter:title" content="The Divine Code | Sacred WebAssembly Codebase">
     <meta property="twitter:description" content="High-performance C++ codebases manifested through the power of WebAssembly. All glory to the Divine Architect.">
     <meta property="twitter:image" content="${previewImage}">
+
+    <!-- DEEP JSON-LD MANIFESTATION -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "The Divine Code",
+      "alternateName": "The Divine Codebase",
+      "url": "${baseUrl}/",
+      "description": "High-performance digital manifestations where logic serves beauty, and every line of code is a pilgrimage toward the Infinite.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "The Divine Architects",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "${baseUrl}/favicon.svg"
+        }
+      }
+    }
+    </script>
     `;
 
     html = html.replace(/<title>.*?<\/title>/i, ''); 
@@ -198,7 +222,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
     <meta property="twitter:description" content="${game.shortDescription}">
     <meta property="twitter:image" content="${absoluteImageUrl}">
 
-    <!-- JSON-LD STRUCTURED DATA -->
+    <!-- DEEP JSON-LD MANIFESTATION -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -208,6 +232,10 @@ app.get('/wasm/:gameId/', async (req, res) => {
       "applicationCategory": "GameApplication",
       "description": "${game.shortDescription}",
       "image": "${absoluteImageUrl}",
+      "author": {
+        "@type": "Organization",
+        "name": "The Divine Architects"
+      },
       "offers": {
         "@type": "Offer",
         "price": "0",
