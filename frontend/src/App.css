@@ -10,6 +10,7 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(20px);
   --ios-radius: 20px;
+  --gradient-top: #1a1a1a;
 }
 
 body.light-mode {
@@ -20,19 +21,21 @@ body.light-mode {
   --accent: #000000;
   --glass-bg: rgba(0, 0, 0, 0.05);
   --glass-border: rgba(0, 0, 0, 0.1);
+  --gradient-top: #e5e5e7;
 }
 
 html, body {
   margin: 0;
   padding: 0;
   background-color: var(--primary-bg);
-  background-image: radial-gradient(circle at 50% -20%, #1a1a1a 0%, #000000 100%);
+  background-image: radial-gradient(circle at 50% -20%, var(--gradient-top) 0%, var(--primary-bg) 100%);
   background-attachment: fixed;
   color: var(--text-color);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   animation: backgroundBreath 15s ease-in-out infinite alternate;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 @keyframes backgroundBreath {
@@ -666,11 +669,6 @@ body {
 
 .theme-toggle-minimal {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth background transitions */
-body {
-  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 /* --- RESPONSIVE SHARE --- */
