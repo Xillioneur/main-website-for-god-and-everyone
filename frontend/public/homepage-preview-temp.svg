@@ -1,0 +1,33 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid Background -->
+  <rect width="1200" height="630" fill="#000000"/>
+  
+  <!-- Subtle Gradient Glow -->
+  <defs>
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#1a1a1a; stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#000000; stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#aaaaaa;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg-glow)"/>
+
+  <!-- Logo (Centered via Group transform) -->
+  <!-- 1200/2 = 600. Logo at 512*0.35 = 153.6. 600 - 76.8 = 523.2 -->
+  <g transform="translate(523, 100) scale(0.35)">
+    <rect width="512" height="512" rx="140" fill="#111111"/>
+    <path d="M160 160L80 256L160 352" stroke="url(#logo-grad)" stroke-width="45" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M352 160L432 256L352 352" stroke="url(#logo-grad)" stroke-width="45" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M256 110V402" stroke="#ffffff" stroke-width="50" stroke-linecap="round"/>
+    <path d="M200 256H312" stroke="#ffffff" stroke-width="35" stroke-linecap="round"/>
+  </g>
+
+  <!-- Title - Positioned carefully -->
+  <text x="600" y="400" font-family="Arial, sans-serif" font-size="80" font-weight="900" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">THE DIVINE CODE</text>
+  
+  <!-- Tagline -->
+  <text x="600" y="480" font-family="Arial, sans-serif" font-size="28" font-weight="400" fill="#888888" text-anchor="middle" dominant-baseline="middle" letter-spacing="10">&lt; SACRED LOGIC /&gt;</text>
+</svg>
