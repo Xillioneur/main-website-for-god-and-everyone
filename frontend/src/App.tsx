@@ -31,6 +31,36 @@ function App() {
     }
   }, [isDarkMode]);
 
+  // Phase 4: Browser Sovereignty (Back-button & URL Support)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const gameId = params.get('manifest');
+      
+      if (gameId && games.length > 0) {
+        const game = games.find(g => g.id === gameId);
+        if (game) setSelectedGameDetails(game);
+        else setSelectedGameDetails(null);
+      } else {
+        setSelectedGameDetails(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // Initial check if games are loaded and URL has a param
+    if (games.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const gameId = params.get('manifest');
+      if (gameId) {
+        const game = games.find(g => g.id === gameId);
+        if (game) setSelectedGameDetails(game);
+      }
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [games]);
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -60,6 +90,10 @@ function App() {
 
   const viewGameDetails = (game: Game) => {
     setSelectedGameDetails(game);
+    // Push state to browser history
+    const url = new URL(window.location.href);
+    url.searchParams.set('manifest', game.id);
+    window.history.pushState({ gameId: game.id }, '', url);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -82,6 +116,10 @@ function App() {
 
   const backToList = () => {
     setSelectedGameDetails(null);
+    // Clean URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('manifest');
+    window.history.pushState({}, '', url);
     setError(null);
   };
 
@@ -118,6 +156,17 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
+            <h4>PHASE 4: THE RESILIENT SOUL</h4>
+            <p>Browser Sovereignty manifested. Implemented URL-aware navigation and navigation history. The Sanctuary now breathes with a subtle gradient animation.</p>
+          </div>
+        </div>
+
+        <div className="update-entry">
+          <div className="update-meta">
+            <span className="update-date">FEB 04</span>
+            <div className="update-dot"></div>
+          </div>
+          <div className="update-content">
             <h4>GRACE OF THE USER EXPERIENCE</h4>
             <p>Sacred Shell synchronization complete. Manifested fluid loading transitions and global keyboard shortcuts for a seamless journey through the codebase.</p>
           </div>
@@ -142,28 +191,6 @@ function App() {
           <div className="update-content">
             <h4>SACRED IDENTITY & PURIFICATION</h4>
             <p>Manifested the Coder's Cross visual seal. Purified all manifestations of strife and death, centering the platform around life-affirming Catholic logic.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 02</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>THE WORD SPREADS</h4>
-            <p>Overhauled SEO engines with dynamic metadata injection and automated sitemaps. Google Analytics integrated via secure headers.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 01</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>GENESIS</h4>
-            <p>The initial manifestation of the high-performance WebAssembly engine. Transitioned to iOS-inspired bold minimalism.</p>
           </div>
         </div>
       </div>
