@@ -5,104 +5,147 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>THE DIVINE CODE</title>
+    <!-- We link to the fonts used in the main site -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/main-theme.css">
     <link rel="stylesheet" href="/game_shell.css">
+    <style>
+        /* Embedded shell-specific polish */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+        
+        .loader-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        .loader-text {
+            color: #ffffff;
+            font-size: 0.8rem;
+            letter-spacing: 0.3em;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        #game-canvas-wrapper {
+            position: relative;
+            background: #000;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            outline: none;
+        }
+
+        .game-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+    </style>
 </head>
 <body class="dark-mode">
-    <div id="game-container-wrapper" class="App playing-game">
-        <div class="game-playing-container">
-            <div class="game-controls-overlay">
-                <button onclick="window.location.href='/'" class="control-button">BACK TO THE CREATION</button>
-                <button id="fullscreen-button" class="control-button">ENTER THE VOID</button>
-            </div>
-            
-            <div id="game-canvas-wrapper">
-                <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-                <div id="loading-message" class="loading-message" style="display: none;">Summoning divine code...</div>
-            </div>
-            
-            <div class="game-output-console">
-                <h3>ORACULAR TRACERIES:</h3>
-                <pre id="game-output-pre">Awaiting divine whispers from the depths...</pre>
-            </div>
-        </div>
+    <div id="loading-overlay">
+        <!-- The Coder's Cross Manifested -->
+        <svg class="loader-icon" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="512" height="512" rx="140" fill="#111111"/>
+            <path d="M160 160L80 256L160 352" stroke="#ffffff" stroke-width="45" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M352 160L432 256L352 352" stroke="#ffffff" stroke-width="45" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M256 110V402" stroke="#ffffff" stroke-width="50" stroke-linecap="round"/>
+            <path d="M200 256H312" stroke="#ffffff" stroke-width="35" stroke-linecap="round"/>
+        </svg>
+        <div id="loader-status" class="loader-text">MANIFESTING LOGIC...</div>
+    </div>
+
+    <div class="game-nav">
+        <button onclick="window.location.href='/'" class="nav-btn">← RETURN TO SANCTUARY</button>
+        <button id="fs-btn" class="nav-btn">EXPAND VISION</button>
+    </div>
+
+    <div id="game-canvas-wrapper">
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
     </div>
 
     <script type="text/javascript">
-        // Theme initialization logic
-        (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.body.classList.add('light-mode');
-                document.body.classList.remove('dark-mode');
-            } else {
-                document.body.classList.add('dark-mode');
-                document.body.classList.remove('light-mode');
-            }
-        })();
-
         var Module = {
             preRun: [],
             postRun: [],
-            print: (function() {
-                var element = document.getElementById('game-output-pre');
-                if (element) element.textContent = ''; // Clear contents
-                return function(text) {
-                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                    console.log(text);
-                    if (element) {
-                        element.textContent += text + "\n";
-                        element.scrollTop = element.scrollHeight;
-                    }
-                };
-            })(),
-            printErr: function(text) {
-                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
-                console.error(text);
-                var errorElement = document.getElementById('game-output-pre');
-                if (errorElement) {
-                    errorElement.textContent += "ERROR: " + text + "\n";
-                    errorElement.scrollTop = errorElement.scrollHeight;
-                }
-            },
+            print: function(text) { console.log(text); },
+            printErr: function(text) { console.error(text); },
             canvas: (function() {
                 var canvas = document.getElementById('canvas');
                 return canvas;
             })(),
             setStatus: function(text) {
-                var loadingElement = document.getElementById('loading-message');
-                if (!loadingElement) return;
-                if (text) {
-                    loadingElement.textContent = text;
-                    loadingElement.style.display = 'block';
-                } else {
-                    loadingElement.style.display = 'none';
+                const statusElement = document.getElementById('loader-status');
+                if (!text) {
+                    // When loading is complete, hide overlay
+                    const overlay = document.getElementById('loading-overlay');
+                    overlay.style.opacity = '0';
+                    overlay.style.visibility = 'hidden';
+                } else if (statusElement) {
+                    statusElement.textContent = text.toUpperCase();
                 }
             },
             monitorRunDependencies: function(left) {
-                this.setStatus('Summoning... (' + (left ? left + ' remaining' : 'complete') + ')');
+                this.setStatus(left ? 'GATHERING FRAGMENTS (' + left + ')...' : '');
             }
         };
 
-        // Fullscreen logic
-        document.getElementById('fullscreen-button').addEventListener('click', function() {
-            var canvas = document.getElementById('canvas');
-            if (canvas) {
-                if (!document.fullscreenElement) {
-                    if (canvas.requestFullscreen) {
-                        canvas.requestFullscreen();
-                    } else if (canvas.mozRequestFullScreen) {
-                        canvas.mozRequestFullScreen();
-                    } else if (canvas.webkitRequestFullscreen) {
-                        canvas.webkitRequestFullscreen();
-                    } else if (canvas.msRequestFullscreen) {
-                        canvas.msRequestFullscreen();
-                    }
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    }
-                }
+        // Fullscreen
+        document.getElementById('fs-btn').addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
             }
         });
     </script>

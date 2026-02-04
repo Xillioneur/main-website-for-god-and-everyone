@@ -31,6 +31,17 @@ function App() {
     }
   }, [isDarkMode]);
 
+  // Keyboard Shortcuts (Phase 3)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedGameDetails) {
+        backToList();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedGameDetails]);
+
   useEffect(() => {
     const fetchGames = async () => {
       try {
@@ -59,7 +70,7 @@ function App() {
   const shareManifestation = (game: Game) => {
     if (navigator.share) {
       navigator.share({
-        title: `${game.name} | The Divine Code`,
+        title: `${game.name} | THE DIVINE CODE`,
         text: `Behold this manifestation of sacred logic: ${game.name}`,
         url: window.location.origin + game.wasmPath,
       });
@@ -89,6 +100,31 @@ function App() {
               EXPLORE THE CODEBASE
             </button>
           )}
+        </div>
+      </div>
+    </section>
+  );
+
+  const ChronicleOfLight = () => (
+    <section className="chronicle-section animate-in">
+      <div className="section-header">
+        <h2>CHRONICLE OF LIGHT</h2>
+        <div className="divider"></div>
+      </div>
+      <div className="chronicle-grid">
+        <div className="update-item">
+          <span className="update-date">FEB 2026</span>
+          <div className="update-info">
+            <h4>PHASE 3 MANIFESTED</h4>
+            <p>The Sacred Shell has been synchronized. All game manifestations now share the visual harmony of the Sanctuary. Keyboard shortcuts initialized.</p>
+          </div>
+        </div>
+        <div className="update-item">
+          <span className="update-date">JAN 2026</span>
+          <div className="update-info">
+            <h4>THE CODER'S CROSS</h4>
+            <p>A new visual seal has been established. The platform has been renamed to THE DIVINE CODE to better reflect its logical essence.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -155,7 +191,7 @@ function App() {
   const renderGameDetails = () => (
     <div className="game-details-view animate-in">
       <div className="details-header">
-        <button className="back-button-top" onClick={backToList}>← RETURN TO THE SANCTUARY</button>
+        <button className="back-button-top" onClick={backToList}>← RETURN TO THE SANCTUARY (ESC)</button>
         <div className="title-share-row">
           <h2>{selectedGameDetails?.name}</h2>
           <button className="share-button" onClick={() => selectedGameDetails && shareManifestation(selectedGameDetails)}>
@@ -217,7 +253,10 @@ function App() {
             <div className="games-grid-wrapper">
               {renderGameList()}
             </div>
-            <MissionStatement />
+            <div className="home-secondary-content">
+              <ChronicleOfLight />
+              <MissionStatement />
+            </div>
           </>
         ) : (
           renderGameDetails()

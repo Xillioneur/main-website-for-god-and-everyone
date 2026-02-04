@@ -393,6 +393,144 @@ html, body {
   }
 }
 
+/* --- SECONDARY CONTENT LAYOUT --- */
+.home-secondary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* --- CHRONICLE SECTION --- */
+.chronicle-section {
+  padding: 100px 5%;
+  background: var(--primary-bg);
+  border-top: 1px solid var(--glass-border);
+}
+
+.chronicle-grid {
+  display: grid;
+  gap: 40px;
+  margin-top: 40px;
+  max-width: 800px;
+}
+
+.update-item {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.update-date {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  padding-top: 5px;
+  min-width: 80px;
+}
+
+.update-info h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.update-info p {
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* --- MISSION SECTION --- */
+.mission-section {
+  padding: 100px 5%;
+  background: var(--secondary-bg);
+  border-top: 1px solid var(--glass-border);
+}
+
+.mission-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 60px;
+  margin-top: 40px;
+}
+
+.mission-item h3 {
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin-bottom: 20px;
+  color: var(--text-color);
+}
+
+.mission-item p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* --- SHARE BUTTON --- */
+.title-share-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.share-button {
+  background: var(--glass-bg);
+  color: var(--text-color);
+  border: 1px solid var(--glass-border);
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  backdrop-filter: var(--glass-blur);
+}
+
+.share-button:hover {
+  background: var(--text-color);
+  color: var(--primary-bg);
+}
+
+/* --- POLISH & REFINEMENTS --- */
+.game-card:hover {
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+}
+
+.theme-toggle-minimal {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+@media (max-width: 768px) {
+  .title-share-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .update-item {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
 /* --- MISSION SECTION --- */
 .mission-section {
   padding: 100px 5%;
