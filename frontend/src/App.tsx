@@ -111,19 +111,111 @@ function App() {
         <h2>CHRONICLE OF LIGHT</h2>
         <div className="divider"></div>
       </div>
-      <div className="chronicle-grid">
-        <div className="update-item">
-          <span className="update-date">FEB 2026</span>
-          <div className="update-info">
-            <h4>PHASE 3 MANIFESTED</h4>
-            <p>The Sacred Shell has been synchronized. All game manifestations now share the visual harmony of the Sanctuary. Keyboard shortcuts initialized.</p>
+      <div className="chronicle-container">
+        {/* VOLUME IV */}
+        <div className="chronicle-volume">
+          <div className="volume-header">
+            <span className="folder-icon">📂</span>
+            <span className="volume-title">VOL_IV_GRACE_OF_UX</span>
+            <span className="volume-date">FEB 2026</span>
+          </div>
+          <div className="volume-contents">
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>PHASE_3_SYNCHRONIZATION</strong>
+                <p>The Sacred Shell Manifested. Global keyboard rituals (ESC) initialized. Fluid loading transitions added to all manifestations.</p>
+              </div>
+            </div>
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>DIVINE_VISION_&_SHARING</strong>
+                <p>Mission statement established. Web Share API integrated for digital evangelization. High-shadow visual polish applied.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="update-item">
-          <span className="update-date">JAN 2026</span>
-          <div className="update-info">
-            <h4>THE CODER'S CROSS</h4>
-            <p>A new visual seal has been established. The platform has been renamed to THE DIVINE CODE to better reflect its logical essence.</p>
+
+        {/* VOLUME III */}
+        <div className="chronicle-volume">
+          <div className="volume-header">
+            <span className="folder-icon">📂</span>
+            <span className="volume-title">VOL_III_SACRED_IDENTITY</span>
+            <span className="volume-date">FEB 2026</span>
+          </div>
+          <div className="volume-contents">
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>THE_CODERS_CROSS</strong>
+                <p>High-quality Coder's Cross Favicon manifested. Identity shifted to THE DIVINE CODE. Brand synergy applied across the Sanctuary.</p>
+              </div>
+            </div>
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>GENESIS_OF_ASCENSION</strong>
+                <p>Flagship manifestation renamed from 'Cursor' to 'ASCENSION'. All shadows of strife and death purified from the code.</p>
+              </div>
+            </div>
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>CATHOLIC_COPY_OVERHAUL</strong>
+                <p>Entire platform re-framed around Catholic teachings and the Logos. Ad Majorem Dei Gloriam.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* VOLUME II */}
+        <div className="chronicle-volume">
+          <div className="volume-header">
+            <span className="folder-icon">📂</span>
+            <span className="volume-title">VOL_II_THE_WORD_SPREADS</span>
+            <span className="volume-date">FEB 2026</span>
+          </div>
+          <div className="volume-contents">
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>SEO_&_METADATA_INJECTION</strong>
+                <p>Dynamic Sitemap and Robots.txt manifested. Dynamic SEO tag injection logic built for individual game manifestations.</p>
+              </div>
+            </div>
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>ANALYTICS_REFINEMENT</strong>
+                <p>Google Analytics tag successfully integrated through secure COEP/COOP headers. Traffic tracking initialized.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* VOLUME I */}
+        <div className="chronicle-volume">
+          <div className="volume-header">
+            <span className="folder-icon">📂</span>
+            <span className="volume-title">VOL_I_GENESIS</span>
+            <span className="volume-date">FEB 2026</span>
+          </div>
+          <div className="volume-contents">
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>MVP_MANIFESTATION</strong>
+                <p>Core WebAssembly loading engine established. Dark/Light mode theme engine built. Initial game artifacts uploaded.</p>
+              </div>
+            </div>
+            <div className="log-entry">
+              <span className="entry-icon">📄</span>
+              <div className="entry-text">
+                <strong>STYLE_EVOLUTION</strong>
+                <p>Transitioned to modern iOS-inspired bold minimalism. Full-screen manifestation support added.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

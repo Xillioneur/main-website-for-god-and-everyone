@@ -400,47 +400,85 @@ html, body {
   gap: 0;
 }
 
-/* --- CHRONICLE SECTION --- */
+/* --- CHRONICLE SECTION (FOLDER STRUCTURE) --- */
 .chronicle-section {
   padding: 100px 5%;
   background: var(--primary-bg);
   border-top: 1px solid var(--glass-border);
 }
 
-.chronicle-grid {
-  display: grid;
-  gap: 40px;
+.chronicle-container {
   margin-top: 40px;
-  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
-.update-item {
+.chronicle-volume {
+  position: relative;
+  padding-left: 20px;
+  border-left: 1px solid var(--glass-border);
+}
+
+.volume-header {
   display: flex;
-  gap: 30px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.folder-icon {
+  font-size: 1.2rem;
+}
+
+.volume-title {
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--text-color);
+}
+
+.volume-date {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: var(--glass-bg);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.volume-contents {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-left: 30px;
+}
+
+.log-entry {
+  display: flex;
+  gap: 15px;
   align-items: flex-start;
 }
 
-.update-date {
-  font-size: 0.7rem;
-  font-weight: 900;
-  color: var(--text-dim);
-  letter-spacing: 0.2em;
-  padding-top: 5px;
-  min-width: 80px;
+.entry-icon {
+  font-size: 1rem;
+  opacity: 0.5;
 }
 
-.update-info h4 {
-  margin: 0 0 10px 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+.entry-text strong {
+  display: block;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: var(--accent);
+  margin-bottom: 5px;
 }
 
-.update-info p {
+.entry-text p {
   margin: 0;
   color: var(--text-dim);
-  line-height: 1.6;
   font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* --- MISSION SECTION --- */
