@@ -356,20 +356,35 @@ html, body {
   color: var(--text-dim);
 }
 
-/* --- UTILS --- */
+/* --- UTILS & ANIMATIONS --- */
 .animate-in {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: slideUp 0.6s ease forwards;
+  animation: divineFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-@keyframes slideUp {
-  to { opacity: 1; transform: translateY(0); }
+@keyframes divineFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.98); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.view-transition-exit {
+  animation: divineFadeOut 0.4s ease forwards;
+}
+
+@keyframes divineFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* Ensure the content area handles the transition flow */
+.content-area {
+  position: relative;
+  min-height: 600px;
 }
 
 .error-banner {
@@ -697,5 +712,32 @@ body {
   .title-share-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .update-entry {
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 50px;
+  }
+  .update-entry::after {
+    left: 4px;
+    top: 30px;
+  }
+  .update-meta {
+    min-width: auto;
+    justify-content: flex-start;
+    gap: 15px;
+  }
+  .update-date {
+    text-align: left;
+    width: auto;
+  }
+  .mission-grid {
+    gap: 40px;
+  }
+  .hero-section {
+    padding: 80px 5% 40px 5%;
+  }
+  .chronicle-section, .mission-section {
+    padding: 60px 5%;
   }
 }
