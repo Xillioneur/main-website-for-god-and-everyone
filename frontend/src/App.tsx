@@ -56,6 +56,19 @@ function App() {
     window.location.href = game.wasmPath;
   };
 
+  const shareManifestation = (game: Game) => {
+    if (navigator.share) {
+      navigator.share({
+        title: `${game.name} | The Divine Code`,
+        text: `Behold this manifestation of sacred logic: ${game.name}`,
+        url: window.location.origin + game.wasmPath,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.origin + game.wasmPath);
+      alert('Manifestation link copied to clipboard.');
+    }
+  };
+
   const backToList = () => {
     setSelectedGameDetails(null);
     setError(null);
@@ -76,6 +89,31 @@ function App() {
               EXPLORE THE CODEBASE
             </button>
           )}
+        </div>
+      </div>
+    </section>
+  );
+
+  const MissionStatement = () => (
+    <section className="mission-section animate-in">
+      <div className="mission-content">
+        <div className="section-header">
+          <h2>THE DIVINE VISION</h2>
+          <div className="divider"></div>
+        </div>
+        <div className="mission-grid">
+          <div className="mission-item">
+            <h3>LOGOS & LOGIC</h3>
+            <p>We believe that code is not merely a tool for utility, but a reflection of the Divine Order. In the mathematical precision of a C++ algorithm, we catch a glimpse of the Creator's hand.</p>
+          </div>
+          <div className="mission-item">
+            <h3>SACRED PLAY</h3>
+            <p>Our manifestations are designed to be life-affirming. We strive for "Non-Violent Sophistication"—challenges that test the soul's fortitude and patience without resorting to the base instincts of strife.</p>
+          </div>
+          <div className="mission-item">
+            <h3>ASCENSION</h3>
+            <p>Every journey through our digital sanctuary is intended to be a step toward clarity. From the parry of a storm to the harmony of multithreaded logic, we seek the Infinite through the Finite.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -118,7 +156,13 @@ function App() {
     <div className="game-details-view animate-in">
       <div className="details-header">
         <button className="back-button-top" onClick={backToList}>← RETURN TO THE SANCTUARY</button>
-        <h2>{selectedGameDetails?.name}</h2>
+        <div className="title-share-row">
+          <h2>{selectedGameDetails?.name}</h2>
+          <button className="share-button" onClick={() => selectedGameDetails && shareManifestation(selectedGameDetails)}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            SHARE
+          </button>
+        </div>
       </div>
       <div className="details-layout">
         <div className="details-image-container">
@@ -173,6 +217,7 @@ function App() {
             <div className="games-grid-wrapper">
               {renderGameList()}
             </div>
+            <MissionStatement />
           </>
         ) : (
           renderGameDetails()
