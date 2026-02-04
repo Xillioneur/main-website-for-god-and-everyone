@@ -66,6 +66,8 @@ async function getGamesMetadata() {
                     catch (error) {
                         console.warn(`No description.md found for ${gameName}`);
                     }
+                    // Capture modification time for chronological sorting
+                    const stats = fs_1.default.statSync(gameFolderPath);
                     games.push({
                         id: gameName,
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
@@ -77,11 +79,13 @@ async function getGamesMetadata() {
  A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
+                        mtime: stats.mtimeMs
                     });
                 }
             }
         }
-        return games;
+        // Chronological Sort: Newest (Latest Modified) first
+        return games.sort((a, b) => b.mtime - a.mtime);
     }
     catch (error) {
         console.error('Failed to read games directory:', error);
