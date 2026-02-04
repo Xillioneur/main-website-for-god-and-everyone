@@ -400,85 +400,103 @@ html, body {
   gap: 0;
 }
 
-/* --- CHRONICLE SECTION (FOLDER STRUCTURE) --- */
+/* --- CHRONICLE SECTION (REFINED LIST) --- */
 .chronicle-section {
   padding: 100px 5%;
   background: var(--primary-bg);
   border-top: 1px solid var(--glass-border);
 }
 
-.chronicle-container {
-  margin-top: 40px;
+.chronicle-list {
+  margin-top: 60px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 0;
+  max-width: 900px;
 }
 
-.chronicle-volume {
+.update-entry {
+  display: flex;
+  gap: 40px;
+  padding-bottom: 40px;
   position: relative;
-  padding-left: 20px;
-  border-left: 1px solid var(--glass-border);
 }
 
-.volume-header {
+.update-entry::after {
+  content: '';
+  position: absolute;
+  left: 91px; /* Center of dot */
+  top: 25px;
+  bottom: 0;
+  width: 1px;
+  background: var(--glass-border);
+}
+
+.update-entry:last-child::after {
+  display: none;
+}
+
+.update-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  font-family: 'Courier New', Courier, monospace;
-}
-
-.folder-icon {
-  font-size: 1.2rem;
-}
-
-.volume-title {
-  font-size: 0.9rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  color: var(--text-color);
-}
-
-.volume-date {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-dim);
-  background: var(--glass-bg);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.volume-contents {
-  display: flex;
-  flex-direction: column;
   gap: 20px;
-  padding-left: 30px;
+  min-width: 120px;
 }
 
-.log-entry {
-  display: flex;
-  gap: 15px;
-  align-items: flex-start;
+.update-date {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-align: right;
+  width: 60px;
 }
 
-.entry-icon {
-  font-size: 1rem;
-  opacity: 0.5;
+.update-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--accent);
+  z-index: 2;
 }
 
-.entry-text strong {
-  display: block;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.85rem;
-  color: var(--accent);
-  margin-bottom: 5px;
+.update-content h4 {
+  margin: 0 0 12px 0;
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: var(--text-color);
+  text-transform: uppercase;
 }
 
-.entry-text p {
+.update-content p {
   margin: 0;
   color: var(--text-dim);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.7;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .update-entry {
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 50px;
+  }
+  .update-entry::after {
+    left: 4px;
+    top: 30px;
+  }
+  .update-meta {
+    min-width: auto;
+    justify-content: flex-start;
+    gap: 15px;
+  }
+  .update-date {
+    text-align: left;
+    width: auto;
+  }
 }
 
 /* --- MISSION SECTION --- */
