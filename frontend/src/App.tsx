@@ -31,7 +31,7 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // Phase 4: Browser Sovereignty (Back-button & URL Support)
+  // Phase 4: Browser Sovereignty
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
@@ -48,7 +48,6 @@ function App() {
 
     window.addEventListener('popstate', handlePopState);
     
-    // Initial check if games are loaded and URL has a param
     if (games.length > 0) {
       const params = new URLSearchParams(window.location.search);
       const gameId = params.get('manifest');
@@ -72,25 +71,30 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedGameDetails]);
 
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const response = await fetch('/api/games');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: Game[] = await response.json();
-        setGames(data);
-      } catch (e: any) {
-        setError('Failed to fetch games: ' + e.message);
+  const fetchGames = async () => {
+    try {
+      setError(null);
+      const response = await fetch('/api/games');
+      if (!response.ok) {
+        throw new Error('Interrupt');
       }
-    };
+      const data: Game[] = await response.json();
+      setGames(data);
+    } catch (e: any) {
+      setError('A momentary cloud has passed over the connection.');
+    }
+  };
+
+  useEffect(() => {
     fetchGames();
   }, []);
 
+  const retryManifestation = () => {
+    fetchGames();
+  };
+
   const viewGameDetails = (game: Game) => {
     setSelectedGameDetails(game);
-    // Push state to browser history
     const url = new URL(window.location.href);
     url.searchParams.set('manifest', game.id);
     window.history.pushState({ gameId: game.id }, '', url);
@@ -116,7 +120,6 @@ function App() {
 
   const backToList = () => {
     setSelectedGameDetails(null);
-    // Clean URL
     const url = new URL(window.location.href);
     url.searchParams.delete('manifest');
     window.history.pushState({}, '', url);
@@ -157,7 +160,7 @@ function App() {
           </div>
           <div className="update-content">
             <h4>PHASE 4: THE RESILIENT SOUL</h4>
-            <p>Browser Sovereignty manifested. Implemented URL-aware navigation and navigation history. The Sanctuary now breathes with a subtle gradient animation.</p>
+            <p>Browser Sovereignty manifested. Deep metadata structures integrated for search engine illumination. Graceful recovery rituals established for connection trials.</p>
           </div>
         </div>
 
@@ -311,7 +314,12 @@ function App() {
         </button>
       </header>
       
-      {error && <div className="error-banner">AWAITING CLARITY: {error}</div>}
+      {error && (
+        <div className="error-banner">
+          <span>{error}</span>
+          <button onClick={retryManifestation} className="retry-button">INVOKE AGAIN</button>
+        </div>
+      )}
 
       <main className="content-area">
         {!selectedGameDetails ? (
