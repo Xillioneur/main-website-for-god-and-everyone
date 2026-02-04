@@ -137,9 +137,12 @@ function App() {
         </p>
         <div className="hero-cta">
           {games.length > 0 && (
-            <button className="hero-button" onClick={() => viewGameDetails(games[0])}>
-              EXPLORE THE CODEBASE
-            </button>
+            <div className="latest-highlight">
+              <span className="highlight-tag">LATEST MANIFESTATION</span>
+              <button className="hero-button" onClick={() => viewGameDetails(games[0])}>
+                EXPLORE {games[0].name.toUpperCase()}
+              </button>
+            </div>
           )}
         </div>
       </div>

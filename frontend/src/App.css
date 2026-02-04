@@ -139,6 +139,24 @@ html, body {
   transform: scale(1.05);
 }
 
+.latest-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.highlight-tag {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  background: var(--glass-bg);
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+}
+
 /* --- GAMES GRID --- */
 .games-grid-wrapper {
   padding: 0 5% 100px 5%;
