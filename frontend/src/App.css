@@ -724,6 +724,16 @@ body.light-mode .code-block {
   font-family: 'Courier New', Courier, monospace;
 }
 
+.link-value {
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.link-value:hover {
+  color: var(--accent);
+}
+
 .status-glow {
   color: var(--accent);
   text-shadow: 0 0 15px var(--accent);

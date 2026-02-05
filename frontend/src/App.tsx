@@ -20,6 +20,7 @@ interface DivineStats {
   atomicWeight: number;
   manifestations: number;
   foundations: number;
+  communion: string;
   status: string;
 }
 
@@ -177,12 +178,14 @@ function App() {
           <span className="census-value">{stats?.atomicWeight || '8469'}</span>
         </div>
         <div className="census-item">
-          <span className="census-label">MANIFESTATIONS</span>
-          <span className="census-value">{stats?.manifestations || '4'}</span>
+          <span className="census-label">SACRED COMMUNION</span>
+          <a href="https://x.com/liwawil" target="_blank" rel="noopener noreferrer" className="census-value link-value">
+            {stats?.communion || '@liwawil'}
+          </a>
         </div>
         <div className="census-item">
-          <span className="census-label">FOUNDATIONS</span>
-          <span className="census-value">{stats?.foundations || '3'}</span>
+          <span className="census-label">MANIFESTATIONS</span>
+          <span className="census-value">{stats?.manifestations || '4'}</span>
         </div>
         <div className="census-item">
           <span className="census-label">SANCTUARY STATUS</span>
@@ -238,8 +241,8 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>PHASE 11: THE LIVING CODEX</h4>
-            <p>Divine Census implemented. The sanctuary now calculates its own atomic weight and status dynamically. Commandment Rituals (Keyboard Shortcuts) manifested for seekers.</p>
+            <h4>SACRED COMMUNION</h4>
+            <p>The Divine Census now tracks our Digital Communion. Linked the sanctuary to the Architect's presence on X.com (@liwawil).</p>
           </div>
         </div>
 
@@ -249,8 +252,8 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>THE GEEK'S SANCTUARY</h4>
-            <p>Technical Foundations separated from primary Sacred Logic. Developers and geeks can now explore foundational logic manifests in a dedicated repository section.</p>
+            <h4>PHASE 11: THE LIVING CODEX</h4>
+            <p>Divine Census implemented. The sanctuary now calculates its own atomic weight and status dynamically. Commandment Rituals manifested for seekers.</p>
           </div>
         </div>
       </div>
