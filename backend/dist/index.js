@@ -140,7 +140,7 @@ async function getDivineCensus() {
             if (fs_1.default.statSync(filePath).isDirectory()) {
                 walkSync(filePath);
             }
-            else if (extensions.some(ext => filePath.endsWith(extensions[extensions.indexOf(ext)]))) {
+            else if (extensions.some(ext => filePath.endsWith(ext))) {
                 const content = fs_1.default.readFileSync(filePath, 'utf8');
                 totalLoc += content.split('\n').length;
             }
