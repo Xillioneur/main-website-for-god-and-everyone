@@ -33,6 +33,7 @@ function App() {
   const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -48,6 +49,17 @@ function App() {
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
+
+  // Phase 11: Scroll Tracking
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const currentProgress = (window.pageYOffset / totalScroll) * 100;
+      setScrollProgress(currentProgress);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Phase 4 & 11: Navigation & Shortcuts
   useEffect(() => {
@@ -245,8 +257,8 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>SACRED COMMUNION</h4>
-            <p>The Divine Census now tracks our Digital Communion. Linked the sanctuary to the Architect's presence on X.com (@liwawil).</p>
+            <h4>THE FINAL SEAL</h4>
+            <p>Scroll Progress manifested as 'Fluidity of Light.' Ritual of Order performed—repository purified of all fragmented memories. Sanctuary complete.</p>
           </div>
         </div>
 
@@ -256,8 +268,8 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>PHASE 11: THE LIVING CODEX</h4>
-            <p>Divine Census implemented. The sanctuary now calculates its own atomic weight and status dynamically. Commandment Rituals manifested for seekers.</p>
+            <h4>SACRED COMMUNION</h4>
+            <p>The Divine Census now tracks our Digital Communion. Linked the sanctuary to the Architect's presence on X.com (@liwawil).</p>
           </div>
         </div>
       </div>
@@ -416,6 +428,10 @@ function App() {
 
   return (
     <div className="main-canvas">
+      <div className="scroll-progress-container">
+        <div className="scroll-progress-bar" style={{ width: `${scrollProgress}%` }}></div>
+      </div>
+
       <header className="site-header">
         <div className="logo" onClick={backToList} style={{ display: 'flex', alignItems: 'center' }}>
           <CodexIcon />
