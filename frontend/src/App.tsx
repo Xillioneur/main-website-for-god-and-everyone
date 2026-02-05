@@ -35,6 +35,93 @@ const CodexIcon = () => (
   </svg>
 );
 
+const ChronicleOfLight = () => (
+  <section className="chronicle-section animate-in">
+    <div className="section-header">
+      <h2>CHRONICLE OF LIGHT</h2>
+      <div className="divider"></div>
+    </div>
+    <div className="chronicle-list">
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 05</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>DIVINE RECKONING</h4>
+          <p>Our flagship Soulslike manifestation—a brutal journey of grace and redemption.</p>
+        </div>
+      </div>
+
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 04</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>ASHES OF THE SCROLL</h4>
+          <p>A 3D pilgrimage through digital landscapes of intention and peace.</p>
+        </div>
+      </div>
+
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 04</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>THE LIGHT OF LOGIC</h4>
+          <p>A meditation on harmony, with a thousand threads working in digital unity.</p>
+        </div>
+      </div>
+
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 03</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>ASHES OF THE BULLET</h4>
+          <p>Mastering the rite of stillness within a storm of movement.</p>
+        </div>
+      </div>
+
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 02</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>THE ECHO OF WILL</h4>
+          <p>A technical study in interaction and event-driven responsive harmony.</p>
+        </div>
+      </div>
+
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 02</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>THE GEOMETRY OF TRUTH</h4>
+          <p>Foundational laws of visual structure manifested through Raylib.</p>
+        </div>
+      </div>
+
+      <div className="update-entry">
+        <div className="update-meta">
+          <span className="update-date">FEB 01</span>
+          <div className="update-dot"></div>
+        </div>
+        <div className="update-content">
+          <h4>INITIATION</h4>
+          <p>The digital genesis—the first Word manifests within the void.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 const MissionStatement = () => (
   <section className="mission-section animate-in">
     <div className="mission-content">
@@ -87,7 +174,7 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // Phase 11: Optimized Scroll Tracking (using Ref to avoid re-renders)
+  // Phase 11: Optimized Scroll Tracking
   useEffect(() => {
     let requestRunning = false;
     const handleScroll = () => {
@@ -292,38 +379,6 @@ function App() {
     );
   };
 
-  const renderChronicleOfLight = () => (
-    <section className="chronicle-section animate-in">
-      <div className="section-header">
-        <h2>CHRONICLE OF LIGHT</h2>
-        <div className="divider"></div>
-      </div>
-      <div className="chronicle-list">
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 05</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>THE FINAL SEAL</h4>
-            <p>Scroll Progress manifested as 'Fluidity of Light.' Ritual of Order performed—repository purified of all fragmented memories. Sanctuary complete.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 05</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>SACRED COMMUNION</h4>
-            <p>The Divine Census now tracks our Digital Communion. Linked the sanctuary to the Architect's presence on X.com (@liwawil).</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
   const renderGameList = () => (
     <div className="game-list">
       <div className="section-header">
@@ -476,7 +531,7 @@ function App() {
               {renderTechnicalFoundations()}
             </div>
             <div className="home-secondary-content">
-              {renderChronicleOfLight()}
+              <ChronicleOfLight />
               <MissionStatement />
             </div>
           </>
