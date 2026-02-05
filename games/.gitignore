@@ -1,2 +1,3 @@
 *.cpp
+!logic_snippet.cpp
 .DS_Store
