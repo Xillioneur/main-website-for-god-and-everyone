@@ -34,7 +34,10 @@ const gameVirtues = {
     'divine': 'REDEMPTION',
     'ascension': 'CLARITY',
     'ashes': 'FORTITUDE',
-    'parry': 'TEMPERANCE'
+    'parry': 'TEMPERANCE',
+    'hello': 'INITIATION',
+    'raylib_example': 'ORDER',
+    'sdl2_example': 'REACTION'
 };
 // Helper to get all game metadata
 async function getGamesMetadata() {
