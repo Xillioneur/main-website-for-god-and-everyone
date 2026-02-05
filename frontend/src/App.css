@@ -457,26 +457,16 @@ html, body {
   overflow-x: auto;
   width: 100%;
   box-sizing: border-box;
+  transition: background-color 0.3s ease;
 }
 
-.code-block pre {
-  margin: 0;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.9rem;
-  color: #d1d1d1;
-  line-height: 1.6;
-}
-
-.code-block code {
-  white-space: pre;
+/* Override Prism default backgrounds */
+.code-block pre, .code-block code {
+  background: transparent !important;
 }
 
 body.light-mode .code-block {
-  background: #f0f0f2;
-}
-
-body.light-mode .code-block pre {
-  color: #333;
+  background: #f9f9fb;
 }
 
 /* --- CHRONICLE SECTION (REFINED LIST) --- */
