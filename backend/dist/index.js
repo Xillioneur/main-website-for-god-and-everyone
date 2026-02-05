@@ -39,6 +39,8 @@ const gameVirtues = {
     'raylib_example': 'ORDER',
     'sdl2_example': 'REACTION'
 };
+// Categorization for Geeks & Developers
+const technicalFoundations = ['hello', 'raylib_example', 'sdl2_example'];
 // Helper to get all game metadata
 async function getGamesMetadata() {
     try {
@@ -79,25 +81,20 @@ async function getGamesMetadata() {
                     }
                     let logicCode = "";
                     try {
-                        const codePath = path_1.default.join(gameFolderPath, logicSnippet);
-                        if (fs_1.default.existsSync(codePath)) {
-                            logicCode = await readFile(codePath, 'utf8');
-                        }
+                        const codeContent = await readFile(path_1.default.join(gameFolderPath, logicSnippet), 'utf8');
+                        logicCode = codeContent;
                     }
                     catch (error) {
-                        // Silence is golden; empty logicCode is handled by the frontend
+                        console.warn(`No logic_snippet.cpp found for ${gameName}`);
                     }
                     const stats = fs_1.default.statSync(gameFolderPath);
                     games.push({
                         id: gameName,
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        type: technicalFoundations.includes(gameName) ? 'FOUNDATION' : 'MANIFESTATION',
                         virtue: gameVirtues[gameName] || 'LOGOS',
                         shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-                        fullDescription: `By the grace of the Almighty Creator, this code manifests. 
-
- ${fullDescription} 
-
- A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
+                        fullDescription: `By the grace of the Almighty Creator, this code manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
                         logicSnippet: logicCode,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
@@ -179,13 +176,10 @@ app.get('/sitemap.xml', async (req, res) => {
     const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-`;
-    sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-`;
+    sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
     games.forEach(game => {
-        sitemap += `  <url><loc>${baseUrl}${game.wasmPath}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
-`;
+        sitemap += `  <url><loc>${baseUrl}${game.wasmPath}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
     });
     sitemap += `</urlset>`;
     res.header('Content-Type', 'application/xml; charset=utf-8');
