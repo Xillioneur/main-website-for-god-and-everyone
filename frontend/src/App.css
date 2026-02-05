@@ -700,7 +700,7 @@ body.light-mode .code-block {
 
 .census-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 40px;
 }
 
@@ -708,6 +708,7 @@ body.light-mode .code-block {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0; /* Prevents grid blowout */
 }
 
 .census-label {
@@ -715,13 +716,17 @@ body.light-mode .code-block {
   font-weight: 900;
   letter-spacing: 0.2em;
   color: var(--text-dim);
+  white-space: nowrap;
 }
 
 .census-value {
-  font-size: 1.8rem;
+  font-size: 1.6rem; /* Slightly smaller to fit better */
   font-weight: 900;
   color: var(--text-color);
   font-family: 'Courier New', Courier, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .link-value {
