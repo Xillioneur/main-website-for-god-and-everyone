@@ -87,10 +87,12 @@ async function getGamesMetadata() {
 
           let logicCode = "";
           try {
-            const codeContent = await readFile(path.join(gameFolderPath, logicSnippet), 'utf8');
-            logicCode = codeContent;
+            const codePath = path.join(gameFolderPath, logicSnippet);
+            if (fs.existsSync(codePath)) {
+              logicCode = await readFile(codePath, 'utf8');
+            }
           } catch (error) {
-            console.warn(`No logic_snippet.cpp found for ${gameName}`);
+            // Silence is golden; empty logicCode is handled by the frontend
           }
 
           const stats = fs.statSync(gameFolderPath);

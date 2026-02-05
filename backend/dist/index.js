@@ -79,11 +79,13 @@ async function getGamesMetadata() {
                     }
                     let logicCode = "";
                     try {
-                        const codeContent = await readFile(path_1.default.join(gameFolderPath, logicSnippet), 'utf8');
-                        logicCode = codeContent;
+                        const codePath = path_1.default.join(gameFolderPath, logicSnippet);
+                        if (fs_1.default.existsSync(codePath)) {
+                            logicCode = await readFile(codePath, 'utf8');
+                        }
                     }
                     catch (error) {
-                        console.warn(`No logic_snippet.cpp found for ${gameName}`);
+                        // Silence is golden; empty logicCode is handled by the frontend
                     }
                     const stats = fs_1.default.statSync(gameFolderPath);
                     games.push({
