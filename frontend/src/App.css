@@ -90,7 +90,7 @@ html, body {
   font-weight: 800;
   letter-spacing: 0.1em;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-toggle-minimal:hover {
@@ -263,10 +263,56 @@ html, body {
   font-size: 1rem;
 }
 
+.card-virtue-tag {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: var(--accent);
+  color: var(--primary-bg);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  z-index: 5;
+}
+
+/* --- VIRTUE MATRIX --- */
+.virtue-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.filter-btn {
+  background: var(--glass-bg);
+  color: var(--text-dim);
+  border: 1px solid var(--glass-border);
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: var(--glass-blur);
+}
+
+.filter-btn:hover {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: var(--primary-bg);
+  border-color: var(--accent);
+}
+
 /* --- DETAILS VIEW --- */
 .game-details-view {
   padding: 50px 5%;
-  animation: fadeIn 0.6s ease forwards;
 }
 
 .details-header {
@@ -293,6 +339,35 @@ html, body {
   font-weight: 900;
   margin: 0;
   text-transform: uppercase;
+}
+
+.title-share-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.share-button {
+  background: var(--glass-bg);
+  color: var(--text-color);
+  border: 1px solid var(--glass-border);
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  backdrop-filter: var(--glass-blur);
+}
+
+.share-button:hover {
+  background: var(--text-color);
+  color: var(--primary-bg);
 }
 
 .details-layout {
@@ -360,109 +435,48 @@ html, body {
   transform: scale(1.02);
 }
 
-/* --- FOOTER --- */
-.site-footer {
-  margin-top: auto;
-  padding: 50px 5%;
-  border-top: 1px solid var(--glass-border);
-  text-align: center;
+/* --- SACRED SCRIPT (CODE SNIPPETS) --- */
+.sacred-script-section {
+  margin-top: 80px;
+  width: 100%;
 }
 
-.site-footer p {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
+.sacred-script-section h3 {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
   color: var(--text-dim);
+  margin-bottom: 20px;
+  text-transform: uppercase;
 }
 
-/* --- UTILS & ANIMATIONS --- */
-.animate-in {
-  animation: divineFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+.code-block {
+  background: #050505;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 30px;
+  overflow-x: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-@keyframes divineFadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(30px) scale(0.98); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1); 
-  }
+.code-block pre {
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  color: #d1d1d1;
+  line-height: 1.6;
 }
 
-.view-transition-exit {
-  animation: divineFadeOut 0.4s ease forwards;
+.code-block code {
+  white-space: pre;
 }
 
-@keyframes divineFadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(-20px); }
+body.light-mode .code-block {
+  background: #f0f0f2;
 }
 
-/* Ensure the content area handles the transition flow */
-.content-area {
-  position: relative;
-  min-height: 600px;
-}
-
-.error-banner {
-  background: #ff3b30;
-  color: #fff;
-  padding: 15px 5%;
-  text-align: center;
-  font-weight: 700;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-}
-
-.retry-button {
-  background: #fff;
-  color: #ff3b30;
-  border: none;
-  padding: 5px 15px;
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.retry-button:hover {
-  opacity: 0.8;
-}
-
-.loading-text {
-  font-size: 1.5rem;
-  text-align: center;
-  margin-top: 100px;
-  color: var(--text-dim);
-}
-
-/* --- RESPONSIVE --- */
-@media (max-width: 1024px) {
-  .details-layout {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-}
-
-@media (max-width: 768px) {
-  .game-cards-container {
-    grid-template-columns: 1fr;
-  }
-  .hero-section {
-    padding-top: 80px;
-  }
-}
-
-/* --- SECONDARY CONTENT LAYOUT --- */
-.home-secondary-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+body.light-mode .code-block pre {
+  color: #333;
 }
 
 /* --- CHRONICLE SECTION (REFINED LIST) --- */
@@ -543,27 +557,6 @@ html, body {
   font-weight: 400;
 }
 
-@media (max-width: 768px) {
-  .update-entry {
-    flex-direction: column;
-    gap: 15px;
-    padding-bottom: 50px;
-  }
-  .update-entry::after {
-    left: 4px;
-    top: 30px;
-  }
-  .update-meta {
-    min-width: auto;
-    justify-content: flex-start;
-    gap: 15px;
-  }
-  .update-date {
-    text-align: left;
-    width: auto;
-  }
-}
-
 /* --- MISSION SECTION --- */
 .mission-section {
   padding: 100px 5%;
@@ -598,135 +591,87 @@ html, body {
   font-weight: 400;
 }
 
-/* --- SHARE BUTTON --- */
-.title-share-row {
+/* --- FOOTER --- */
+.site-footer {
+  margin-top: auto;
+  padding: 50px 5%;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+}
+
+.site-footer p {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+}
+
+/* --- UTILS & ANIMATIONS --- */
+.animate-in {
+  animation: divineFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes divineFadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.98); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+.error-banner {
+  background: #ff3b30;
+  color: #fff;
+  padding: 15px 5%;
+  text-align: center;
+  font-weight: 700;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
   gap: 20px;
 }
 
-.share-button {
-  background: var(--glass-bg);
-  color: var(--text-color);
-  border: 1px solid var(--glass-border);
-  padding: 10px 20px;
+.retry-button {
+  background: #fff;
+  color: #ff3b30;
+  border: none;
+  padding: 5px 15px;
   border-radius: 100px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  backdrop-filter: var(--glass-blur);
-}
-
-.share-button:hover {
-  background: var(--text-color);
-  color: var(--primary-bg);
-}
-
-/* --- POLISH & REFINEMENTS --- */
-.game-card:hover {
-  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-}
-
-.theme-toggle-minimal {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-body {
-  transition: background-color 0.5s ease, color 0.5s ease;
-}
-
-@media (max-width: 768px) {
-  .title-share-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .update-item {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-/* --- MISSION SECTION --- */
-.mission-section {
-  padding: 100px 5%;
-  background: var(--secondary-bg);
-  border-top: 1px solid var(--glass-border);
-}
-
-.mission-content {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.mission-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 60px;
-  margin-top: 40px;
-}
-
-.mission-item h3 {
-  font-size: 1.2rem;
+  font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.1em;
-  margin-bottom: 20px;
-  color: var(--text-color);
-}
-
-.mission-item p {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--text-dim);
-  font-weight: 400;
-}
-
-/* --- SHARE BUTTON --- */
-.title-share-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 20px;
-}
-
-.share-button {
-  background: var(--glass-bg);
-  color: var(--text-color);
-  border: 1px solid var(--glass-border);
-  padding: 10px 20px;
-  border-radius: 100px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  backdrop-filter: var(--glass-blur);
+  transition: opacity 0.2s ease;
 }
 
-.share-button:hover {
-  background: var(--text-color);
-  color: var(--primary-bg);
+.retry-button:hover {
+  opacity: 0.8;
 }
 
-/* --- POLISH & REFINEMENTS --- */
-.game-card:hover {
-  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+.loading-text {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-top: 100px;
+  color: var(--text-dim);
 }
 
-.theme-toggle-minimal {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+  .details-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
 }
 
-/* --- RESPONSIVE SHARE --- */
 @media (max-width: 768px) {
+  .game-cards-container {
+    grid-template-columns: 1fr;
+  }
+  .hero-section {
+    padding: 80px 5% 40px 5%;
+  }
   .title-share-row {
     flex-direction: column;
     align-items: flex-start;
@@ -752,99 +697,7 @@ body {
   .mission-grid {
     gap: 40px;
   }
-  .hero-section {
-    padding: 80px 5% 40px 5%;
-  }
   .chronicle-section, .mission-section {
     padding: 60px 5%;
   }
-}
-
-/* --- VIRTUE MATRIX --- */
-.virtue-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 40px;
-}
-
-.filter-btn {
-  background: var(--glass-bg);
-  color: var(--text-dim);
-  border: 1px solid var(--glass-border);
-  padding: 8px 20px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: var(--glass-blur);
-}
-
-.filter-btn:hover {
-  border-color: var(--text-color);
-  color: var(--text-color);
-}
-
-.filter-btn.active {
-  background: var(--accent);
-  color: var(--primary-bg);
-  border-color: var(--accent);
-}
-
-.card-virtue-tag {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: var(--accent);
-  color: var(--primary-bg);
-  padding: 4px 12px;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  z-index: 5;
-}
-
-/* --- SACRED SCRIPT (CODE SNIPPETS) --- */
-.sacred-script-section {
-  margin-top: 40px;
-}
-
-.sacred-script-section h3 {
-  font-size: 0.75rem;
-  letter-spacing: 0.25em;
-  color: var(--text-dim);
-  margin-bottom: 20px;
-  text-transform: uppercase;
-}
-
-.code-block {
-  background: #050505;
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 20px;
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-.code-block pre {
-  margin: 0;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.85rem;
-  color: #d1d1d1;
-  line-height: 1.5;
-}
-
-.code-block code {
-  white-space: pre;
-}
-
-body.light-mode .code-block {
-  background: #f0f0f2;
-}
-
-body.light-mode .code-block pre {
-  color: #333;
 }
