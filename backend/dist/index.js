@@ -12,7 +12,6 @@ const readFile = (0, util_1.promisify)(fs_1.default.readFile);
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
 // Divine Security & Multithreading Headers (COOP/COEP)
-// Using 'require-corp' for broader iOS compatibility while keeping SharedArrayBuffer enabled.
 app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
@@ -20,7 +19,7 @@ app.use((req, res, next) => {
 });
 // POINT OF TRUTH: Source directory for games and their metadata
 const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
-// Google Analytics Tag - Added 'crossorigin' to ensure loading under 'require-corp' COEP
+// Google Analytics Tag
 const googleAnalyticsTag = `
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
 <script>
@@ -30,6 +29,13 @@ const googleAnalyticsTag = `
   gtag('config', 'G-LFWV3YSBMT');
 </script>
 `;
+// Map of games to their primary Virtues
+const gameVirtues = {
+    'divine': 'REDEMPTION',
+    'ascension': 'CLARITY',
+    'ashes': 'FORTITUDE',
+    'parry': 'TEMPERANCE'
+};
 // Helper to get all game metadata
 async function getGamesMetadata() {
     try {
@@ -82,7 +88,11 @@ async function getGamesMetadata() {
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                         virtue: gameVirtues[gameName] || 'LOGOS',
                         shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
-                        fullDescription: `By the grace of the Almighty Creator, this code manifests. \n\n ${fullDescription} \n\n A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
+                        fullDescription: `By the grace of the Almighty Creator, this code manifests. 
+
+ ${fullDescription} 
+
+ A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
                         logicSnippet: logicCode,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
@@ -98,13 +108,6 @@ async function getGamesMetadata() {
         return [];
     }
 }
-// Map of games to their primary Virtues
-const gameVirtues = {
-    'divine': 'REDEMPTION',
-    'ascension': 'CLARITY',
-    'ashes': 'FORTITUDE',
-    'parry': 'TEMPERANCE'
-};
 // --- HOME PAGE SEO INJECTION ---
 app.get('/', async (req, res) => {
     const indexPath = path_1.default.join(__dirname, '../../frontend/dist/index.html');
