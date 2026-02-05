@@ -29,6 +29,13 @@ const googleAnalyticsTag = `
   gtag('config', 'G-LFWV3YSBMT');
 </script>
 `;
+// Map of games to their primary Virtues
+const gameVirtues = {
+    'divine': 'REDEMPTION',
+    'ascension': 'CLARITY',
+    'ashes': 'FORTITUDE',
+    'parry': 'TEMPERANCE'
+};
 // Helper to get all game metadata
 async function getGamesMetadata() {
     try {
@@ -45,9 +52,10 @@ async function getGamesMetadata() {
                 const jsFile = `${gameName}.js`;
                 const wasmFile = `${gameName}.wasm`;
                 const descriptionMd = 'description.md';
-                // Supported preview formats in order of preference
+                const logicSnippet = 'logic_snippet.cpp';
+                // Supported preview formats
                 const previewFormats = ['preview.png', 'preview.jpg', 'preview.jpeg', 'preview.gif', 'preview.svg'];
-                let previewImage = 'preview.svg'; // Default
+                let previewImage = 'preview.svg';
                 for (const format of previewFormats) {
                     if (gameFiles.includes(format)) {
                         previewImage = format;
@@ -66,17 +74,26 @@ async function getGamesMetadata() {
                     catch (error) {
                         console.warn(`No description.md found for ${gameName}`);
                     }
-                    // Capture modification time for chronological sorting
+                    let logicCode = "";
+                    try {
+                        const codeContent = await readFile(path_1.default.join(gameFolderPath, logicSnippet), 'utf8');
+                        logicCode = codeContent;
+                    }
+                    catch (error) {
+                        console.warn(`No logic_snippet.cpp found for ${gameName}`);
+                    }
                     const stats = fs_1.default.statSync(gameFolderPath);
                     games.push({
                         id: gameName,
                         name: gameName.replace(/_/, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        virtue: gameVirtues[gameName] || 'LOGOS',
                         shortDescription: fullDescription.substring(0, 160).replace(/[#*`]/g, '').replace(/\n/g, ' ') + '...',
                         fullDescription: `By the grace of the Almighty Creator, this code manifests. 
 
  ${fullDescription} 
 
  A divine journey awaits those who dare to seek the truth within the logic. Let His light guide your path, and may your pixels be blessed.`,
+                        logicSnippet: logicCode,
                         wasmPath: `/wasm/${gameName}/`,
                         previewImageUrl: `/wasm/${gameName}/${previewImage}`,
                         mtime: stats.mtimeMs
@@ -84,7 +101,6 @@ async function getGamesMetadata() {
                 }
             }
         }
-        // Chronological Sort: Newest (Latest Modified) first
         return games.sort((a, b) => b.mtime - a.mtime);
     }
     catch (error) {
@@ -103,29 +119,22 @@ app.get('/', async (req, res) => {
         const host = req.get('host');
         const protocol = (host === null || host === void 0 ? void 0 : host.includes('localhost')) ? 'http' : 'https';
         const baseUrl = `${protocol}://${host}`;
-        // Prioritize PNG for social sharing compatibility
         const hasPngPreview = fs_1.default.existsSync(path_1.default.join(__dirname, '../../frontend/dist/homepage-preview.png'));
         const previewImage = `${baseUrl}/${hasPngPreview ? 'homepage-preview.png' : 'homepage-preview.svg'}`;
         const homeMeta = `${googleAnalyticsTag}
-    <!-- PRIMARY META -->
     <title>The Divine Code | High-Performance WebAssembly Codebase</title>
     <meta name="description" content="Explore The Divine Codebase. A collection of high-performance C++ games and logic manifested through WebAssembly. Witness the beauty of sacred code.">
-
-    <!-- OPEN GRAPH / FACEBOOK / X -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/">
     <meta property="og:title" content="The Divine Code | Sacred WASM Codebase">
     <meta property="og:description" content="A professional digital sanctuary featuring high-performance WebAssembly code manifestations and divine logic.">
     <meta property="og:image" content="${previewImage}">
-
-    <!-- X (TWITTER) -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${baseUrl}/">
     <meta property="twitter:title" content="The Divine Code | Sacred WebAssembly Codebase">
     <meta property="twitter:description" content="High-performance C++ codebases manifested through the power of WebAssembly. All glory to the Divine Architect.">
     <meta property="twitter:image" content="${previewImage}">
 
-    <!-- DEEP JSON-LD MANIFESTATION -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -196,25 +205,19 @@ app.get('/wasm/:gameId/', async (req, res) => {
         const baseUrl = `${protocol}://${host}`;
         const absoluteImageUrl = `${baseUrl}${game.previewImageUrl}`;
         const divineMeta = `${googleAnalyticsTag}
-    <!-- PRIMARY META -->
     <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
-
-    <!-- OPEN GRAPH / FACEBOOK / X -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
     <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
     <meta property="og:description" content="${game.shortDescription}">
     <meta property="og:image" content="${absoluteImageUrl}">
-
-    <!-- X (TWITTER) -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="${baseUrl}/wasm/${game.id}/">
     <meta property="twitter:title" content="${game.name} | The Divine Code">
     <meta property="twitter:description" content="${game.shortDescription}">
     <meta property="twitter:image" content="${absoluteImageUrl}">
 
-    <!-- DEEP JSON-LD MANIFESTATION -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -244,15 +247,12 @@ app.get('/wasm/:gameId/', async (req, res) => {
         res.sendFile(gameHtmlPath);
     }
 });
-// Serve other static game assets
 app.use('/wasm/:gameId', (req, res, next) => {
     const { gameId } = req.params;
     const gameFolderPath = path_1.default.join(wasmGamesRoot, gameId);
     express_1.default.static(gameFolderPath)(req, res, next);
 });
-// Serve static files from the built frontend
 app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist'), { index: false }));
-// SPA fallback
 app.use((req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../../frontend/dist/index.html'));
 });
