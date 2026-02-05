@@ -174,6 +174,14 @@ function App() {
     <section className="census-section">
       <div className="census-grid">
         <div className="census-item">
+          <span className="census-label">MANIFESTATIONS</span>
+          <span className="census-value">{stats?.manifestations || '4'}</span>
+        </div>
+        <div className="census-item">
+          <span className="census-label">FOUNDATIONS</span>
+          <span className="census-value">{stats?.foundations || '3'}</span>
+        </div>
+        <div className="census-item">
           <span className="census-label">ATOMIC WEIGHT (LOC)</span>
           <span className="census-value">{stats?.atomicWeight || '8469'}</span>
         </div>
@@ -182,10 +190,6 @@ function App() {
           <a href="https://x.com/liwawil" target="_blank" rel="noopener noreferrer" className="census-value link-value">
             {stats?.communion || '@liwawil'}
           </a>
-        </div>
-        <div className="census-item">
-          <span className="census-label">MANIFESTATIONS</span>
-          <span className="census-value">{stats?.manifestations || '4'}</span>
         </div>
         <div className="census-item">
           <span className="census-label">SANCTUARY STATUS</span>
