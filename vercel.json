@@ -39,32 +39,8 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/wasm/:path*",
-      "destination": "/games/:path*"
-    },
-    {
-      "source": "/assets/:path*",
-      "destination": "/frontend/dist/assets/:path*"
-    },
-    {
-      "source": "/favicon.svg",
-      "destination": "/frontend/dist/favicon.svg"
-    },
-    {
-      "source": "/homepage-preview.png",
-      "destination": "/frontend/dist/homepage-preview.png"
-    },
-    {
-      "source": "/main-theme.css",
-      "destination": "/frontend/dist/main-theme.css"
-    },
-    {
-      "source": "/game_shell.css",
-      "destination": "/frontend/dist/game_shell.css"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/frontend/dist/index.html"
+      "destination": "/$1"
     }
   ]
 }

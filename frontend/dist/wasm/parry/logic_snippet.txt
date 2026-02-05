@@ -1,0 +1,51 @@
+            Enemy e{};
+            e.type = t;
+            e.health = e.maxHealth = hp;
+            e.soulValue = souls;
+            e.shootTimer = (float)i * 0.25f;
+            float angle = (float)i / count * 2 * PI + GetRandomValue(-30,30) * DEG2RAD;
+            float radius = 55.0f;
+            e.pos = {cosf(angle) * radius, 0, sinf(angle) * radius};
+            e.color = (t == BOSS) ? MAROON : (t == SHIELDED) ? DARKGRAY : (t == RAPID) ? ORANGE : (t == SPIRAL) ? PURPLE : RED;
+            e.scale = (t == BOSS) ? 3.5f : (t == SHIELDED) ? 1.4f : 1.0f;
+            enemies.push_back(e);
+        }
+    };
+
+    if (wave == 1) {
+        spawnEnemy(GRUNT, 10, 70, 80);
+    } else if (wave == 2) {
+        spawnEnemy(GRUNT, 4, 90, 120);
+        spawnEnemy(SPIRAL, 3, 60, 140);
+        spawnEnemy(RAPID, 4, 55, 110);
+    } else if (wave == 3) {
+        spawnEnemy(WALL, 4, 100, 180);
+        spawnEnemy(SHIELDED, 4, 140, 250);
+        spawnEnemy(BOSS, 1, 3200, 5000);
+    }
+}
+
+void RestAtBonfire() {
+    player.flasks = MAX_FLASKS;
+    player.health = player.maxHealth;
+    player.stamina = player.maxStamina;
+    player.pos = bonfirePos;
+}
+
+int GetUpgradeCost(int level) {
+    return UPGRADE_COST_BASE + level * UPGRADE_COST_MULTIPLIER;
+}
+
+void DropSouls(Vector3 pos, int amount) {
+    int orbs = amount / 80;
+    for (int i = 0; i < orbs; i++) {
+        SoulOrb s;
+        s.pos = Vector3Add(pos, {GetRandomValue(-60,60)/10.0f, 3.0f, GetRandomValue(-60,60)/10.0f});
+        s.timer = 10.0f;
+        soulOrbs.push_back(s);
+    }
+    player.souls += amount % 80;
+}
+
+void CollectSouls(float dt) {
+    for (auto it = soulOrbs.begin(); it != soulOrbs.end(); ) {
