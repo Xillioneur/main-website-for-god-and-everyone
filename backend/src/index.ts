@@ -114,7 +114,7 @@ async function getGamesMetadata() {
   }
 }
 
-// Dynamic Census with Communion (X Integration Placeholder)
+// Dynamic Census with Thematic Statuses
 async function getDivineCensus() {
     let totalLoc = 0;
     const extensions = ['.cpp', '.h', '.hpp'];
@@ -135,15 +135,27 @@ async function getDivineCensus() {
     if (fs.existsSync(wasmGamesRoot)) walkSync(wasmGamesRoot);
     const games = await getGamesMetadata();
 
-    // TO THE ARCHITECT: 
-    // To make this live, you would use fetch() to an X proxy or official API here.
-    // For now, we manifest your handle and a "Growing" status.
+    const sacredStates = [
+        "GATHERING GRACE",
+        "HARMONIZING THREADS",
+        "PARRYING THE VOID",
+        "MANIFESTING LOGOS",
+        "ASCENDING...",
+        "STILLNESS ACHIEVED",
+        "DIVINE RECKONING ACTIVE",
+        "LATENCY: IMMACULATE",
+        "UPTIME: ETERNAL",
+        "ATOMS ALIGNED"
+    ];
+    
+    const randomStatus = sacredStates[Math.floor(Math.random() * sacredStates.length)];
+
     return {
         atomicWeight: totalLoc,
         manifestations: games.filter(g => g.type === 'MANIFESTATION').length,
         foundations: games.filter(g => g.type === 'FOUNDATION').length,
-        communion: '@liwawil', // Your X handle
-        status: 'SANCTIFIED'
+        communion: '@liwawil',
+        status: randomStatus
     };
 }
 
