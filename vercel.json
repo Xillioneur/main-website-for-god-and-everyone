@@ -5,39 +5,6 @@
       "includeFiles": "games/**,frontend/dist/**"
     }
   },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api/index.js"
-    },
-    {
-      "src": "/sitemap.xml",
-      "dest": "api/index.js"
-    },
-    {
-      "src": "/wasm/(.*)/",
-      "dest": "api/index.js"
-    },
-    {
-      "src": "/",
-      "dest": "api/index.js"
-    },
-    {
-      "src": "/wasm/(.*)",
-      "dest": "/games/$1"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/frontend/dist/assets/$1"
-    },
-    {
-      "src": "/(favicon.svg|homepage-preview.png|main-theme.css|game_shell.css)",
-      "dest": "/frontend/dist/$1"
-    },
-    {
-      "handle": "filesystem"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -51,6 +18,52 @@
           "value": "require-corp"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/wasm/:game/",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/wasm/:path*",
+      "destination": "/games/:path*"
+    },
+    {
+      "source": "/assets/:path*",
+      "destination": "/frontend/dist/assets/:path*"
+    },
+    {
+      "source": "/favicon.svg",
+      "destination": "/frontend/dist/favicon.svg"
+    },
+    {
+      "source": "/homepage-preview.png",
+      "destination": "/frontend/dist/homepage-preview.png"
+    },
+    {
+      "source": "/main-theme.css",
+      "destination": "/frontend/dist/main-theme.css"
+    },
+    {
+      "source": "/game_shell.css",
+      "destination": "/frontend/dist/game_shell.css"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/dist/index.html"
     }
   ]
 }
