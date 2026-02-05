@@ -696,19 +696,21 @@ body.light-mode .code-block {
   border: 1px solid var(--glass-border);
   border-radius: var(--ios-radius);
   backdrop-filter: var(--glass-blur);
+  overflow-x: auto; /* Allows horizontal scroll on mobile if needed */
 }
 
 .census-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 60px;
+  justify-content: flex-start;
 }
 
 .census-item {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 0; /* Prevents grid blowout */
+  flex: 0 0 auto; /* Each item takes only what it needs */
 }
 
 .census-label {
@@ -720,13 +722,11 @@ body.light-mode .code-block {
 }
 
 .census-value {
-  font-size: 1.6rem; /* Slightly smaller to fit better */
+  font-size: 1.8rem; /* Restored to original bold size */
   font-weight: 900;
   color: var(--text-color);
   font-family: 'Courier New', Courier, monospace;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap; /* Forces one line */
 }
 
 .link-value {
