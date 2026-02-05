@@ -16,13 +16,22 @@ interface Game {
   previewImageUrl: string;
 }
 
+interface DivineStats {
+  atomicWeight: number;
+  manifestations: number;
+  foundations: number;
+  status: string;
+}
+
 function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);
   const [foundations, setFoundations] = useState<Game[]>([]);
+  const [stats, setStats] = useState<DivineStats | null>(null);
   const [selectedGameDetails, setSelectedGameDetails] = useState<Game | null>(null);
   const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -39,14 +48,13 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // Phase 4: Browser Sovereignty
+  // Phase 4 & 11: Navigation & Shortcuts
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const gameId = params.get('manifest');
-      
       if (gameId && games.length > 0) {
-        const game = games.find(g => g.id === gameId);
+        const game = games.concat(foundations).find(g => g.id === gameId);
         if (game) setSelectedGameDetails(game);
         else setSelectedGameDetails(null);
       } else {
@@ -54,48 +62,46 @@ function App() {
       }
     };
 
-    window.addEventListener('popstate', handlePopState);
-    
-    if (games.length > 0) {
-      const params = new URLSearchParams(window.location.search);
-      const gameId = params.get('manifest');
-      if (gameId) {
-        const game = games.find(g => g.id === gameId);
-        if (game) setSelectedGameDetails(game);
-      }
-    }
-
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [games]);
-
-  // Keyboard Shortcuts
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && selectedGameDetails) {
-        backToList();
+      if (e.key === 'Escape') backToList();
+      if (e.key === '?' || e.key === '/') {
+        if (!selectedGameDetails) setShowHelp(prev => !prev);
       }
     };
+
+    window.addEventListener('popstate', handlePopState);
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedGameDetails]);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [games, foundations, selectedGameDetails]);
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchData = async () => {
       try {
         setError(null);
-        const response = await fetch('/api/games');
-        if (!response.ok) {
-          throw new Error('Interrupt');
+        const [gamesRes, statsRes] = await Promise.all([
+          fetch('/api/games'),
+          fetch('/api/stats')
+        ]);
+        
+        if (!gamesRes.ok) throw new Error('Interrupt');
+        const gamesData: Game[] = await gamesRes.json();
+        setGames(gamesData.filter(g => g.type === 'MANIFESTATION'));
+        setFoundations(gamesData.filter(g => g.type === 'FOUNDATION'));
+        setFilteredGames(gamesData.filter(g => g.type === 'MANIFESTATION'));
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData);
         }
-        const data: Game[] = await response.json();
-        setGames(data.filter(g => g.type === 'MANIFESTATION'));
-        setFoundations(data.filter(g => g.type === 'FOUNDATION'));
-        setFilteredGames(data.filter(g => g.type === 'MANIFESTATION'));
       } catch (e: any) {
         setError('A momentary cloud has passed over the connection.');
       }
     };
-    fetchGames();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -137,6 +143,7 @@ function App() {
     url.searchParams.delete('manifest');
     window.history.pushState({}, '', url);
     setError(null);
+    setShowHelp(false);
   };
 
   const Hero = () => (
@@ -160,6 +167,45 @@ function App() {
         </div>
       </div>
     </section>
+  );
+
+  const DivineCensus = () => (
+    <section className="census-section">
+      <div className="census-grid">
+        <div className="census-item">
+          <span className="census-label">ATOMIC WEIGHT (LOC)</span>
+          <span className="census-value">{stats?.atomicWeight || '8469'}</span>
+        </div>
+        <div className="census-item">
+          <span className="census-label">MANIFESTATIONS</span>
+          <span className="census-value">{stats?.manifestations || '4'}</span>
+        </div>
+        <div className="census-item">
+          <span className="census-label">FOUNDATIONS</span>
+          <span className="census-value">{stats?.foundations || '3'}</span>
+        </div>
+        <div className="census-item">
+          <span className="census-label">SANCTUARY STATUS</span>
+          <span className="census-value status-glow">{stats?.status || 'SANCTIFIED'}</span>
+        </div>
+      </div>
+    </section>
+  );
+
+  const CommandmentRitual = () => (
+    <div className={`help-overlay ${showHelp ? 'visible' : ''}`} onClick={() => setShowHelp(false)}>
+      <div className="help-content" onClick={e => e.stopPropagation()}>
+        <h2>SACRED RITUALS</h2>
+        <div className="ritual-grid">
+          <div className="ritual-item"><span>ESC</span> <p>RETURN TO SANCTUARY</p></div>
+          <div className="ritual-item"><span>?</span> <p>TOGGLE COMMANDMENTS</p></div>
+          <div className="ritual-item"><span>Q</span> <p>INVOKE PRAYER / PARRY</p></div>
+          <div className="ritual-item"><span>WASD</span> <p>NAVIGATE THE VOID</p></div>
+          <div className="ritual-item"><span>SPACE</span> <p>DODGE ROLL / ASCEND</p></div>
+        </div>
+        <button className="close-help" onClick={() => setShowHelp(false)}>UNDERSTOOD</button>
+      </div>
+    </div>
   );
 
   const VirtueFilter = () => {
@@ -192,8 +238,8 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>THE GEEK'S SANCTUARY</h4>
-            <p>Technical Foundations separated from primary Sacred Logic. Developers and geeks can now explore foundational logic manifests in a dedicated repository section.</p>
+            <h4>PHASE 11: THE LIVING CODEX</h4>
+            <p>Divine Census implemented. The sanctuary now calculates its own atomic weight and status dynamically. Commandment Rituals (Keyboard Shortcuts) manifested for seekers.</p>
           </div>
         </div>
 
@@ -203,19 +249,8 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>PHASE 10: UNIFICATION OF THE VOID</h4>
-            <p>Legacy examples unified into the Divine Codebase. Lorem Ipsum purged. Every manifestation now possesses a sacred description and assigned virtue.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 04</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>SYNTAX ILLUMINATION</h4>
-            <p>Fragments of Logic are now fully colorized. Integrated the Prism engine to reveal the technical beauty of C++ manifests with professional syntax highlighting.</p>
+            <h4>THE GEEK'S SANCTUARY</h4>
+            <p>Technical Foundations separated from primary Sacred Logic. Developers and geeks can now explore foundational logic manifests in a dedicated repository section.</p>
           </div>
         </div>
       </div>
@@ -379,9 +414,12 @@ function App() {
           <CodexIcon />
           <span>THE DIVINE CODE</span>
         </div>
-        <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
-          {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
-        </button>
+        <div className="header-actions">
+          <button className="help-trigger" onClick={() => setShowHelp(true)}>PROTOCOLS (?)</button>
+          <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
+            {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
+          </button>
+        </div>
       </header>
       
       {error && (
@@ -397,6 +435,7 @@ function App() {
             <Hero />
             <div className="games-grid-wrapper">
               {renderGameList()}
+              <DivineCensus />
               {renderTechnicalFoundations()}
             </div>
             <div className="home-secondary-content">
@@ -408,6 +447,8 @@ function App() {
           renderGameDetails()
         )}
       </main>
+
+      <CommandmentRitual />
 
       <footer className="site-footer">
         <p>
