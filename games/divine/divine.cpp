@@ -2801,11 +2801,9 @@ void DrawGame3D() {
             Color c = p.color;
             c.a = (unsigned char)(alpha * 255);
             
-            Matrix transform = MatrixTranslate(p.pos.x, p.pos.y, p.pos.z);
-            transform = MatrixMultiply(MatrixScale(p.size, p.size, p.size), transform);
             
-            instanceMaterial.maps[MATERIAL_MAP_DIFFUSE].color = c;
-            DrawMesh(particleMesh, instanceMaterial, transform);
+            DrawCube(p.pos, p.size, p.size, p.size, c);
+            
         }
     }
     
@@ -2982,16 +2980,14 @@ void DrawEnemy(const Enemy& e) {
 }
 
 void DrawBullet(const Bullet& b) {
-    Matrix transform = MatrixTranslate(b.pos.x, b.pos.y, b.pos.z);
-    transform = MatrixMultiply(MatrixScale(b.size, b.size, b.size), transform);
     
     // Set material color for the mesh
-    instanceMaterial.maps[MATERIAL_MAP_DIFFUSE].color = b.color;
-    DrawMesh(bulletMesh, instanceMaterial, transform);
+    
+    DrawSphere(b.pos, b.size, b.color);
     
     if(b.reflected) {
-        instanceMaterial.maps[MATERIAL_MAP_DIFFUSE].color = Fade(GOLD, 0.4f);
-        DrawMesh(bulletMesh, instanceMaterial, MatrixMultiply(MatrixScale(1.5f, 1.5f, 1.5f), transform));
+        
+        DrawSphereWires(b.pos, b.size * 1.5f, 6, 6, Fade(GOLD, 0.4f));
     }
     
     // Optimized Glow Trails (One extra pass instead of 2-3)
@@ -3003,8 +2999,8 @@ void DrawBullet(const Bullet& b) {
         else if(b.color.r == 128 && b.color.b == 128) { glowCol = Fade(VIOLET, 0.3f); } // Purple
         else if(b.size > 0.6f) { glowCol = Fade(ORANGE, 0.4f); glowScale = 1.3f; } // Heavy
 
-        instanceMaterial.maps[MATERIAL_MAP_DIFFUSE].color = glowCol;
-        DrawMesh(bulletMesh, instanceMaterial, MatrixMultiply(MatrixScale(glowScale, glowScale, glowScale), transform));
+        
+        DrawSphere(b.pos, b.size * glowScale, glowCol);
     }
 }
 

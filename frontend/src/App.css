@@ -759,3 +759,92 @@ body {
     padding: 60px 5%;
   }
 }
+
+/* --- VIRTUE MATRIX --- */
+.virtue-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+.filter-btn {
+  background: var(--glass-bg);
+  color: var(--text-dim);
+  border: 1px solid var(--glass-border);
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: var(--glass-blur);
+}
+
+.filter-btn:hover {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: var(--primary-bg);
+  border-color: var(--accent);
+}
+
+.card-virtue-tag {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: var(--accent);
+  color: var(--primary-bg);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  z-index: 5;
+}
+
+/* --- SACRED SCRIPT (CODE SNIPPETS) --- */
+.sacred-script-section {
+  margin-top: 40px;
+}
+
+.sacred-script-section h3 {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.code-block {
+  background: #050505;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 20px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.code-block pre {
+  margin: 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: #d1d1d1;
+  line-height: 1.5;
+}
+
+.code-block code {
+  white-space: pre;
+}
+
+body.light-mode .code-block {
+  background: #f0f0f2;
+}
+
+body.light-mode .code-block pre {
+  color: #333;
+}

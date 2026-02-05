@@ -5,15 +5,19 @@ import './App.css'
 interface Game {
   id: string;
   name: string;
+  virtue: string;
   description: string;
   fullDescription: string;
+  logicSnippet: string;
   wasmPath: string;
   previewImageUrl: string;
 }
 
 function App() {
   const [games, setGames] = useState<Game[]>([]);
+  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
   const [selectedGameDetails, setSelectedGameDetails] = useState<Game | null>(null);
+  const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -71,27 +75,31 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedGameDetails]);
 
-  const fetchGames = async () => {
-    try {
-      setError(null);
-      const response = await fetch('/api/games');
-      if (!response.ok) {
-        throw new Error('Interrupt');
-      }
-      const data: Game[] = await response.json();
-      setGames(data);
-    } catch (e: any) {
-      setError('A momentary cloud has passed over the connection.');
-    }
-  };
-
   useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        setError(null);
+        const response = await fetch('/api/games');
+        if (!response.ok) {
+          throw new Error('Interrupt');
+        }
+        const data: Game[] = await response.json();
+        setGames(data);
+        setFilteredGames(data);
+      } catch (e: any) {
+        setError('A momentary cloud has passed over the connection.');
+      }
+    };
     fetchGames();
   }, []);
 
-  const retryManifestation = () => {
-    fetchGames();
-  };
+  useEffect(() => {
+    if (activeVirtue === 'ALL') {
+      setFilteredGames(games);
+    } else {
+      setFilteredGames(games.filter(g => g.virtue === activeVirtue));
+    }
+  }, [activeVirtue, games]);
 
   const viewGameDetails = (game: Game) => {
     setSelectedGameDetails(game);
@@ -149,6 +157,23 @@ function App() {
     </section>
   );
 
+  const VirtueFilter = () => {
+    const virtues = ['ALL', 'REDEMPTION', 'CLARITY', 'FORTITUDE', 'TEMPERANCE'];
+    return (
+      <div className="virtue-filter">
+        {virtues.map(v => (
+          <button 
+            key={v} 
+            className={`filter-btn ${activeVirtue === v ? 'active' : ''}`}
+            onClick={() => setActiveVirtue(v)}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   const ChronicleOfLight = () => (
     <section className="chronicle-section animate-in">
       <div className="section-header">
@@ -156,6 +181,17 @@ function App() {
         <div className="divider"></div>
       </div>
       <div className="chronicle-list">
+        <div className="update-entry">
+          <div className="update-meta">
+            <span className="update-date">FEB 04</span>
+            <div className="update-dot"></div>
+          </div>
+          <div className="update-content">
+            <h4>PHASE 7: THE REVELATION OF LOGIC</h4>
+            <p>The Virtue Matrix manifested. Seekers can now filter the Codex by sacred categories. Preparations for the Sacred Script repository initiated.</p>
+          </div>
+        </div>
+
         <div className="update-entry">
           <div className="update-meta">
             <span className="update-date">FEB 04</span>
@@ -186,39 +222,6 @@ function App() {
           <div className="update-content">
             <h4>PHASE 4: THE RESILIENT SOUL</h4>
             <p>Browser Sovereignty manifested. Deep metadata structures integrated for search engine illumination. Graceful recovery rituals established for connection trials.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 04</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>GRACE OF THE USER EXPERIENCE</h4>
-            <p>Sacred Shell synchronization complete. Manifested fluid loading transitions and global keyboard shortcuts for a seamless journey through the codebase.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 04</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>THE DIVINE VISION</h4>
-            <p>Established the mission of Non-Violent Sophistication. Integrated Web Share protocols to allow seekers to spread the manifestations of logic.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 03</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>SACRED IDENTITY & PURIFICATION</h4>
-            <p>Manifested the Coder's Cross visual seal. Purified all manifestations of strife and death, centering the platform around life-affirming Catholic logic.</p>
           </div>
         </div>
       </div>
@@ -256,11 +259,14 @@ function App() {
         <h2>SACRED LOGIC</h2>
         <div className="divider"></div>
       </div>
-      {games.length === 0 && !error ? (
+      
+      <VirtueFilter />
+
+      {filteredGames.length === 0 && !error ? (
         <p className="loading-text">Awaiting the Word to manifest in code...</p>
       ) : (
         <div className="game-cards-container">
-          {games.map((game) => (
+          {filteredGames.map((game) => (
             <div key={game.id} className="game-card" onClick={() => viewGameDetails(game)}>
               <div className="card-image-wrapper">
                 <img
@@ -271,6 +277,7 @@ function App() {
                 <div className="card-overlay">
                    <button className="card-play-button" onClick={(e) => { e.stopPropagation(); loadAndRunWasm(game); }}>ASCEND</button>
                 </div>
+                <div className="card-virtue-tag">{game.virtue}</div>
               </div>
               <div className="card-content">
                 <h3>{game.name}</h3>
@@ -302,6 +309,14 @@ function App() {
             alt={`Icon of ${selectedGameDetails?.name}`}
             className="game-details-image"
           />
+          {selectedGameDetails?.logicSnippet && (
+            <div className="sacred-script-section">
+              <h3>FRAGMENTS OF LOGIC</h3>
+              <div className="code-block">
+                <pre><code>{selectedGameDetails.logicSnippet}</code></pre>
+              </div>
+            </div>
+          )}
         </div>
         <div className="details-info">
           <div className="details-edict">
@@ -342,7 +357,7 @@ function App() {
       {error && (
         <div className="error-banner">
           <span>{error}</span>
-          <button onClick={retryManifestation} className="retry-button">INVOKE AGAIN</button>
+          <button onClick={() => window.location.reload()} className="retry-button">INVOKE AGAIN</button>
         </div>
       )}
 
