@@ -16,7 +16,8 @@ app.use((req, res, next) => {
   next();
 });
 
-const wasmGamesRoot = path.join(__dirname, '../../games');
+// POINT OF TRUTH: Correct resolution for both local and Vercel environments
+const wasmGamesRoot = path.join(process.cwd(), 'games');
 
 const googleAnalyticsTag = `
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
@@ -114,7 +115,6 @@ async function getGamesMetadata() {
   }
 }
 
-// Dynamic Census with Thematic Statuses
 async function getDivineCensus() {
     let totalLoc = 0;
     const extensions = ['.cpp', '.h', '.hpp'];
@@ -189,7 +189,7 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 app.get('/', async (req, res) => {
-  const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
+  const indexPath = path.join(process.cwd(), 'frontend/dist/index.html');
   if (!fs.existsSync(indexPath)) return res.status(404).send('Build frontend first.');
 
   try {
@@ -209,7 +209,7 @@ app.get('/', async (req, res) => {
     html = html.replace(/<head>/i, `<head>${homeMeta}`);
     res.send(html);
   } catch (error) {
-    res.sendFile(indexPath);
+    res.status(500).send('Divine error in home SEO injection.');
   }
 });
 
@@ -231,18 +231,25 @@ app.get('/wasm/:gameId/', async (req, res) => {
     html = html.replace(/<head>/i, `<head>${divineMeta}`);
     res.send(html);
   } catch (error) {
-    res.sendFile(gameHtmlPath);
+    res.status(500).send('Divine error in game SEO injection.');
   }
 });
 
+// Assets serving
 app.use('/wasm/:gameId', (req, res, next) => {
-  express.static(path.join(wasmGamesRoot, req.params.gameId))(req, res, next);
+  const gameFolderPath = path.join(wasmGamesRoot, req.params.gameId);
+  express.static(gameFolderPath)(req, res, next);
 });
 
-app.use(express.static(path.join(__dirname, '../../frontend/dist'), { index: false }));
+app.use(express.static(path.join(process.cwd(), 'frontend/dist'), { index: false }));
 
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+  res.sendFile(path.join(process.cwd(), 'frontend/dist/index.html'));
 });
 
-app.listen(port, () => console.log(`Backend server listening on http://localhost:${port}`));
+// EXPORT FOR VERCEL
+export default app;
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => console.log(`Backend server listening on http://localhost:${port}`));
+}

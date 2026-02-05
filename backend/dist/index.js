@@ -17,7 +17,8 @@ app.use((req, res, next) => {
     res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
     next();
 });
-const wasmGamesRoot = path_1.default.join(__dirname, '../../games');
+// POINT OF TRUTH: Correct resolution for both local and Vercel environments
+const wasmGamesRoot = path_1.default.join(process.cwd(), 'games');
 const googleAnalyticsTag = `
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
 <script>
@@ -104,7 +105,6 @@ async function getGamesMetadata() {
         return [];
     }
 }
-// Dynamic Census with Thematic Statuses
 async function getDivineCensus() {
     let totalLoc = 0;
     const extensions = ['.cpp', '.h', '.hpp'];
@@ -169,7 +169,7 @@ app.get('/sitemap.xml', async (req, res) => {
     res.send(sitemap);
 });
 app.get('/', async (req, res) => {
-    const indexPath = path_1.default.join(__dirname, '../../frontend/dist/index.html');
+    const indexPath = path_1.default.join(process.cwd(), 'frontend/dist/index.html');
     if (!fs_1.default.existsSync(indexPath))
         return res.status(404).send('Build frontend first.');
     try {
@@ -188,7 +188,7 @@ app.get('/', async (req, res) => {
         res.send(html);
     }
     catch (error) {
-        res.sendFile(indexPath);
+        res.status(500).send('Divine error in home SEO injection.');
     }
 });
 app.get('/wasm/:gameId/', async (req, res) => {
@@ -209,14 +209,20 @@ app.get('/wasm/:gameId/', async (req, res) => {
         res.send(html);
     }
     catch (error) {
-        res.sendFile(gameHtmlPath);
+        res.status(500).send('Divine error in game SEO injection.');
     }
 });
+// Assets serving
 app.use('/wasm/:gameId', (req, res, next) => {
-    express_1.default.static(path_1.default.join(wasmGamesRoot, req.params.gameId))(req, res, next);
+    const gameFolderPath = path_1.default.join(wasmGamesRoot, req.params.gameId);
+    express_1.default.static(gameFolderPath)(req, res, next);
 });
-app.use(express_1.default.static(path_1.default.join(__dirname, '../../frontend/dist'), { index: false }));
+app.use(express_1.default.static(path_1.default.join(process.cwd(), 'frontend/dist'), { index: false }));
 app.use((req, res) => {
-    res.sendFile(path_1.default.join(__dirname, '../../frontend/dist/index.html'));
+    res.sendFile(path_1.default.join(process.cwd(), 'frontend/dist/index.html'));
 });
-app.listen(port, () => console.log(`Backend server listening on http://localhost:${port}`));
+// EXPORT FOR VERCEL
+exports.default = app;
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => console.log(`Backend server listening on http://localhost:${port}`));
+}
