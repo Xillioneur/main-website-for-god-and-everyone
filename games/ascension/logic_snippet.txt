@@ -1,0 +1,51 @@
+#include <mutex>
+#include <queue>
+#include <thread>
+
+// --- Thread-Safe Atomic Wrapper for Vectors ---
+template <typename T> struct AtomicWrapper {
+  std::atomic<T> val;
+  AtomicWrapper() : val(T{}) {}
+  AtomicWrapper(T v) : val(v) {}
+  AtomicWrapper(const AtomicWrapper &o) : val(o.val.load()) {}
+  AtomicWrapper &operator=(const AtomicWrapper &o) {
+    val.store(o.val.load());
+    return *this;
+  }
+  AtomicWrapper &operator=(T v) {
+    val.store(v);
+    return *this;
+  }
+  operator T() const { return val.load(); }
+  T operator++(int) { return val.fetch_add(1); }
+  T operator--(int) { return val.fetch_sub(1); }
+  T operator+=(T v) {
+    T expected = val.load();
+    while (!val.compare_exchange_weak(expected, expected + v))
+      ;
+    return expected + v;
+  }
+  T operator-=(T v) {
+    T expected = val.load();
+    while (!val.compare_exchange_weak(expected, expected - v))
+      ;
+    return expected - v;
+  }
+};
+
+// Forward Declarations
+void QueueExplosion(Vector3 pos, Color color);
+void QueueSound(Sound sfx);
+void QueueText(Vector3 pos, const char *text, Color color);
+void ProcessEffectBuffer();
+void SpawnExplosion(Vector3 pos, Color color);
+void SpawnBullet(Vector3 pos, Vector3 vel);
+void SpawnEnemyBullet(Vector3 pos, Vector3 vel);
+
+// --- Atomic Helper for Floats ---
+void AtomicMax(std::atomic<float> &atom, float val) {
+  float cur = atom.load();
+  while (cur < val && !atom.compare_exchange_weak(cur, val))
+    ;
+}
+
