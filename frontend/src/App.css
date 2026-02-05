@@ -581,6 +581,89 @@ body.light-mode .code-block {
   font-weight: 400;
 }
 
+/* --- TECHNICAL FOUNDATIONS --- */
+.foundations-section {
+  margin-top: 150px;
+}
+
+.section-subtitle {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+  max-width: 600px;
+}
+
+.foundations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.foundation-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--ios-radius);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  backdrop-filter: var(--glass-blur);
+}
+
+.foundation-card:hover {
+  transform: translateY(-5px);
+  background: var(--glass-border);
+  border-color: var(--text-dim);
+}
+
+.foundation-header {
+  margin-bottom: 20px;
+}
+
+.foundation-virtue {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.foundation-card h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.foundation-card p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.foundation-view-btn {
+  background: none;
+  border: 1px solid var(--glass-border);
+  color: var(--text-color);
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.foundation-card:hover .foundation-view-btn {
+  background: var(--text-color);
+  color: var(--primary-bg);
+}
+
 /* --- FOOTER --- */
 .site-footer {
   margin-top: auto;

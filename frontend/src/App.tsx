@@ -8,6 +8,7 @@ interface Game {
   id: string;
   name: string;
   virtue: string;
+  type: 'MANIFESTATION' | 'FOUNDATION';
   description: string;
   fullDescription: string;
   logicSnippet: string;
@@ -18,6 +19,7 @@ interface Game {
 function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);
+  const [foundations, setFoundations] = useState<Game[]>([]);
   const [selectedGameDetails, setSelectedGameDetails] = useState<Game | null>(null);
   const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
@@ -86,8 +88,9 @@ function App() {
           throw new Error('Interrupt');
         }
         const data: Game[] = await response.json();
-        setGames(data);
-        setFilteredGames(data);
+        setGames(data.filter(g => g.type === 'MANIFESTATION'));
+        setFoundations(data.filter(g => g.type === 'FOUNDATION'));
+        setFilteredGames(data.filter(g => g.type === 'MANIFESTATION'));
       } catch (e: any) {
         setError('A momentary cloud has passed over the connection.');
       }
@@ -189,19 +192,19 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>PHASE 10: UNIFICATION OF THE VOID</h4>
-            <p>Legacy examples unified into the Divine Codebase. Lorem Ipsum purged. Every manifestation, from Initiation to Divine Reckoning, now possesses a sacred description and assigned virtue.</p>
+            <h4>THE GEEK'S SANCTUARY</h4>
+            <p>Technical Foundations separated from primary Sacred Logic. Developers and geeks can now explore foundational logic manifests in a dedicated repository section.</p>
           </div>
         </div>
 
         <div className="update-entry">
           <div className="update-meta">
-            <span className="update-date">FEB 04</span>
+            <span className="update-date">FEB 05</span>
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
-            <h4>PHASE 8: MULTI-FILE ARCHITECTURE</h4>
-            <p>The 'Ashes' manifestation has been unified. The build system now supports complex, modular logic across multiple C++ files, allowing for even deeper and more sophisticated sacred manifests.</p>
+            <h4>PHASE 10: UNIFICATION OF THE VOID</h4>
+            <p>Legacy examples unified into the Divine Codebase. Lorem Ipsum purged. Every manifestation now possesses a sacred description and assigned virtue.</p>
           </div>
         </div>
 
@@ -213,28 +216,6 @@ function App() {
           <div className="update-content">
             <h4>SYNTAX ILLUMINATION</h4>
             <p>Fragments of Logic are now fully colorized. Integrated the Prism engine to reveal the technical beauty of C++ manifests with professional syntax highlighting.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 04</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>PHASE 7: THE REVELATION OF LOGIC</h4>
-            <p>The Virtue Matrix manifested. Seekers can now filter the Codex by sacred categories. Fragments of Logic revealed through code snippets.</p>
-          </div>
-        </div>
-
-        <div className="update-entry">
-          <div className="update-meta">
-            <span className="update-date">FEB 04</span>
-            <div className="update-dot"></div>
-          </div>
-          <div className="update-content">
-            <h4>PHASE 6: THE RECKONING OF LIGHT</h4>
-            <p>Our most ambitious manifestation, Divine Reckoning, has been integrated. Purified the build system to support advanced C++23 logic. Sanctuaries and the Cycle of Grace are now live.</p>
           </div>
         </div>
       </div>
@@ -300,6 +281,29 @@ function App() {
           ))}
         </div>
       )}
+    </div>
+  );
+
+  const renderTechnicalFoundations = () => (
+    <div className="foundations-section animate-in">
+      <div className="section-header">
+        <h2>TECHNICAL FOUNDATIONS</h2>
+        <div className="divider"></div>
+      </div>
+      <p className="section-subtitle">Dedicated manifestations for geeks and developers exploring the atomic order of the Divine Code.</p>
+      
+      <div className="foundations-grid">
+        {foundations.map((item) => (
+          <div key={item.id} className="foundation-card" onClick={() => viewGameDetails(item)}>
+            <div className="foundation-header">
+              <span className="foundation-virtue">{item.virtue}</span>
+              <h3>{item.name}</h3>
+            </div>
+            <p>{item.description}</p>
+            <button className="foundation-view-btn">GATHER FRAGMENTS</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
@@ -393,6 +397,7 @@ function App() {
             <Hero />
             <div className="games-grid-wrapper">
               {renderGameList()}
+              {renderTechnicalFoundations()}
             </div>
             <div className="home-secondary-content">
               <ChronicleOfLight />
