@@ -1,4 +1,5 @@
-# --- THE DIVINE BUILD SYSTEM v2.6 (iOS Compatible) ---
+# --- THE DIVINE BUILD SYSTEM v2.7 (High-Performance iOS) ---
+# Optimized for SharedArrayBuffer with strict security headers
 
 RAYLIB_PATH = $(HOME)/raylib
 RAYLIB_SRC_PATH = $(RAYLIB_PATH)/src
@@ -6,16 +7,20 @@ LIBRAYLIB_PATH = $(RAYLIB_SRC_PATH)/libraylib.web.a
 
 EMCC = emcc
 
+# POINT OF TRUTH: Absolute path to the sacred shell
+SHELL_FILE = $(CURDIR)/game_shell.html
+
 # Divine Compilation Flags
-# Disabled -pthread for mobile/iOS compatibility (Avoids SharedArrayBuffer security requirements)
-CFLAGS = -O2 -std=c++23 -I$(RAYLIB_SRC_PATH) -L$(RAYLIB_SRC_PATH) -DGRAPHICS_API_OPENGL_ES3
+# -pthread: Enable the threads of creation
+CFLAGS = -O2 -std=c++23 -pthread -I$(RAYLIB_SRC_PATH) -L$(RAYLIB_SRC_PATH) -DGRAPHICS_API_OPENGL_ES3
 
 # Manifestation Flags
-# Removed -s USE_PTHREADS=1: iOS/Chrome iOS requires strict COOP/COEP headers for pthreads/SharedArrayBuffer.
-# Forcing single-threaded mode for maximum portability.
+# USE_PTHREADS=1: Essential for high-performance C++ manifests
+# PTHREAD_POOL_SIZE=2: Conservative for mobile stability
 EMCC_FLAGS = -s USE_GLFW=3 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -s USE_SDL=2 \
+             -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=2 \
              -s MAX_WEBGL_VERSION=2 -s MIN_WEBGL_VERSION=2 \
-             --shell-file ../game_shell.html
+             --shell-file $(SHELL_FILE)
 
 GAMES = $(shell find . -mindepth 1 -maxdepth 1 -type d)
 
