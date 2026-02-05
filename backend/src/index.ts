@@ -16,8 +16,33 @@ app.use((req, res, next) => {
   next();
 });
 
-// POINT OF TRUTH: Correct resolution for both local and Vercel environments
-const wasmGamesRoot = path.join(process.cwd(), 'games');
+// ROBUST PATH RESOLUTION: Try multiple paths to find the sacred artifacts
+const getGamesRoot = () => {
+    const paths = [
+        path.join(process.cwd(), 'games'),
+        path.join(__dirname, '../../games'),
+        path.join(__dirname, '../games')
+    ];
+    for (const p of paths) {
+        if (fs.existsSync(p)) return p;
+    }
+    return paths[0]; // Fallback
+};
+
+const getFrontendDist = () => {
+    const paths = [
+        path.join(process.cwd(), 'frontend/dist'),
+        path.join(__dirname, '../../frontend/dist'),
+        path.join(__dirname, '../frontend/dist')
+    ];
+    for (const p of paths) {
+        if (fs.existsSync(p)) return p;
+    }
+    return paths[0]; // Fallback
+};
+
+const wasmGamesRoot = getGamesRoot();
+const frontendDist = getFrontendDist();
 
 const googleAnalyticsTag = `
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
@@ -189,8 +214,11 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 app.get('/', async (req, res) => {
-  const indexPath = path.join(process.cwd(), 'frontend/dist/index.html');
-  if (!fs.existsSync(indexPath)) return res.status(404).send('Build frontend first.');
+  const indexPath = path.join(frontendDist, 'index.html');
+  if (!fs.existsSync(indexPath)) {
+      console.error('CRITICAL: index.html not found at', indexPath);
+      return res.status(404).send(`Build frontend first. Path checked: ${indexPath}`);
+  }
 
   try {
     let html = await readFile(indexPath, 'utf8');
@@ -216,7 +244,7 @@ app.get('/', async (req, res) => {
 app.get('/wasm/:gameId/', async (req, res) => {
   const { gameId } = req.params;
   const gameHtmlPath = path.join(wasmGamesRoot, gameId, `${gameId}.html`);
-  if (!fs.existsSync(gameHtmlPath)) return res.status(404).send('Not found.');
+  if (!fs.existsSync(gameHtmlPath)) return res.status(404).send(`Not found. Path: ${gameHtmlPath}`);
 
   try {
     const games = await getGamesMetadata();
@@ -241,10 +269,10 @@ app.use('/wasm/:gameId', (req, res, next) => {
   express.static(gameFolderPath)(req, res, next);
 });
 
-app.use(express.static(path.join(process.cwd(), 'frontend/dist'), { index: false }));
+app.use(express.static(frontendDist, { index: false }));
 
 app.use((req, res) => {
-  res.sendFile(path.join(process.cwd(), 'frontend/dist/index.html'));
+  res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
 // EXPORT FOR VERCEL
