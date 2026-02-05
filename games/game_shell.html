@@ -11,6 +11,10 @@
     <link rel="stylesheet" href="/game_shell.css">
     <style>
         /* Embedded shell-specific polish */
+        html, body {
+            overflow: hidden;
+            touch-action: none; /* Prevent scrolling and zooming during gameplay */
+        }
         #loading-overlay {
             position: fixed;
             inset: 0;
@@ -148,6 +152,30 @@
                 document.exitFullscreen();
             }
         });
+
+        // iOS/Mobile Touch-to-Mouse Redirection
+        (function() {
+            const canvas = document.getElementById('canvas');
+            function redirectTouch(e) {
+                if (e.target !== canvas) return;
+                const touch = e.touches[0] || e.changedTouches[0];
+                const mouseEvent = new MouseEvent({
+                    touchstart: 'mousedown',
+                    touchmove: 'mousemove',
+                    touchend: 'mouseup'
+                }[e.type], {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                canvas.dispatchEvent(mouseEvent);
+                e.preventDefault();
+            }
+            canvas.addEventListener('touchstart', redirectTouch, { passive: false });
+            canvas.addEventListener('touchmove', redirectTouch, { passive: false });
+            canvas.addEventListener('touchend', redirectTouch, { passive: false });
+        })();
     </script>
     {{{ SCRIPT }}}
 </body>
