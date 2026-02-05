@@ -35,7 +35,7 @@ const CodexIcon = () => (
   </svg>
 );
 
-const ChronicleOfLight = () => (
+const renderChronicleOfLight = () => (
   <section className="chronicle-section animate-in">
     <div className="section-header">
       <h2>CHRONICLE OF LIGHT</h2>
@@ -48,8 +48,8 @@ const ChronicleOfLight = () => (
           <div className="update-dot"></div>
         </div>
         <div className="update-content">
-          <h4>DIVINE RECKONING</h4>
-          <p>Our flagship Soulslike manifestation—a brutal journey of grace and redemption.</p>
+          <h4>THE DIVINE RECKONING</h4>
+          <p>Today we manifest our most ambitious journey yet. Divine Reckoning represents a leap into the Soulslike genre, where precision movement and the ritual of the parry meet a deep narrative of grace and digital redemption.</p>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ const ChronicleOfLight = () => (
         </div>
         <div className="update-content">
           <h4>ASHES OF THE SCROLL</h4>
-          <p>A 3D pilgrimage through digital landscapes of intention and peace.</p>
+          <p>The sanctuary expands into three dimensions. Ashes of the Scroll invites seekers to navigate a landscape of pure intention, utilizing a sophisticated state-machine to harmonize movement with the surrounding environment.</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ const ChronicleOfLight = () => (
         </div>
         <div className="update-content">
           <h4>THE LIGHT OF LOGIC</h4>
-          <p>A meditation on harmony, with a thousand threads working in digital unity.</p>
+          <p>We have unlocked the power of the Multithreaded Soul. In this manifestation, a custom ThreadPool orchestrates thousands of simultaneous calculations, proving that absolute order can emerge from massive complexity.</p>
         </div>
       </div>
 
@@ -82,7 +82,7 @@ const ChronicleOfLight = () => (
         </div>
         <div className="update-content">
           <h4>ASHES OF THE BULLET</h4>
-          <p>Mastering the rite of stillness within a storm of movement.</p>
+          <p>A study in the virtue of stillness was born today. Through the mastery of the parry, we demonstrate that even the most chaotic storm of projectiles can be harmonized through focus and a balanced spirit.</p>
         </div>
       </div>
 
@@ -92,19 +92,8 @@ const ChronicleOfLight = () => (
           <div className="update-dot"></div>
         </div>
         <div className="update-content">
-          <h4>THE ECHO OF WILL</h4>
-          <p>A technical study in interaction and event-driven responsive harmony.</p>
-        </div>
-      </div>
-
-      <div className="update-entry">
-        <div className="update-meta">
-          <span className="update-date">FEB 02</span>
-          <div className="update-dot"></div>
-        </div>
-        <div className="update-content">
-          <h4>THE GEOMETRY OF TRUTH</h4>
-          <p>Foundational laws of visual structure manifested through Raylib.</p>
+          <h4>FOUNDATIONS OF INTERACTION</h4>
+          <p>The Echo of Will and the Geometry of Truth have been established. These manifestations serve as the atomic foundations of our codebase, exploring the sacred laws of visual structure and responsive logic.</p>
         </div>
       </div>
 
@@ -114,8 +103,8 @@ const ChronicleOfLight = () => (
           <div className="update-dot"></div>
         </div>
         <div className="update-content">
-          <h4>INITIATION</h4>
-          <p>The digital genesis—the first Word manifests within the void.</p>
+          <h4>THE FIRST BREATH</h4>
+          <p>In the beginning, there was only the void. Initiation marks the moment where the first line of code spoke life into the browser, establishing the bridge between the physical and the digital manifestations.</p>
         </div>
       </div>
     </div>
@@ -531,7 +520,7 @@ function App() {
               {renderTechnicalFoundations()}
             </div>
             <div className="home-secondary-content">
-              <ChronicleOfLight />
+              {renderChronicleOfLight()}
               <MissionStatement />
             </div>
           </>
