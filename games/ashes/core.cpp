@@ -34,24 +34,23 @@ void InitGame() {
 
     target = LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // Simple bloom shader (extract bright parts and blur)
+    // Divine Shader Manifestation (Purified for WebGL 2.0)
     const char* bloomFrag = 
-        "#version 330\n"
+        "#version 300 es\n"
+        "precision mediump float;\n"
         "in vec2 fragTexCoord;\n"
         "in vec4 fragColor;\n"
         "uniform sampler2D texture0;\n"
-        "uniform vec4 colDiffuse;\n"
         "out vec4 finalColor;\n"
         "void main() {\n"
         "    vec4 texel = texture(texture0, fragTexCoord);\n"
         "    vec3 bloom = vec3(0.0);\n"
         "    float threshold = 0.85;\n"
         "    if (length(texel.rgb) > threshold) bloom = texel.rgb;\n"
-        "    // Simple 3x3 blur approximation\n"
-        "    vec2 size = vec2(1.0/1280.0, 1.0/720.0);\n"
+        "    vec2 size = vec2(1.0/1440.0, 1.0/810.0);\n"
         "    for (int x = -1; x <= 1; x++) {\n"
         "        for (int y = -1; y <= 1; y++) {\n"
-        "            vec3 sample = texture(texture0, fragTexCoord + vec2(x, y) * size * 2.0).rgb;\n"
+        "            vec3 sample = texture(texture0, fragTexCoord + vec2(float(x), float(y)) * size * 2.0).rgb;\n"
         "            if (length(sample) > threshold) bloom += sample * 0.1;\n"
         "        }\n"
         "    }\n"
