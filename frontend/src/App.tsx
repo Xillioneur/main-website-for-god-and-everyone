@@ -189,6 +189,17 @@ function App() {
             <div className="update-dot"></div>
           </div>
           <div className="update-content">
+            <h4>PHASE 8: MULTI-FILE ARCHITECTURE</h4>
+            <p>The 'Ashes' manifestation has been unified. The build system now supports complex, modular logic across multiple C++ files, allowing for even deeper and more sophisticated sacred manifests.</p>
+          </div>
+        </div>
+
+        <div className="update-entry">
+          <div className="update-meta">
+            <span className="update-date">FEB 04</span>
+            <div className="update-dot"></div>
+          </div>
+          <div className="update-content">
             <h4>SYNTAX ILLUMINATION</h4>
             <p>Fragments of Logic are now fully colorized. Integrated the Prism engine to reveal the technical beauty of C++ manifests with professional syntax highlighting.</p>
           </div>
