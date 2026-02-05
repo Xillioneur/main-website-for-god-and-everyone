@@ -1,0 +1,50 @@
+#include "game.h"
+#include "raylib.h"
+
+int main() {
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Divine Sentinel – The Celestial Nexus");
+
+    SetExitKey(KEY_NULL);
+    SetTargetFPS(60);
+    HideCursor();
+    DisableCursor();
+    InitAudioDevice();
+    InitGame();
+
+    while (!WindowShouldClose()) {
+        float dt = GetFrameTime();
+
+        UpdateCamera(dt);
+        UpdateParticles(dt);
+
+        if (gameState == TITLE_SCREEN) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsKeyPressed(KEY_ENTER)) {
+                gameState = INSTRUCTIONS;
+            }
+        }
+        else if (gameState == INSTRUCTIONS) {
+            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsKeyPressed(KEY_ENTER)) {
+                currentLevel = 1;
+                ResetLevel();  // This sets gameState = PLAYING internally
+            }
+        }
+        else if (gameState == PLAYING || gameState == PAUSED) {
+            if (IsKeyPressed(KEY_ESCAPE)) {
+                if (IsCursorHidden()) {
+                    EnableCursor();
+                    ShowCursor();
+                } else {
+                    DisableCursor();
+                    HideCursor(); 
+                }
+                gameState = (gameState == PLAYING) ? PAUSED : PLAYING;
+            }
+
+            if (gameState == PAUSED) {
+                Vector2 mousePos = GetMousePosition();
+                Rectangle quitBtn = { SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 + 80, 300, 60 };
+
+                if (CheckCollisionPointRec(mousePos, quitBtn) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                    break;  // Exit the game loop – quits the game cleanly
+                }
+            }
