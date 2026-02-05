@@ -57,7 +57,7 @@ async function getGamesMetadata() {
                 const jsFile = `${gameName}.js`;
                 const wasmFile = `${gameName}.wasm`;
                 const descriptionMd = 'description.md';
-                const logicSnippet = 'logic_snippet.cpp';
+                const logicSnippet = 'logic_snippet.txt';
                 // Supported preview formats
                 const previewFormats = ['preview.png', 'preview.jpg', 'preview.jpeg', 'preview.gif', 'preview.svg'];
                 let previewImage = 'preview.svg';
