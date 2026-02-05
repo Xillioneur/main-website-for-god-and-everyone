@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -24,6 +24,42 @@ interface DivineStats {
   status: string;
 }
 
+// --- STATIC COMPONENTS (Defined outside to prevent remounting on scroll) ---
+
+const CodexIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
+    <path d="M7 8L3 12L7 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M17 8L21 12L17 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 5V19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+    <path d="M9 12H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const MissionStatement = () => (
+  <section className="mission-section animate-in">
+    <div className="mission-content">
+      <div className="section-header">
+        <h2>THE DIVINE VISION</h2>
+        <div className="divider"></div>
+      </div>
+      <div className="mission-grid">
+        <div className="mission-item">
+          <h3>LOGOS & LOGIC</h3>
+          <p>We believe that code is not merely a tool for utility, but a reflection of the Divine Order. In the mathematical precision of a C++ algorithm, we catch a glimpse of the Creator's hand.</p>
+        </div>
+        <div className="mission-item">
+          <h3>SACRED PLAY</h3>
+          <p>Our manifestations are designed to be life-affirming. We strive for "Non-Violent Sophistication"—challenges that test the soul's fortitude and patience without resorting to the base instincts of strife.</p>
+        </div>
+        <div className="mission-item">
+          <h3>ASCENSION</h3>
+          <p>Every journey through our digital sanctuary is intended to be a step toward clarity. From the parry of a storm to the harmony of multithreaded logic, we seek the Infinite through the Finite.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 function App() {
   const [games, setGames] = useState<Game[]>([]);
   const [filteredGames, setFilteredGames] = useState<Game[]>([]);
@@ -33,7 +69,8 @@ function App() {
   const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -50,12 +87,21 @@ function App() {
     }
   }, [isDarkMode]);
 
-  // Phase 11: Scroll Tracking
+  // Phase 11: Optimized Scroll Tracking (using Ref to avoid re-renders)
   useEffect(() => {
+    let requestRunning = false;
     const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const currentProgress = (window.pageYOffset / totalScroll) * 100;
-      setScrollProgress(currentProgress);
+      if (!requestRunning) {
+        requestRunning = true;
+        requestAnimationFrame(() => {
+          const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const currentProgress = totalScroll > 0 ? (window.pageYOffset / totalScroll) * 100 : 0;
+          if (progressBarRef.current) {
+            progressBarRef.current.style.width = `${currentProgress}%`;
+          }
+          requestRunning = false;
+        });
+      }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -159,7 +205,9 @@ function App() {
     setShowHelp(false);
   };
 
-  const Hero = () => (
+  // --- RENDER HELPERS ---
+
+  const renderHero = () => (
     <section className="hero-section">
       <div className="hero-content">
         <h1>THE ETERNAL CODE</h1>
@@ -182,7 +230,7 @@ function App() {
     </section>
   );
 
-  const DivineCensus = () => (
+  const renderDivineCensus = () => (
     <section className="census-section">
       <div className="census-grid">
         <div className="census-item">
@@ -211,7 +259,7 @@ function App() {
     </section>
   );
 
-  const CommandmentRitual = () => (
+  const renderCommandmentRitual = () => (
     <div className={`help-overlay ${showHelp ? 'visible' : ''}`} onClick={() => setShowHelp(false)}>
       <div className="help-content" onClick={e => e.stopPropagation()}>
         <h2>SACRED RITUALS</h2>
@@ -227,7 +275,7 @@ function App() {
     </div>
   );
 
-  const VirtueFilter = () => {
+  const renderVirtueFilter = () => {
     const virtues = ['ALL', 'REDEMPTION', 'CLARITY', 'FORTITUDE', 'TEMPERANCE'];
     return (
       <div className="virtue-filter">
@@ -244,7 +292,7 @@ function App() {
     );
   };
 
-  const ChronicleOfLight = () => (
+  const renderChronicleOfLight = () => (
     <section className="chronicle-section animate-in">
       <div className="section-header">
         <h2>CHRONICLE OF LIGHT</h2>
@@ -276,31 +324,6 @@ function App() {
     </section>
   );
 
-  const MissionStatement = () => (
-    <section className="mission-section animate-in">
-      <div className="mission-content">
-        <div className="section-header">
-          <h2>THE DIVINE VISION</h2>
-          <div className="divider"></div>
-        </div>
-        <div className="mission-grid">
-          <div className="mission-item">
-            <h3>LOGOS & LOGIC</h3>
-            <p>We believe that code is not merely a tool for utility, but a reflection of the Divine Order. In the mathematical precision of a C++ algorithm, we catch a glimpse of the Creator's hand.</p>
-          </div>
-          <div className="mission-item">
-            <h3>SACRED PLAY</h3>
-            <p>Our manifestations are designed to be life-affirming. We strive for "Non-Violent Sophistication"—challenges that test the soul's fortitude and patience without resorting to the base instincts of strife.</p>
-          </div>
-          <div className="mission-item">
-            <h3>ASCENSION</h3>
-            <p>Every journey through our digital sanctuary is intended to be a step toward clarity. From the parry of a storm to the harmony of multithreaded logic, we seek the Infinite through the Finite.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
   const renderGameList = () => (
     <div className="game-list">
       <div className="section-header">
@@ -308,7 +331,7 @@ function App() {
         <div className="divider"></div>
       </div>
       
-      <VirtueFilter />
+      {renderVirtueFilter()}
 
       {filteredGames.length === 0 && !error ? (
         <p className="loading-text">Awaiting the Word to manifest in code...</p>
@@ -417,19 +440,10 @@ function App() {
     </div>
   );
 
-  const CodexIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '12px' }}>
-      <path d="M7 8L3 12L7 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M17 8L21 12L17 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M12 5V19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-      <path d="M9 12H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-
   return (
     <div className="main-canvas">
       <div className="scroll-progress-container">
-        <div className="scroll-progress-bar" style={{ width: `${scrollProgress}%` }}></div>
+        <div className="scroll-progress-bar" ref={progressBarRef}></div>
       </div>
 
       <header className="site-header">
@@ -455,14 +469,14 @@ function App() {
       <main className="content-area">
         {!selectedGameDetails ? (
           <>
-            <Hero />
+            {renderHero()}
             <div className="games-grid-wrapper">
               {renderGameList()}
-              <DivineCensus />
+              {renderDivineCensus()}
               {renderTechnicalFoundations()}
             </div>
             <div className="home-secondary-content">
-              <ChronicleOfLight />
+              {renderChronicleOfLight()}
               <MissionStatement />
             </div>
           </>
@@ -471,7 +485,7 @@ function App() {
         )}
       </main>
 
-      <CommandmentRitual />
+      {renderCommandmentRitual()}
 
       <footer className="site-footer">
         <p>
