@@ -133,44 +133,33 @@ async function getGamesMetadata() {
   }
 }
 
-// REFINED: Read Baked Census from Build-Time
 async function getDivineCensus() {
-    let census = {
-        atomicWeight: 8469, // Fallback
-        manifestations: 4,
-        foundations: 3,
-        status: 'SANCTIFIED'
-    };
-
-    const bakedCensusPath = path.join(process.cwd(), 'backend/census.json');
-    const localCensusPath = path.join(__dirname, '../census.json');
-    const rootCensusPath = path.join(__dirname, '../../backend/census.json');
-
-    const tryPaths = [bakedCensusPath, localCensusPath, rootCensusPath];
+    let census = { atomicWeight: 8469, manifestations: 4, foundations: 3, status: 'SANCTIFIED' };
+    const tryPaths = [path.join(process.cwd(), 'backend/census.json'), path.join(__dirname, '../census.json'), path.join(__dirname, '../../backend/census.json')];
     for (const p of tryPaths) {
         if (fs.existsSync(p)) {
-            try {
-                census = JSON.parse(fs.readFileSync(p, 'utf8'));
-                break;
-            } catch (e) {
-                console.error('Failed to parse census at', p);
-            }
+            try { census = JSON.parse(fs.readFileSync(p, 'utf8')); break; } catch (e) { console.error('Failed to parse census at', p); }
         }
     }
-
     const sacredStates = ["GATHERING GRACE", "HARMONIZING THREADS", "PARRYING THE VOID", "MANIFESTING LOGOS", "ASCENDING...", "STILLNESS ACHIEVED", "DIVINE RECKONING ACTIVE", "LATENCY: IMMACULATE", "UPTIME: ETERNAL", "ATOMS ALIGNED"];
     const randomStatus = sacredStates[Math.floor(Math.random() * sacredStates.length)];
-
-    return { 
-        ...census, 
-        communion: '@liwawil', 
-        status: randomStatus 
-    };
+    return { ...census, communion: '@liwawil', status: randomStatus };
 }
 
-// Helper to inject tags at the absolute start of head
+// RITUAL OF PURIFICATION: Removes generic metadata before injecting professional SEO
 function injectSacredTags(html: string, extraMeta: string = "") {
-    const cleanedHtml = html.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
+    let cleanedHtml = html;
+    
+    // 1. Purge legacy Google Tags
+    cleanedHtml = cleanedHtml.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
+    
+    // 2. Purge existing title and description tags to prevent Google confusion
+    cleanedHtml = cleanedHtml.replace(/<title>.*?<\/title>/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta name="description" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta property="og:title" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta property="og:description" content=".*?">/gi, "");
+
+    // 3. Prepend the definitive GA tag + professional SEO immediately after <head>
     return cleanedHtml.replace(/(<head[^>]*>)/i, `$1${googleAnalyticsTag}${extraMeta}`);
 }
 
@@ -204,8 +193,20 @@ app.get('/', async (req, res) => {
   if (!fs.existsSync(indexPath)) return res.status(404).send('Build frontend first.');
   try {
     let html = await readFile(indexPath, 'utf8');
-    const baseUrl = `${req.get('host')?.includes('localhost') ? 'http' : 'https'}://${req.get('host')}`;
-    const homeMeta = `<title>The Divine Code | High-Performance WebAssembly Codebase</title><meta name="description" content="Explore The Divine Codebase. A collection of high-performance C++ games and logic manifested through WebAssembly."><meta property="og:image" content="${baseUrl}/homepage-preview.png"><meta property="twitter:image" content="${baseUrl}/homepage-preview.png">`;
+    const host = req.get('host');
+    const baseUrl = `${host?.includes('localhost') ? 'http' : 'https'}://${host}`;
+    
+    // THE MASTER SEO SIGNAL: Professional title and deep description
+    const homeMeta = `
+    <title>The Divine Code | High-Performance C++ & WebAssembly Sanctuary</title>
+    <meta name="description" content="Explore a professional digital sanctuary of high-performance manifestations. Witness the beauty of C++ logic and WebAssembly through Divine Reckoning, Ascension, and more.">
+    <meta property="og:title" content="The Divine Code | Sacred WASM Codebase">
+    <meta property="og:description" content="A professional digital sanctuary featuring high-performance WebAssembly code manifestations and divine logic.">
+    <meta property="og:image" content="${baseUrl}/homepage-preview.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:image" content="${baseUrl}/homepage-preview.png">
+    `;
+    
     res.send(injectSacredTags(html, homeMeta));
   } catch (error) {
     res.status(500).send('Divine error in home SEO injection.');
@@ -221,8 +222,20 @@ app.get('/wasm/:gameId/', async (req, res) => {
     const game = games.find(g => g.id === gameId);
     let html = await readFile(gameHtmlPath, 'utf8');
     if (!game) return res.send(html);
-    const baseUrl = `${req.get('host')?.includes('localhost') ? 'http' : 'https'}://${req.get('host')}`;
-    const divineMeta = `<title>${game.name} | The Divine Code</title><meta property="og:image" content="${baseUrl}${game.previewImageUrl}">`;
+    
+    const host = req.get('host');
+    const baseUrl = `${host?.includes('localhost') ? 'http' : 'https'}://${host}`;
+    
+    // GAME-SPECIFIC SEO SIGNAL
+    const divineMeta = `
+    <title>${game.name} | The Divine Code</title>
+    <meta name="description" content="${game.shortDescription}">
+    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
+    <meta property="og:description" content="${game.shortDescription}">
+    <meta property="og:image" content="${baseUrl}${game.previewImageUrl}">
+    <meta property="twitter:card" content="summary_large_image">
+    `;
+    
     res.send(injectSacredTags(html, divineMeta));
   } catch (error) {
     res.status(500).send('Divine error in game SEO injection.');
