@@ -45,12 +45,12 @@ const wasmGamesRoot = getGamesRoot();
 const frontendDist = getFrontendDist();
 
 const googleAnalyticsTag = `
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LFWV3YSBMT" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-LFWV3YSBMT');
+  gtag('config', 'G-PDHE3BDWQM');
 </script>
 `;
 
