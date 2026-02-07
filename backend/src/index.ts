@@ -91,14 +91,17 @@ async function getDivineCensus() {
     return { ...census, communion: '@liwawil', status: sacredStates[Math.floor(Math.random() * sacredStates.length)] };
 }
 
+// THE FINAL FOOLPROOF INJECTION: Targets the sacred marker exclusively
 function injectSacredTags(html: string, extraMeta: string = "") {
-    let cleanedHtml = html;
-    cleanedHtml = cleanedHtml.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
-    cleanedHtml = cleanedHtml.replace(/<title>.*?<\/title>/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta name="(?:description|keywords|author)" content=".*?">/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta property="og:.*?" content=".*?">/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta name="twitter:.*?" content=".*?">/gi, "");
-    return cleanedHtml.replace(/(<head[^>]*>)/i, `$1${googleAnalyticsTag}${extraMeta}`);
+    const marker = "<!-- DIVINE_META_MANIFESTATION -->";
+    const masterSignal = `${googleAnalyticsTag}${extraMeta}`;
+    
+    if (html.includes(marker)) {
+        return html.replace(marker, masterSignal);
+    }
+    
+    // Fallback if marker is missing
+    return html.replace(/(<head[^>]*>)/i, `$1${masterSignal}`);
 }
 
 app.get('/api/games', async (req, res) => {
@@ -111,7 +114,6 @@ app.get('/api/stats', async (req, res) => {
     res.json(stats);
 });
 
-// MASTER LANDING PAGE SEO ritual
 app.get('/', async (req, res) => {
   const indexPath = path.join(frontendDist, 'index.template.html');
   if (!fs.existsSync(indexPath)) return res.status(404).send('Divine error: Landing template not found.');
@@ -121,7 +123,6 @@ app.get('/', async (req, res) => {
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
     
-    // BOOSTED MASTER METADATA
     const homeMeta = `
     <title>The Divine Code | High-Performance C++ & WebAssembly Sanctuary</title>
     <meta name="description" content="Explore a professional digital sanctuary featuring high-performance C++ manifestations and sacred logic. Experience Divine Reckoning, Ascension, and more via WebAssembly.">
@@ -129,11 +130,10 @@ app.get('/', async (req, res) => {
     <meta property="og:url" content="${baseUrl}/">
     <meta property="og:site_name" content="The Divine Code">
     <meta property="og:title" content="The Divine Code | High-Performance C++ & WebAssembly Sanctuary">
-    <meta property="og:description" content="A professional digital sanctuary of high-performance logic manifestations. Witness the beauty of the Word in code.">
+    <meta property="og:description" content="A professional digital sanctuary of high-performance manifestations. Witness the beauty of the Word in code.">
     <meta property="og:image" content="${baseUrl}/homepage-preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="The Divine Code - Sacred C++ Manifestations">
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:site" content="@liwawil">
     <meta property="twitter:title" content="The Divine Code | High-Performance C++ & WebAssembly Sanctuary">
@@ -142,7 +142,7 @@ app.get('/', async (req, res) => {
     `;
     
     res.send(injectSacredTags(html, homeMeta));
-  } catch (error) { res.status(500).send('Divine error during landing manifestation.'); }
+  } catch (error) { res.status(500).send('Divine error.'); }
 });
 
 app.get('/wasm/:gameId/', async (req, res) => {
@@ -165,7 +165,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
     <meta property="og:type" content="article">
     <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
     <meta property="og:site_name" content="The Divine Code">
-    <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
+    <meta property="og:title" content="${game.name} - The Divine Code">
     <meta property="og:description" content="${game.shortDescription}">
     <meta property="og:image" content="${game.previewImageUrl}">
     <meta property="og:image:width" content="1200">
@@ -185,7 +185,6 @@ app.use(express.static(frontendDist, { index: false }));
 app.use((req, res) => {
   const indexPath = path.join(frontendDist, 'index.template.html');
   if (fs.existsSync(indexPath)) {
-      // Catch-all also gets the landing injection
       res.redirect('/');
   } else {
       res.status(404).send('Sanctuary not found.');
