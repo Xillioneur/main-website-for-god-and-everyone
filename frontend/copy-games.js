@@ -18,15 +18,21 @@ async function copyGames() {
     // 1. Ensure dist/wasm exists
     await fs.ensureDir(distWasmDir);
 
-    // 2. Synchronize ALL games into dist/wasm for Vercel Static Serving
-    // We filter for directories to avoid copying root makefiles/shells
+    // 2. Synchronize ALL games into dist/wasm, FILTERING OUT source files
     const items = await fs.readdir(gamesRoot, { withFileTypes: true });
     for (const item of items) {
         if (item.isDirectory()) {
             const src = path.join(gamesRoot, item.name);
             const dest = path.join(distWasmDir, item.name);
-            await fs.copy(src, dest);
-            console.log(`Manifested: ${item.name} synced to dist/wasm/`);
+            
+            await fs.copy(src, dest, {
+                filter: (src) => {
+                    const ext = path.extname(src).toLowerCase();
+                    // EXCLUDE all source files from the public build
+                    return !['.cpp', '.h', '.hpp', '.o', '.a', '.git'].includes(ext);
+                }
+            });
+            console.log(`Manifested: ${item.name} assets synced to dist/wasm/ (Source Purged)`);
         }
     }
 
