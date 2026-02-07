@@ -3,7 +3,7 @@
   "outputDirectory": "frontend/dist",
   "functions": {
     "api/index.js": {
-      "includeFiles": "games/**,frontend/dist/**,backend/census.json"
+      "includeFiles": "games/**,frontend/dist/**"
     }
   },
   "headers": [
@@ -35,16 +35,12 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/wasm/(.*)",
-      "destination": "/dist/wasm/$1"
-    },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
-    },
-    {
-      "source": "/((?!assets|wasm|favicon.svg|homepage-preview.png|main-theme.css|game_shell.css).*)",
+      "source": "/",
       "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
     }
   ]
 }
