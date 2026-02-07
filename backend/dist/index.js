@@ -44,7 +44,7 @@ const getFrontendDist = () => {
 };
 const wasmGamesRoot = getGamesRoot();
 const frontendDist = getFrontendDist();
-// POINT OF TRUTH: Clean Google Tag (No leading newlines for immediate placement)
+// POINT OF TRUTH: Clean Google Tag
 const googleAnalyticsTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-PDHE3BDWQM');</script>`;
 const gameVirtues = {
     'divine': 'REDEMPTION',
@@ -123,34 +123,40 @@ async function getGamesMetadata() {
         return [];
     }
 }
+// REFINED: Read Baked Census from Build-Time
 async function getDivineCensus() {
-    let totalLoc = 0;
-    const extensions = ['.cpp', '.h', '.hpp'];
-    const walkSync = (dir) => {
-        const files = fs_1.default.readdirSync(dir);
-        files.forEach((file) => {
-            const filePath = path_1.default.join(dir, file);
-            if (fs_1.default.statSync(filePath).isDirectory()) {
-                walkSync(filePath);
-            }
-            else if (extensions.some(ext => filePath.endsWith(ext))) {
-                const content = fs_1.default.readFileSync(filePath, 'utf8');
-                totalLoc += content.split('\n').length;
-            }
-        });
+    let census = {
+        atomicWeight: 8469, // Fallback
+        manifestations: 4,
+        foundations: 3,
+        status: 'SANCTIFIED'
     };
-    if (fs_1.default.existsSync(wasmGamesRoot))
-        walkSync(wasmGamesRoot);
-    const games = await getGamesMetadata();
+    const bakedCensusPath = path_1.default.join(process.cwd(), 'backend/census.json');
+    const localCensusPath = path_1.default.join(__dirname, '../census.json');
+    const rootCensusPath = path_1.default.join(__dirname, '../../backend/census.json');
+    const tryPaths = [bakedCensusPath, localCensusPath, rootCensusPath];
+    for (const p of tryPaths) {
+        if (fs_1.default.existsSync(p)) {
+            try {
+                census = JSON.parse(fs_1.default.readFileSync(p, 'utf8'));
+                break;
+            }
+            catch (e) {
+                console.error('Failed to parse census at', p);
+            }
+        }
+    }
     const sacredStates = ["GATHERING GRACE", "HARMONIZING THREADS", "PARRYING THE VOID", "MANIFESTING LOGOS", "ASCENDING...", "STILLNESS ACHIEVED", "DIVINE RECKONING ACTIVE", "LATENCY: IMMACULATE", "UPTIME: ETERNAL", "ATOMS ALIGNED"];
     const randomStatus = sacredStates[Math.floor(Math.random() * sacredStates.length)];
-    return { atomicWeight: totalLoc, manifestations: games.filter(g => g.type === 'MANIFESTATION').length, foundations: games.filter(g => g.type === 'FOUNDATION').length, communion: '@liwawil', status: randomStatus };
+    return {
+        ...census,
+        communion: '@liwawil',
+        status: randomStatus
+    };
 }
-// Helper to inject tags at the absolute start of head, purging existing ones to prevent duplicates
+// Helper to inject tags at the absolute start of head
 function injectSacredTags(html, extraMeta = "") {
-    // Purge any existing Google Tags to ensure "Sacred Uniqueness"
     const cleanedHtml = html.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
-    // Prepend the GA tag + extra meta immediately after <head>
     return cleanedHtml.replace(/<head>/i, `<head>${googleAnalyticsTag}${extraMeta}`);
 }
 app.get('/api/games', async (req, res) => {
