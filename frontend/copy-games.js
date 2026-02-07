@@ -10,15 +10,18 @@ const publicDir = path.resolve(__dirname, './public');
 const distDir = path.resolve(__dirname, './dist');
 const distAssetsDir = path.resolve(__dirname, './dist/assets');
 const distWasmDir = path.resolve(__dirname, './dist/wasm');
+const backendTemplatesDir = path.resolve(__dirname, '../backend/templates');
 
 async function copyGames() {
   try {
     console.log('--- SACRED SYNCHRONIZATION INITIATED ---');
 
-    // 1. Ensure dist/wasm exists
+    // 1. Ensure directories exist
     await fs.ensureDir(distWasmDir);
+    await fs.ensureDir(backendTemplatesDir);
+    await fs.ensureDir(path.join(backendTemplatesDir, 'wasm'));
 
-    // 2. Synchronize ALL games into dist/wasm, FILTERING OUT source, and RENAMING html
+    // 2. Synchronize ALL games into dist/wasm, FILTERING OUT source
     const items = await fs.readdir(gamesRoot, { withFileTypes: true });
     for (const item of items) {
         if (item.isDirectory()) {
@@ -28,24 +31,25 @@ async function copyGames() {
             await fs.copy(src, dest, {
                 filter: (src) => {
                     const ext = path.extname(src).toLowerCase();
-                    return !['.cpp', '.h', '.hpp', '.o', '.a', '.git'].includes(ext);
+                    // Keep ONLY non-source files in the public dist
+                    return !['.cpp', '.h', '.hpp', '.o', '.a', '.git', '.html'].includes(ext);
                 }
             });
 
-            // CLOAKING: Rename game html so Vercel doesn't serve it statically
-            const gameHtml = path.join(dest, `${item.name}.html`);
+            // Move game HTML to Backend Templates for SEO Injection
+            const gameHtml = path.join(src, `${item.name}.html`);
             if (await fs.pathExists(gameHtml)) {
-                await fs.move(gameHtml, path.join(dest, `${item.name}.template.html`), { overwrite: true });
+                await fs.copy(gameHtml, path.join(backendTemplatesDir, 'wasm', `${item.name}.template.html`));
             }
-            console.log(`Manifested: ${item.name} assets synced and cloaked.`);
+            console.log(`Manifested: ${item.name} assets synced and template stored.`);
         }
     }
 
-    // 3. Cloak the main index.html
+    // 3. Move main index.html to Backend Templates
     const indexHtml = path.join(distDir, 'index.html');
     if (await fs.pathExists(indexHtml)) {
-        await fs.move(indexHtml, path.join(distDir, 'index.template.html'), { overwrite: true });
-        console.log('Manifested: index.html cloaked as template.');
+        await fs.move(indexHtml, path.join(backendTemplatesDir, 'index.template.html'), { overwrite: true });
+        console.log('Manifested: index.html moved to template sanctuary.');
     }
 
     // 4. Synchronize CSS

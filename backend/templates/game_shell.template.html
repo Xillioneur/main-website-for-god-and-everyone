@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- DIVINE_META_MANIFESTATION -->
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- We link to the fonts used in the main site -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" href="/main-theme.css">
+    <link rel="stylesheet" href="/game_shell.css">
+    <style>
+        /* Embedded shell-specific polish */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+        
+        .loader-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        .loader-text {
+            color: #ffffff;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            font-weight: 900;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.95); }
+        }
+
+        body.light-mode #loading-overlay {
+            background: #ffffff;
+        }
+        body.light-mode .loader-text {
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <!-- The Loader Overlay (Sanctuary Entry) -->
+    <div id="loading-overlay">
+        <div class="loader-icon">
+            <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="512" height="512" rx="140" fill="currentColor" fill-opacity="0.1"/>
+                <path d="M256 80V432" stroke="currentColor" stroke-width="40" stroke-linecap="round"/>
+                <path d="M120 256H392" stroke="currentColor" stroke-width="30" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="loader-text" id="status-text">Summoning Divine Logic...</div>
+    </div>
+
+    <!-- The Main Manifestation Canvas -->
+    <div class="App playing-game" id="game-container-wrapper">
+        <div class="game-playing-container">
+            <div class="game-controls-overlay">
+                <button class="control-button" onclick="window.location.href='/'">BACK TO THE CREATION</button>
+                <button class="control-button" id="fullscreen-button">ENTER THE VOID</button>
+            </div>
+            
+            <div id="game-canvas-wrapper">
+                <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+            </div>
+
+            <div class="game-output-console">
+                <h3>ORACULAR TRACERIES:</h3>
+                <pre id="game-output-pre">Awaiting divine whispers from the depths...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script type='text/javascript'>
+        // Sync theme with main site immediately
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        var statusElement = document.getElementById('status-text');
+        var overlayElement = document.getElementById('loading-overlay');
+
+        var Module = {
+            preRun: [],
+            postRun: [function() {
+                // When game starts, hide the overlay gracefully
+                overlayElement.style.opacity = '0';
+                setTimeout(function() {
+                    overlayElement.style.visibility = 'hidden';
+                }, 800);
+            }],
+            print: (function() {
+                var element = document.getElementById('game-output-pre');
+                if (element) element.textContent = ''; // clear browser messages
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                    if (element) {
+                        element.textContent += text + "\n";
+                        element.scrollTop = element.scrollHeight; // focus on bottom
+                    }
+                };
+            })(),
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+                var element = document.getElementById('game-output-pre');
+                if (element) {
+                    element.textContent += "ERROR: " + text + "\n";
+                    element.scrollTop = element.scrollHeight;
+                }
+            },
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                return canvas;
+            })(),
+            setStatus: function(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+                if (statusElement) statusElement.textContent = text;
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Manifesting... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All dependencies manifested.');
+            }
+        };
+        Module.setStatus('Initiating pilgrimage...');
+        window.onerror = function() {
+            Module.setStatus('Exception encountered during manifestation.');
+            overlayElement.style.display = 'none';
+            Module.printErr('Exception thrown, check console for details.');
+        };
+
+        // Fullscreen support
+        document.getElementById('fullscreen-button').addEventListener('click', function() {
+            var canvas = document.getElementById('canvas');
+            if (canvas) {
+                if (document.fullscreenElement) {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                } else {
+                    if (canvas.requestFullscreen) canvas.requestFullscreen();
+                    else if (canvas.mozRequestFullScreen) canvas.requestFullScreen();
+                    else if (canvas.webkitRequestFullscreen) canvas.requestFullscreen();
+                    else if (canvas.msRequestFullscreen) canvas.msRequestFullscreen();
+                }
+            }
+        });
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>

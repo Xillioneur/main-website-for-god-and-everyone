@@ -9,16 +9,15 @@ const readFile = promisify(fs.readFile);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Divine Security & Multithreading Headers (COOP/COEP)
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   next();
 });
 
-// ROBUST PATH RESOLUTION
-const getGamesRoot = () => {
-    const paths = [path.join(process.cwd(), 'games'), path.join(__dirname, '../../games')];
+// POINT OF TRUTH: Paths derived from current execution directory
+const getTemplatesRoot = () => {
+    const paths = [path.join(process.cwd(), 'backend/templates'), path.join(__dirname, '../templates')];
     for (const p of paths) if (fs.existsSync(p)) return p;
     return paths[0];
 };
@@ -29,10 +28,11 @@ const getFrontendDist = () => {
     return paths[0];
 };
 
-const wasmGamesRoot = getGamesRoot();
+const templatesRoot = getTemplatesRoot();
 const frontendDist = getFrontendDist();
+// Note: Metadata like descriptions still come from the source games folder
+const wasmGamesSource = path.join(process.cwd(), 'games');
 
-// POINT OF TRUTH: Clean Google Tag
 const googleAnalyticsTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-PDHE3BDWQM');</script>`;
 
 const gameVirtues: Record<string, string> = {
@@ -43,29 +43,21 @@ const technicalFoundations = ['hello', 'raylib_example', 'sdl2_example'];
 
 async function getGamesMetadata(req: express.Request) {
   try {
-    const games: any[] = [];
-    if (!fs.existsSync(wasmGamesRoot)) return [];
-    const gameSubdirs = await readdir(wasmGamesRoot, { withFileTypes: true });
-    
-    // Resolve Absolute Base URL for SEO
+    if (!fs.existsSync(wasmGamesSource)) return [];
+    const gameSubdirs = await readdir(wasmGamesSource, { withFileTypes: true });
     const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
+    const games: any[] = [];
     for (const dirent of gameSubdirs) {
       if (dirent.isDirectory()) {
         const gameName = dirent.name;
-        const gameFolderPath = path.join(wasmGamesRoot, gameName);
-        const gameFiles = await readdir(gameFolderPath);
-        const stats = fs.statSync(gameFolderPath);
-
+        const gameFolderPath = path.join(wasmGamesSource, gameName);
         let fullDescription = "Manifestation under study.";
         try { fullDescription = await readFile(path.join(gameFolderPath, 'description.md'), 'utf8'); } catch (e) {}
-
         let logicSnippet = "";
         try { logicSnippet = await readFile(path.join(gameFolderPath, 'logic_snippet.txt'), 'utf8'); } catch (e) {}
-
-        const previewImage = gameFiles.find(f => f.startsWith('preview.')) || 'preview.png';
 
         games.push({
           id: gameName,
@@ -76,8 +68,8 @@ async function getGamesMetadata(req: express.Request) {
           fullDescription: fullDescription,
           logicSnippet: logicSnippet,
           wasmPath: `/wasm/${gameName}/`,
-          previewImageUrl: `${baseUrl}/wasm/${gameName}/${previewImage}`,
-          mtime: stats.mtimeMs
+          previewImageUrl: `${baseUrl}/wasm/${gameName}/preview.png`,
+          mtime: fs.statSync(gameFolderPath).mtimeMs
         });
       }
     }
@@ -93,25 +85,14 @@ async function getDivineCensus() {
     return { ...census, communion: '@liwawil', status: sacredStates[Math.floor(Math.random() * sacredStates.length)] };
 }
 
-// THE FINAL ABSOLUTE INJECTION RITUAL
 function injectSacredTags(html: string, extraMeta: string = "") {
     const marker = "<!-- DIVINE_META_MANIFESTATION -->";
     const masterSignal = `${googleAnalyticsTag}${extraMeta}`;
-    
-    let cleanedHtml = html;
-    
-    // 1. Surgical Purge: Remove existing title and meta tags to ensure NO collision
-    cleanedHtml = cleanedHtml.replace(/<title>.*?<\/title>/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta name="(?:description|keywords|author)" content=".*?">/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta property="og:.*?" content=".*?">/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta name="twitter:.*?" content=".*?">/gi, "");
-    
-    // 2. Primary Injection: Replace marker if it exists (Highest Precision)
-    if (cleanedHtml.includes(marker)) {
-        return cleanedHtml.replace(marker, masterSignal);
-    }
-    
-    // 3. Fallback: Prepend immediately after <head> (Resilience)
+    let cleanedHtml = html.replace(/<title>.*?<\/title>/gi, "")
+                          .replace(/<meta name="(?:description|keywords|author)" content=".*?">/gi, "")
+                          .replace(/<meta property="og:.*?" content=".*?">/gi, "")
+                          .replace(/<meta name="twitter:.*?" content=".*?">/gi, "");
+    if (cleanedHtml.includes(marker)) return cleanedHtml.replace(marker, masterSignal);
     return cleanedHtml.replace(/(<head[^>]*>)/i, `$1${masterSignal}`);
 }
 
@@ -125,65 +106,30 @@ app.get('/api/stats', async (req, res) => {
     res.json(stats);
 });
 
-// MASTER LANDING PAGE SEO ritual
 app.get('/', async (req, res) => {
-  const indexPath = path.join(frontendDist, 'index.template.html');
-  if (!fs.existsSync(indexPath)) return res.status(404).send('Divine error: Template missing.');
+  const templatePath = path.join(templatesRoot, 'index.template.html');
+  if (!fs.existsSync(templatePath)) return res.status(404).send('Template sanctuary empty.');
   try {
-    let html = await readFile(indexPath, 'utf8');
+    const html = await readFile(templatePath, 'utf8');
     const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
     const baseUrl = `https://${host}`;
-    
-    const homeMeta = `
-    <title>The Divine Code | High-Performance C++ & WebAssembly Sanctuary</title>
-    <meta name="description" content="Explore a professional digital sanctuary featuring high-performance C++ manifestations and sacred logic. Experience Divine Reckoning, Ascension, and more via WebAssembly.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="${baseUrl}/">
-    <meta property="og:site_name" content="The Divine Code">
-    <meta property="og:title" content="The Divine Code | High-Performance C++ & WebAssembly Sanctuary">
-    <meta property="og:description" content="A professional digital sanctuary of high-performance logic manifestations. Witness the beauty of the Word in code.">
-    <meta property="og:image" content="${baseUrl}/homepage-preview.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="The Divine Code - Sacred C++ Manifestations">
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:site" content="@liwawil">
-    <meta property="twitter:title" content="The Divine Code | High-Performance C++ & WebAssembly Sanctuary">
-    <meta property="twitter:description" content="A professional digital sanctuary of high-performance manifestations. Experience the power of sacred logic.">
-    <meta property="twitter:image" content="${baseUrl}/homepage-preview.png">
-    `;
-    
+    const homeMeta = `<title>The Divine Code | High-Performance C++ & WebAssembly Sanctuary</title><meta name="description" content="Explore a professional digital sanctuary of high-performance manifestations. Witness the beauty of C++ logic and WebAssembly."><meta property="og:type" content="website"><meta property="og:url" content="${baseUrl}/"><meta property="og:site_name" content="The Divine Code"><meta property="og:title" content="The Divine Code | Sacred WASM Codebase"><meta property="og:description" content="A professional digital sanctuary featuring high-performance manifestations."><meta property="og:image" content="${baseUrl}/homepage-preview.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:site" content="@liwawil"><meta property="twitter:image" content="${baseUrl}/homepage-preview.png">`;
     res.send(injectSacredTags(html, homeMeta));
   } catch (error) { res.status(500).send('Divine error.'); }
 });
 
 app.get('/wasm/:gameId/', async (req, res) => {
   const { gameId } = req.params;
-  const gameHtmlPath = path.join(frontendDist, 'wasm', gameId, `${gameId}.template.html`);
-  if (!fs.existsSync(gameHtmlPath)) return res.status(404).send('Manifestation not found.');
+  const templatePath = path.join(templatesRoot, 'wasm', `${gameId}.template.html`);
+  if (!fs.existsSync(templatePath)) return res.status(404).send('Manifestation template not found.');
   try {
     const games = await getGamesMetadata(req);
     const game = games.find(g => g.id === gameId);
-    let html = await readFile(gameHtmlPath, 'utf8');
-    if (!game) return res.send(html);
+    if (!game) return res.status(404).send('Manifestation data missing.');
+    const html = await readFile(templatePath, 'utf8');
     const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
     const baseUrl = `https://${host}`;
-    const divineMeta = `
-    <title>${game.name} | The Divine Code</title>
-    <meta name="description" content="${game.shortDescription}">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
-    <meta property="og:site_name" content="The Divine Code">
-    <meta property="og:title" content="${game.name} - The Divine Code">
-    <meta property="og:description" content="${game.shortDescription}">
-    <meta property="og:image" content="${game.previewImageUrl}">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="1200">
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="${game.name} | The Divine Code">
-    <meta property="twitter:description" content="${game.shortDescription}">
-    <meta property="twitter:image" content="${game.previewImageUrl}">
-    `;
+    const divineMeta = `<title>${game.name} | The Divine Code</title><meta name="description" content="${game.shortDescription}"><meta property="og:type" content="article"><meta property="og:url" content="${baseUrl}/wasm/${game.id}/"><meta property="og:site_name" content="The Divine Code"><meta property="og:title" content="${game.name} - The Divine Code"><meta property="og:description" content="${game.shortDescription}"><meta property="og:image" content="${game.previewImageUrl}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="1200"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:image" content="${game.previewImageUrl}">`;
     res.send(injectSacredTags(html, divineMeta));
   } catch (error) { res.status(500).send('Divine error.'); }
 });
@@ -191,12 +137,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
 app.use(express.static(frontendDist, { index: false }));
 
 app.use((req, res) => {
-  const indexPath = path.join(frontendDist, 'index.template.html');
-  if (fs.existsSync(indexPath)) {
-      res.redirect('/');
-  } else {
-      res.status(404).send('Sanctuary not found.');
-  }
+  res.redirect('/');
 });
 
 export default app;
