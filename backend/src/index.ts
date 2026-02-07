@@ -146,20 +146,19 @@ async function getDivineCensus() {
     return { ...census, communion: '@liwawil', status: randomStatus };
 }
 
-// RITUAL OF PURIFICATION: Removes generic metadata before injecting professional SEO
+// RITUAL OF TOTAL PURIFICATION: Destroys generic signals to make room for Divine Truth
 function injectSacredTags(html: string, extraMeta: string = "") {
     let cleanedHtml = html;
     
     // 1. Purge legacy Google Tags
     cleanedHtml = cleanedHtml.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
     
-    // 2. Purge existing title and description tags to prevent Google confusion
+    // 2. Comprehensive Meta Purge: Removes ANY title or meta tags to prevent SEO collision
     cleanedHtml = cleanedHtml.replace(/<title>.*?<\/title>/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta name="description" content=".*?">/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta property="og:title" content=".*?">/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta property="og:description" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta\s+(?:name|property|content)=["'].*?["']\s+(?:name|property|content)=["'].*?["']\s*\/?>/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta\s+(?:name|property|content)=["'].*?["']\s*\/?>/gi, "");
 
-    // 3. Prepend the definitive GA tag + professional SEO immediately after <head>
+    // 3. Prepend the GA tag + definitive SEO immediately after <head>
     return cleanedHtml.replace(/(<head[^>]*>)/i, `$1${googleAnalyticsTag}${extraMeta}`);
 }
 
@@ -194,16 +193,24 @@ app.get('/', async (req, res) => {
   try {
     let html = await readFile(indexPath, 'utf8');
     const host = req.get('host');
-    const baseUrl = `${host?.includes('localhost') ? 'http' : 'https'}://${host}`;
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     
-    // THE MASTER SEO SIGNAL: Professional title and deep description
+    // MASTER OPENGRAPH SIGNAL
     const homeMeta = `
     <title>The Divine Code | High-Performance C++ & WebAssembly Sanctuary</title>
-    <meta name="description" content="Explore a professional digital sanctuary of high-performance manifestations. Witness the beauty of C++ logic and WebAssembly through Divine Reckoning, Ascension, and more.">
+    <meta name="description" content="Explore a professional digital sanctuary of high-performance manifestations. Witness the beauty of C++ logic and WebAssembly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="${baseUrl}/">
+    <meta property="og:site_name" content="The Divine Code">
     <meta property="og:title" content="The Divine Code | Sacred WASM Codebase">
     <meta property="og:description" content="A professional digital sanctuary featuring high-performance WebAssembly code manifestations and divine logic.">
     <meta property="og:image" content="${baseUrl}/homepage-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="The Divine Code | Sacred WebAssembly Codebase">
+    <meta property="twitter:description" content="High-performance C++ codebases manifested through the power of WebAssembly.">
     <meta property="twitter:image" content="${baseUrl}/homepage-preview.png">
     `;
     
@@ -224,16 +231,23 @@ app.get('/wasm/:gameId/', async (req, res) => {
     if (!game) return res.send(html);
     
     const host = req.get('host');
-    const baseUrl = `${host?.includes('localhost') ? 'http' : 'https'}://${host}`;
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
     
-    // GAME-SPECIFIC SEO SIGNAL
+    // GAME-SPECIFIC OPENGRAPH SIGNAL
     const divineMeta = `
     <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
+    <meta property="og:site_name" content="The Divine Code">
     <meta property="og:title" content="${game.name} - A Manifestation of The Divine Code">
     <meta property="og:description" content="${game.shortDescription}">
     <meta property="og:image" content="${baseUrl}${game.previewImageUrl}">
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="${game.name} | The Divine Code">
+    <meta property="twitter:description" content="${game.shortDescription}">
+    <meta property="twitter:image" content="${baseUrl}${game.previewImageUrl}">
     `;
     
     res.send(injectSacredTags(html, divineMeta));
