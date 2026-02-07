@@ -9,12 +9,14 @@ const readFile = promisify(fs.readFile);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Divine Security & Multithreading Headers (COOP/COEP)
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   next();
 });
 
+// ROBUST PATH RESOLUTION
 const getGamesRoot = () => {
     const paths = [path.join(process.cwd(), 'games'), path.join(__dirname, '../../games')];
     for (const p of paths) if (fs.existsSync(p)) return p;
@@ -30,6 +32,7 @@ const getFrontendDist = () => {
 const wasmGamesRoot = getGamesRoot();
 const frontendDist = getFrontendDist();
 
+// POINT OF TRUTH: Clean Google Tag
 const googleAnalyticsTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-PDHE3BDWQM');</script>`;
 
 const gameVirtues: Record<string, string> = {
@@ -43,8 +46,6 @@ async function getGamesMetadata(req: express.Request) {
     const games: any[] = [];
     if (!fs.existsSync(wasmGamesRoot)) return [];
     const gameSubdirs = await readdir(wasmGamesRoot, { withFileTypes: true });
-    
-    // Resolve Absolute Base URL for SEO
     const host = req.get('x-forwarded-host') || req.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
@@ -79,9 +80,7 @@ async function getGamesMetadata(req: express.Request) {
       }
     }
     return games.sort((a, b) => b.mtime - a.mtime);
-  } catch (error) {
-    return [];
-  }
+  } catch (error) { return []; }
 }
 
 async function getDivineCensus() {
@@ -92,11 +91,20 @@ async function getDivineCensus() {
     return { ...census, communion: '@liwawil', status: sacredStates[Math.floor(Math.random() * sacredStates.length)] };
 }
 
+// RITUAL OF PRECISION PURIFICATION: Purges only SEO/Social meta, sparing structural elements like viewport
 function injectSacredTags(html: string, extraMeta: string = "") {
-    let cleanedHtml = html.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
+    let cleanedHtml = html;
+    
+    // 1. Purge legacy Google Tags
+    cleanedHtml = cleanedHtml.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
+    
+    // 2. Precision Purge: Removes specific title and SEO meta tags, leaving functional ones intact
     cleanedHtml = cleanedHtml.replace(/<title>.*?<\/title>/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta\s+(?:name|property|content)=["'].*?["']\s+(?:name|property|content)=["'].*?["']\s*\/?>/gi, "");
-    cleanedHtml = cleanedHtml.replace(/<meta\s+(?:name|property|content)=["'].*?["']\s*\/?>/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta name="(?:description|keywords|author)" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta property="og:.*?" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta name="twitter:.*?" content=".*?">/gi, "");
+
+    // 3. Prepend the GA tag + definitive SEO immediately after <head>
     return cleanedHtml.replace(/(<head[^>]*>)/i, `$1${googleAnalyticsTag}${extraMeta}`);
 }
 
@@ -111,9 +119,8 @@ app.get('/api/stats', async (req, res) => {
 });
 
 app.get('/', async (req, res) => {
-  // Look for CLOAKED template
   const indexPath = path.join(frontendDist, 'index.template.html');
-  if (!fs.existsSync(indexPath)) return res.status(404).send('Purification error: template missing.');
+  if (!fs.existsSync(indexPath)) return res.status(404).send('Purification error.');
   try {
     let html = await readFile(indexPath, 'utf8');
     const host = req.get('x-forwarded-host') || req.get('host');
@@ -123,10 +130,16 @@ app.get('/', async (req, res) => {
     <meta name="description" content="Explore a professional digital sanctuary of high-performance manifestations. Witness the beauty of C++ logic and WebAssembly.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="${baseUrl}/">
+    <meta property="og:site_name" content="The Divine Code">
     <meta property="og:title" content="The Divine Code | Sacred WASM Codebase">
     <meta property="og:description" content="A professional digital sanctuary featuring high-performance WebAssembly code manifestations.">
     <meta property="og:image" content="${baseUrl}/homepage-preview.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="The Divine Code | Sacred WebAssembly Codebase">
+    <meta property="twitter:description" content="High-performance C++ codebases manifested through the power of WebAssembly.">
+    <meta property="twitter:image" content="${baseUrl}/homepage-preview.png">
     `;
     res.send(injectSacredTags(html, homeMeta));
   } catch (error) { res.status(500).send('Divine error.'); }
@@ -146,10 +159,16 @@ app.get('/wasm/:gameId/', async (req, res) => {
     const divineMeta = `
     <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="${baseUrl}/wasm/${game.id}/">
+    <meta property="og:site_name" content="The Divine Code">
     <meta property="og:title" content="${game.name} - The Divine Code">
     <meta property="og:description" content="${game.shortDescription}">
     <meta property="og:image" content="${game.previewImageUrl}">
     <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="${game.name} | The Divine Code">
+    <meta property="twitter:description" content="${game.shortDescription}">
+    <meta property="twitter:image" content="${game.previewImageUrl}">
     `;
     res.send(injectSacredTags(html, divineMeta));
   } catch (error) { res.status(500).send('Divine error.'); }
