@@ -44,7 +44,7 @@ const getFrontendDist = () => {
 const wasmGamesRoot = getGamesRoot();
 const frontendDist = getFrontendDist();
 
-// POINT OF TRUTH: Clean Google Tag
+// POINT OF TRUTH: Clean Google Tag (Absolute first)
 const googleAnalyticsTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-PDHE3BDWQM');</script>`;
 
 const gameVirtues: Record<string, string> = {
@@ -133,45 +133,30 @@ async function getGamesMetadata() {
   }
 }
 
-// REFINED: Read Baked Census from Build-Time
 async function getDivineCensus() {
-    let census = {
-        atomicWeight: 8469, // Fallback
-        manifestations: 4,
-        foundations: 3,
-        status: 'SANCTIFIED'
-    };
-
+    let census = { atomicWeight: 8469, manifestations: 4, foundations: 3, status: 'SANCTIFIED' };
     const bakedCensusPath = path.join(process.cwd(), 'backend/census.json');
     const localCensusPath = path.join(__dirname, '../census.json');
     const rootCensusPath = path.join(__dirname, '../../backend/census.json');
-
     const tryPaths = [bakedCensusPath, localCensusPath, rootCensusPath];
     for (const p of tryPaths) {
         if (fs.existsSync(p)) {
-            try {
-                census = JSON.parse(fs.readFileSync(p, 'utf8'));
-                break;
-            } catch (e) {
-                console.error('Failed to parse census at', p);
-            }
+            try { census = JSON.parse(fs.readFileSync(p, 'utf8')); break; } catch (e) {}
         }
     }
-
     const sacredStates = ["GATHERING GRACE", "HARMONIZING THREADS", "PARRYING THE VOID", "MANIFESTING LOGOS", "ASCENDING...", "STILLNESS ACHIEVED", "DIVINE RECKONING ACTIVE", "LATENCY: IMMACULATE", "UPTIME: ETERNAL", "ATOMS ALIGNED"];
     const randomStatus = sacredStates[Math.floor(Math.random() * sacredStates.length)];
-
-    return { 
-        ...census, 
-        communion: '@liwawil', 
-        status: randomStatus 
-    };
+    return { ...census, communion: '@liwawil', status: randomStatus };
 }
 
-// Helper to inject tags at the absolute start of head
+// THE RITUAL OF ABSOLUTE PRIMACY
 function injectSacredTags(html: string, extraMeta: string = "") {
-    const cleanedHtml = html.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
-    return cleanedHtml.replace(/<head>/i, `<head>${googleAnalyticsTag}${extraMeta}`);
+    // 1. Purge ANY existing Google Analytics fragments from the head to avoid conflicts
+    const purgedHtml = html.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
+    
+    // 2. Prepend the definitive tag at the absolute beginning of the <head> block
+    // We target the opening <head> tag and ensure no leading whitespace comes before our tag
+    return purgedHtml.replace(/<head\s*>/i, `<head>${googleAnalyticsTag}${extraMeta}`);
 }
 
 app.get('/api/games', async (req, res) => {
@@ -187,8 +172,7 @@ app.get('/api/stats', async (req, res) => {
 app.get('/sitemap.xml', async (req, res) => {
   const games = await getGamesMetadata();
   const host = req.get('host');
-  const protocol = host?.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
+  const baseUrl = `${host?.includes('localhost') ? 'http' : 'https'}://${host}`;
   let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
   games.forEach(game => {
@@ -222,7 +206,7 @@ app.get('/wasm/:gameId/', async (req, res) => {
     let html = await readFile(gameHtmlPath, 'utf8');
     if (!game) return res.send(html);
     const baseUrl = `${req.get('host')?.includes('localhost') ? 'http' : 'https'}://${req.get('host')}`;
-    const divineMeta = `<title>${game.name} | The Divine Code</title><meta property="og:image" content="${baseUrl}${game.previewImageUrl}">`;
+    const divineMeta = `<title>${game.name} | THE DIVINE CODE</title><meta property="og:image" content="${baseUrl}${game.previewImageUrl}">`;
     res.send(injectSacredTags(html, divineMeta));
   } catch (error) {
     res.status(500).send('Divine error in game SEO injection.');
@@ -235,8 +219,16 @@ app.use('/wasm/:gameId', (req, res, next) => {
 
 app.use(express.static(frontendDist, { index: false }));
 
-app.use((req, res) => {
-  res.sendFile(path.join(frontendDist, 'index.html'));
+// Fallback for SPA routing - Always through the Injector
+app.get('*', async (req, res) => {
+    const indexPath = path.join(frontendDist, 'index.html');
+    if (!fs.existsSync(indexPath)) return res.status(404).send('Build frontend first.');
+    try {
+        let html = await readFile(indexPath, 'utf8');
+        res.send(injectSacredTags(html));
+    } catch (e) {
+        res.sendFile(indexPath);
+    }
 });
 
 export default app;
