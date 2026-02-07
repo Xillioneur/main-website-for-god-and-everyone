@@ -16,7 +16,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ROBUST PATH RESOLUTION: Try multiple paths to find the sacred artifacts
+// ROBUST PATH RESOLUTION
 const getGamesRoot = () => {
     const paths = [
         path.join(process.cwd(), 'games'),
@@ -26,7 +26,7 @@ const getGamesRoot = () => {
     for (const p of paths) {
         if (fs.existsSync(p)) return p;
     }
-    return paths[0]; // Fallback
+    return paths[0];
 };
 
 const getFrontendDist = () => {
@@ -38,21 +38,14 @@ const getFrontendDist = () => {
     for (const p of paths) {
         if (fs.existsSync(p)) return p;
     }
-    return paths[0]; // Fallback
+    return paths[0];
 };
 
 const wasmGamesRoot = getGamesRoot();
 const frontendDist = getFrontendDist();
 
-const googleAnalyticsTag = `
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-PDHE3BDWQM');
-</script>
-`;
+// POINT OF TRUTH: Clean Google Tag (No leading newlines for immediate placement)
+const googleAnalyticsTag = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-PDHE3BDWQM" crossorigin="anonymous"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-PDHE3BDWQM');</script>`;
 
 const gameVirtues: Record<string, string> = {
   'divine': 'REDEMPTION',
@@ -143,7 +136,6 @@ async function getGamesMetadata() {
 async function getDivineCensus() {
     let totalLoc = 0;
     const extensions = ['.cpp', '.h', '.hpp'];
-    
     const walkSync = (dir: string) => {
         const files = fs.readdirSync(dir);
         files.forEach((file) => {
@@ -156,32 +148,19 @@ async function getDivineCensus() {
             }
         });
     };
-
     if (fs.existsSync(wasmGamesRoot)) walkSync(wasmGamesRoot);
     const games = await getGamesMetadata();
-
-    const sacredStates = [
-        "GATHERING GRACE",
-        "HARMONIZING THREADS",
-        "PARRYING THE VOID",
-        "MANIFESTING LOGOS",
-        "ASCENDING...",
-        "STILLNESS ACHIEVED",
-        "DIVINE RECKONING ACTIVE",
-        "LATENCY: IMMACULATE",
-        "UPTIME: ETERNAL",
-        "ATOMS ALIGNED"
-    ];
-    
+    const sacredStates = ["GATHERING GRACE", "HARMONIZING THREADS", "PARRYING THE VOID", "MANIFESTING LOGOS", "ASCENDING...", "STILLNESS ACHIEVED", "DIVINE RECKONING ACTIVE", "LATENCY: IMMACULATE", "UPTIME: ETERNAL", "ATOMS ALIGNED"];
     const randomStatus = sacredStates[Math.floor(Math.random() * sacredStates.length)];
+    return { atomicWeight: totalLoc, manifestations: games.filter(g => g.type === 'MANIFESTATION').length, foundations: games.filter(g => g.type === 'FOUNDATION').length, communion: '@liwawil', status: randomStatus };
+}
 
-    return {
-        atomicWeight: totalLoc,
-        manifestations: games.filter(g => g.type === 'MANIFESTATION').length,
-        foundations: games.filter(g => g.type === 'FOUNDATION').length,
-        communion: '@liwawil',
-        status: randomStatus
-    };
+// Helper to inject tags at the absolute start of head, purging existing ones to prevent duplicates
+function injectSacredTags(html: string, extraMeta: string = "") {
+    // Purge any existing Google Tags to ensure "Sacred Uniqueness"
+    const cleanedHtml = html.replace(/<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-PDHE3BDWQM".*?<\/script><script>.*?<\/script>/is, "");
+    // Prepend the GA tag + extra meta immediately after <head>
+    return cleanedHtml.replace(/<head>/i, `<head>${googleAnalyticsTag}${extraMeta}`);
 }
 
 app.get('/api/games', async (req, res) => {
@@ -199,15 +178,11 @@ app.get('/sitemap.xml', async (req, res) => {
   const host = req.get('host');
   const protocol = host?.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
-  
-  let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n`;
-  sitemap += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+  let sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
   sitemap += `  <url><loc>${baseUrl}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n`;
-  
   games.forEach(game => {
     sitemap += `  <url><loc>${baseUrl}${game.wasmPath}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
   });
-  
   sitemap += `</urlset>`;
   res.header('Content-Type', 'application/xml; charset=utf-8');
   res.send(sitemap);
@@ -215,27 +190,12 @@ app.get('/sitemap.xml', async (req, res) => {
 
 app.get('/', async (req, res) => {
   const indexPath = path.join(frontendDist, 'index.html');
-  if (!fs.existsSync(indexPath)) {
-      console.error('CRITICAL: index.html not found at', indexPath);
-      return res.status(404).send(`Build frontend first. Path checked: ${indexPath}`);
-  }
-
+  if (!fs.existsSync(indexPath)) return res.status(404).send('Build frontend first.');
   try {
     let html = await readFile(indexPath, 'utf8');
-    const host = req.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
-    const previewImage = `${baseUrl}/homepage-preview.png`;
-
-    const homeMeta = `${googleAnalyticsTag}
-    <title>The Divine Code | High-Performance WebAssembly Codebase</title>
-    <meta name="description" content="Explore The Divine Codebase. A collection of high-performance C++ games and logic manifested through WebAssembly.">
-    <meta property="og:image" content="${previewImage}">
-    <meta property="twitter:image" content="${previewImage}">
-    `;
-
-    html = html.replace(/<head>/i, `<head>${homeMeta}`);
-    res.send(html);
+    const baseUrl = `${req.get('host')?.includes('localhost') ? 'http' : 'https'}://${req.get('host')}`;
+    const homeMeta = `<title>The Divine Code | High-Performance WebAssembly Codebase</title><meta name="description" content="Explore The Divine Codebase. A collection of high-performance C++ games and logic manifested through WebAssembly."><meta property="og:image" content="${baseUrl}/homepage-preview.png"><meta property="twitter:image" content="${baseUrl}/homepage-preview.png">`;
+    res.send(injectSacredTags(html, homeMeta));
   } catch (error) {
     res.status(500).send('Divine error in home SEO injection.');
   }
@@ -244,29 +204,22 @@ app.get('/', async (req, res) => {
 app.get('/wasm/:gameId/', async (req, res) => {
   const { gameId } = req.params;
   const gameHtmlPath = path.join(wasmGamesRoot, gameId, `${gameId}.html`);
-  if (!fs.existsSync(gameHtmlPath)) return res.status(404).send(`Not found. Path: ${gameHtmlPath}`);
-
+  if (!fs.existsSync(gameHtmlPath)) return res.status(404).send('Not found.');
   try {
     const games = await getGamesMetadata();
     const game = games.find(g => g.id === gameId);
     let html = await readFile(gameHtmlPath, 'utf8');
     if (!game) return res.send(html);
-
-    const host = req.get('host');
-    const baseUrl = `${host?.includes('localhost') ? 'http' : 'https'}://${host}`;
-    const divineMeta = `${googleAnalyticsTag}<title>${game.name} | The Divine Code</title><meta property="og:image" content="${baseUrl}${game.previewImageUrl}">`;
-
-    html = html.replace(/<head>/i, `<head>${divineMeta}`);
-    res.send(html);
+    const baseUrl = `${req.get('host')?.includes('localhost') ? 'http' : 'https'}://${req.get('host')}`;
+    const divineMeta = `<title>${game.name} | The Divine Code</title><meta property="og:image" content="${baseUrl}${game.previewImageUrl}">`;
+    res.send(injectSacredTags(html, divineMeta));
   } catch (error) {
     res.status(500).send('Divine error in game SEO injection.');
   }
 });
 
-// Assets serving
 app.use('/wasm/:gameId', (req, res, next) => {
-  const gameFolderPath = path.join(wasmGamesRoot, req.params.gameId);
-  express.static(gameFolderPath)(req, res, next);
+  express.static(path.join(wasmGamesRoot, req.params.gameId))(req, res, next);
 });
 
 app.use(express.static(frontendDist, { index: false }));
@@ -275,7 +228,6 @@ app.use((req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
-// EXPORT FOR VERCEL
 export default app;
 
 if (process.env.NODE_ENV !== 'production') {
