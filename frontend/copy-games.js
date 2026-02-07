@@ -6,8 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const gamesRoot = path.resolve(__dirname, '../games');
-const backendRoot = path.resolve(__dirname, '../backend');
+const publicDir = path.resolve(__dirname, './public');
 const distDir = path.resolve(__dirname, './dist');
+const distAssetsDir = path.resolve(__dirname, './dist/assets');
 const distWasmDir = path.resolve(__dirname, './dist/wasm');
 
 async function copyGames() {
@@ -17,7 +18,7 @@ async function copyGames() {
     // 1. Ensure dist/wasm exists
     await fs.ensureDir(distWasmDir);
 
-    // 2. Synchronize ALL games into dist/wasm
+    // 2. Synchronize ALL games into dist/wasm, FILTERING OUT source, and RENAMING html
     const items = await fs.readdir(gamesRoot, { withFileTypes: true });
     for (const item of items) {
         if (item.isDirectory()) {
@@ -31,29 +32,32 @@ async function copyGames() {
                 }
             });
 
-            // CLOAKING: Move game html to backend/templates so they are PRIVATE
+            // CLOAKING: Rename game html so Vercel doesn't serve it statically
             const gameHtml = path.join(dest, `${item.name}.html`);
-            const templateDest = path.join(backendRoot, `templates/wasm/${item.name}`);
-            await fs.ensureDir(templateDest);
-            
             if (await fs.pathExists(gameHtml)) {
-                await fs.move(gameHtml, path.join(templateDest, `${item.name}.template.html`), { overwrite: true });
+                await fs.move(gameHtml, path.join(dest, `${item.name}.template.html`), { overwrite: true });
             }
-            console.log(`Manifested: ${item.name} synchronized and template isolated.`);
+            console.log(`Manifested: ${item.name} assets synced and cloaked.`);
         }
     }
 
-    // 3. Isolate the main index.html
+    // 3. Cloak the main index.html
     const indexHtml = path.join(distDir, 'index.html');
     if (await fs.pathExists(indexHtml)) {
-        await fs.ensureDir(path.join(backendRoot, 'templates'));
-        await fs.move(indexHtml, path.join(backendRoot, 'templates/index.template.html'), { overwrite: true });
-        console.log('Manifested: Landing template isolated in backend.');
+        await fs.move(indexHtml, path.join(distDir, 'index.template.html'), { overwrite: true });
+        console.log('Manifested: index.html cloaked as template.');
     }
 
-    // 4. Synchronize CSS to static dist
+    // 4. Synchronize CSS
+    const mainThemeCssSrc = path.join(distAssetsDir, 'main-theme.css');
+    if (await fs.pathExists(mainThemeCssSrc)) {
+        await fs.copy(mainThemeCssSrc, path.join(publicDir, 'main-theme.css'));
+        await fs.copy(mainThemeCssSrc, path.join(distDir, 'main-theme.css'));
+    }
+
     const gameShellCssSrc = path.join(gamesRoot, 'game_shell.css');
     if (await fs.pathExists(gameShellCssSrc)) {
+        await fs.copy(gameShellCssSrc, path.join(publicDir, 'game_shell.css'));
         await fs.copy(gameShellCssSrc, path.join(distDir, 'game_shell.css'));
     }
 
