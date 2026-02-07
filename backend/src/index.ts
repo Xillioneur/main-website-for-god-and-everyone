@@ -46,8 +46,10 @@ async function getGamesMetadata(req: express.Request) {
     const games: any[] = [];
     if (!fs.existsSync(wasmGamesRoot)) return [];
     const gameSubdirs = await readdir(wasmGamesRoot, { withFileTypes: true });
-    const host = req.get('x-forwarded-host') || req.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    
+    // Resolve Absolute Base URL for SEO
+    const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
     for (const dirent of gameSubdirs) {
@@ -91,17 +93,24 @@ async function getDivineCensus() {
     return { ...census, communion: '@liwawil', status: sacredStates[Math.floor(Math.random() * sacredStates.length)] };
 }
 
-// THE FINAL FOOLPROOF INJECTION: Targets the sacred marker exclusively
+// THE FINAL ROBUST INJECTION RITUAL
 function injectSacredTags(html: string, extraMeta: string = "") {
     const marker = "<!-- DIVINE_META_MANIFESTATION -->";
     const masterSignal = `${googleAnalyticsTag}${extraMeta}`;
     
+    // 1. If marker exists, replace it (Highest Precision)
     if (html.includes(marker)) {
         return html.replace(marker, masterSignal);
     }
     
-    // Fallback if marker is missing
-    return html.replace(/(<head[^>]*>)/i, `$1${masterSignal}`);
+    // 2. Fallback: Clean and prepend to head (Resilience)
+    let cleanedHtml = html;
+    cleanedHtml = cleanedHtml.replace(/<title>.*?<\/title>/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta name="(?:description|keywords|author)" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta property="og:.*?" content=".*?">/gi, "");
+    cleanedHtml = cleanedHtml.replace(/<meta name="twitter:.*?" content=".*?">/gi, "");
+    
+    return cleanedHtml.replace(/(<head[^>]*>)/i, `$1${masterSignal}`);
 }
 
 app.get('/api/games', async (req, res) => {
@@ -114,14 +123,14 @@ app.get('/api/stats', async (req, res) => {
     res.json(stats);
 });
 
+// MASTER LANDING PAGE SEO ritual
 app.get('/', async (req, res) => {
   const indexPath = path.join(frontendDist, 'index.template.html');
-  if (!fs.existsSync(indexPath)) return res.status(404).send('Divine error: Landing template not found.');
+  if (!fs.existsSync(indexPath)) return res.status(404).send('Divine error: Template missing.');
   try {
     let html = await readFile(indexPath, 'utf8');
-    const host = req.get('x-forwarded-host') || req.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
+    const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
+    const baseUrl = `https://${host}`;
     
     const homeMeta = `
     <title>The Divine Code | High-Performance C++ & WebAssembly Sanctuary</title>
@@ -130,7 +139,7 @@ app.get('/', async (req, res) => {
     <meta property="og:url" content="${baseUrl}/">
     <meta property="og:site_name" content="The Divine Code">
     <meta property="og:title" content="The Divine Code | High-Performance C++ & WebAssembly Sanctuary">
-    <meta property="og:description" content="A professional digital sanctuary of high-performance manifestations. Witness the beauty of the Word in code.">
+    <meta property="og:description" content="A professional digital sanctuary of high-performance logic manifestations. Witness the beauty of the Word in code.">
     <meta property="og:image" content="${baseUrl}/homepage-preview.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -154,11 +163,8 @@ app.get('/wasm/:gameId/', async (req, res) => {
     const game = games.find(g => g.id === gameId);
     let html = await readFile(gameHtmlPath, 'utf8');
     if (!game) return res.send(html);
-    
-    const host = req.get('x-forwarded-host') || req.get('host');
-    const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const baseUrl = `${protocol}://${host}`;
-    
+    const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
+    const baseUrl = `https://${host}`;
     const divineMeta = `
     <title>${game.name} | The Divine Code</title>
     <meta name="description" content="${game.shortDescription}">
@@ -175,7 +181,6 @@ app.get('/wasm/:gameId/', async (req, res) => {
     <meta property="twitter:description" content="${game.shortDescription}">
     <meta property="twitter:image" content="${game.previewImageUrl}">
     `;
-    
     res.send(injectSacredTags(html, divineMeta));
   } catch (error) { res.status(500).send('Divine error.'); }
 });
