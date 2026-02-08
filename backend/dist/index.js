@@ -129,7 +129,7 @@ app.get('/', async (req, res) => {
         res.status(500).send('Divine error.');
     }
 });
-app.get('/wasm/:gameId/', async (req, res) => {
+app.get('/wasm/:gameId', async (req, res) => {
     const { gameId } = req.params;
     const templatePath = path_1.default.join(templatesRoot, 'wasm', `${gameId}.template.html`);
     if (!fs_1.default.existsSync(templatePath))

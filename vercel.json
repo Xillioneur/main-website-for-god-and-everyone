@@ -1,6 +1,7 @@
 {
   "version": 2,
   "outputDirectory": "frontend/dist",
+  "trailingSlash": false,
   "functions": {
     "api/index.js": {
       "includeFiles": "backend/templates/**,games/**,frontend/dist/**"
@@ -28,6 +29,10 @@
     },
     {
       "source": "/sitemap.xml",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/wasm/:game",
       "destination": "/api/index.js"
     },
     {
