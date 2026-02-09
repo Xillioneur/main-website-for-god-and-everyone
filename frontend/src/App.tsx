@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus, prism } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Editor from '@monaco-editor/react'
 import './App.css'
 
 interface Game {
@@ -156,7 +157,218 @@ function App() {
   const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [showPlayground, setShowPlayground] = useState(false);
+  const [playgroundCode, setPlaygroundCode] = useState<string>(`#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Divine Code - Playground");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawText("LOGOS MANIFESTED", 190, 200, 40, WHITE);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`);
+  const [compileLogs, setCompileLogs] = useState<string>('');
+  const [isCompiling, setIsCompiling] = useState(false);
+  const [manifestedAssets, setManifestedAssets] = useState<string[]>([]);
+  const [settings, setSettings] = useState({ width: 800, height: 450, fps: 60, optLevel: '2' });
+  const [playgroundFiles, setPlaygroundFiles] = useState<string[]>([]);
+  const [activeFileName, setActiveFileName] = useState<string>('manifestation.cpp');
+  const [autoCompile, setAutoCompile] = useState(false);
   
+  // Phase 2: Live Reload Logic
+  useEffect(() => {
+    if (!autoCompile || !showPlayground) return;
+    
+    const timeout = setTimeout(() => {
+      handleCompile();
+    }, 2000);
+    
+    return () => clearTimeout(timeout);
+  }, [playgroundCode, autoCompile]);
+
+  const playgroundExamples = {
+    basic: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Divine Code - Playground");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawText("LOGOS MANIFESTED", 190, 200, 40, WHITE);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`,
+    shapes: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "Geometric Truth");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawCircle(400, 225, 100, MAROON);
+        DrawRectangle(200, 100, 150, 150, BLUE);
+        DrawTriangle({400, 50}, {300, 150}, {500, 150}, GOLD);
+        DrawText("ORDER IN GEOMETRY", 250, 350, 30, DARKGRAY);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`,
+    input: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Echo of Will");
+    SetTargetFPS(60);
+    Vector2 ballPosition = { (float)800/2, (float)450/2 };
+
+    while (!WindowShouldClose()) {
+        if (IsKeyDown(KEY_RIGHT)) ballPosition.x += 2.0f;
+        if (IsKeyDown(KEY_LEFT)) ballPosition.x -= 2.0f;
+        if (IsKeyDown(KEY_UP)) ballPosition.y -= 2.0f;
+        if (IsKeyDown(KEY_DOWN)) ballPosition.y += 2.0f;
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawCircleV(ballPosition, 50, MAROON);
+        DrawText("MOVE WITH WASD OR ARROWS", 10, 10, 20, DARKGRAY);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`,
+    threeD: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "Ashes of the Scroll - 3D");
+    Camera camera = { 0 };
+    camera.position = (Vector3){ 10.0f, 10.0f, 10.0f };
+    camera.target = (Vector3){ 0.0f, 0.0f, 0.0f };
+    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+    camera.fovy = 45.0f;
+    camera.projection = CAMERA_PERSPECTIVE;
+
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        UpdateCamera(&camera, CAMERA_ORBITAL);
+
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        BeginMode3D(camera);
+            DrawCube((Vector3){ 0, 0, 0 }, 2.0f, 2.0f, 2.0f, RED);
+            DrawCubeWires((Vector3){ 0, 0, 0 }, 2.0f, 2.0f, 2.0f, MAROON);
+            DrawGrid(10, 1.0f);
+        EndMode3D();
+        DrawText("3D SACRED GEOMETRY", 10, 40, 20, DARKGRAY);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`,
+    audio: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Harmony of Logic");
+    InitAudioDevice();
+    Sound fx = LoadSound("resources/target.wav");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        if (IsKeyPressed(KEY_SPACE)) PlaySound(fx);
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawText("PRESS SPACE TO INVOKE SOUND", 200, 200, 20, MAROON);
+        EndDrawing();
+    }
+
+    UnloadSound(fx);
+    CloseAudioDevice();
+    CloseWindow();
+    return 0;
+}`,
+    texture: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Icon of Truth");
+    Texture2D tex = LoadTexture("resources/preview.png");
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawTexture(tex, 400 - tex.width/2, 225 - tex.height/2, WHITE);
+        DrawText("TEXTURE MANIFESTED", 10, 10, 20, RAYWHITE);
+        EndDrawing();
+    }
+
+    UnloadTexture(tex);
+    CloseWindow();
+    return 0;
+}`,
+    collision: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Boundary of Being");
+    Rectangle player = { 400, 225, 50, 50 };
+    Rectangle wall = { 200, 100, 200, 200 };
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        if (IsKeyDown(KEY_RIGHT)) player.x += 4;
+        if (IsKeyDown(KEY_LEFT)) player.x -= 4;
+        if (IsKeyDown(KEY_UP)) player.y -= 4;
+        if (IsKeyDown(KEY_DOWN)) player.y += 4;
+
+        bool collision = CheckCollisionRecs(player, wall);
+
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        DrawRectangleRec(wall, GRAY);
+        DrawRectangleRec(player, collision ? RED : BLUE);
+        DrawText(collision ? "COLLISION DETECTED" : "NAVIGATE THE VOID", 10, 10, 20, DARKGRAY);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`,
+    shader: `#include "raylib.h"
+
+int main() {
+    InitWindow(800, 450, "The Light of Logos");
+    // Shaders require external .fs files, usually preloaded
+    // This is a placeholder for the shader manifestation study
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(BLACK);
+        DrawText("SHADER LOGIC UNDER STUDY", 200, 200, 20, GOLD);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}`
+  };
+
   const progressBarRef = useRef<HTMLDivElement>(null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -225,6 +437,17 @@ function App() {
   }, [games, foundations, selectedGameDetails]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedCode = params.get('code');
+    if (sharedCode) {
+      try {
+        setPlaygroundCode(atob(sharedCode));
+        setShowPlayground(true);
+      } catch (e) {
+        console.error("Failed to decode shared code.");
+      }
+    }
+    
     const fetchData = async () => {
       try {
         setError(null);
@@ -285,6 +508,7 @@ function App() {
 
   const backToList = () => {
     setSelectedGameDetails(null);
+    setShowPlayground(false);
     const url = new URL(window.location.href);
     url.searchParams.delete('manifest');
     window.history.pushState({}, '', url);
@@ -292,7 +516,254 @@ function App() {
     setShowHelp(false);
   };
 
+  const handleCompile = async () => {
+    setIsCompiling(true);
+    setCompileLogs('GATHERING FRAGMENTS...\n');
+    try {
+      const res = await fetch('/api/compile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: playgroundCode, settings, fileName: activeFileName })
+      });
+      const data = await res.json();
+      setCompileLogs(data.logs || (data.success ? 'ORDER ACHIEVED.' : 'THE LOGIC IS UNSOUND.'));
+      if (data.success) fetchFiles();
+    } catch (e) {
+      setCompileLogs('COMMUNION INTERRUPTED.');
+    } finally {
+      setIsCompiling(false);
+    }
+  };
+
+  const fetchFiles = async () => {
+    try {
+      const res = await fetch('/api/playground-files');
+      const data = await res.json();
+      if (data.success) setPlaygroundFiles(data.files);
+    } catch (e) {}
+  };
+
+  const openFile = async (name: string) => {
+    if (name.startsWith('resources/')) return; // Can't edit binary assets yet
+    try {
+      const res = await fetch(`/api/playground-file-content?name=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      if (data.success) {
+        setPlaygroundCode(data.content);
+        setActiveFileName(name);
+      }
+    } catch (e) {}
+  };
+
+  const deleteFile = async (name: string) => {
+    if (!confirm(`Are you sure you want to discard this fragment: ${name}?`)) return;
+    try {
+      const res = await fetch(`/api/delete-playground-file?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        fetchFiles();
+        if (activeFileName === name) {
+          setPlaygroundCode('// Fragment discarded.');
+          setActiveFileName('manifestation.cpp');
+        }
+      }
+    } catch (e) {}
+  };
+
+  useEffect(() => {
+    if (showPlayground) fetchFiles();
+  }, [showPlayground]);
+
+  const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const data = event.target?.result as string;
+      try {
+        const res = await fetch('/api/upload-asset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: file.name, data })
+        });
+        const result = await res.json();
+        if (result.success) {
+          setManifestedAssets(prev => [...prev, file.name]);
+          setCompileLogs(prev => prev + `\nAsset manifested: ${file.name}`);
+        }
+      } catch (err) {
+        setCompileLogs(prev => prev + `\nFailed to manifest asset: ${file.name}`);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const sharePlayground = () => {
+    const encodedCode = btoa(playgroundCode);
+    const url = new URL(window.location.href);
+    url.searchParams.set('code', encodedCode);
+    navigator.clipboard.writeText(url.toString());
+    alert('Manifestation link copied to clipboard.');
+  };
+
   // --- RENDER HELPERS ---
+
+  const renderPlayground = () => (
+    <div className="playground-view animate-in">
+      <div className="details-header">
+        <button className="back-button-top" onClick={backToList}>← RETURN TO THE SANCTUARY</button>
+        <div className="title-share-row">
+          <h2>MANIFEST LOGOS</h2>
+          <div className="example-selector">
+            <span style={{ fontSize: '0.7rem', fontWeight: 900, marginRight: '10px' }}>SELECT TEMPLATE:</span>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.basic)}>BASIC</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.shapes)}>GEOMETRY</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.input)}>INPUT</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.threeD)}>3D SPACE</button>
+            <button className="share-button" style={{ marginLeft: '20px' }} onClick={sharePlayground}>SHARE</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="playground-layout">
+        <div className="playground-sidebar">
+          <div className="sidebar-header">
+            <h3>FRAGMENTS</h3>
+            <button className="help-trigger mini-btn" onClick={() => {
+              const name = prompt('Enter fragment name (e.g. tools.h):');
+              if (name) {
+                setActiveFileName(name);
+                setPlaygroundCode('// New fragment of logic');
+              }
+            }}>+</button>
+          </div>
+          <div className="file-list">
+            {playgroundFiles.map(file => (
+              <div 
+                key={file} 
+                className={`file-item ${activeFileName === file ? 'active' : ''}`}
+                onClick={() => openFile(file)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span>
+                  {file.startsWith('resources/') ? '📦 ' : '📄 '}
+                  {file.replace('resources/', '')}
+                </span>
+                {!file.startsWith('resources/') && (
+                  <button 
+                    className="delete-btn" 
+                    onClick={(e) => { e.stopPropagation(); deleteFile(file); }}
+                    title="Discard Fragment"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="editor-section">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h3>SACRED SCRIPT: {activeFileName}</h3>
+            <label className="auto-compile-toggle">
+              <input 
+                type="checkbox" 
+                checked={autoCompile} 
+                onChange={(e) => setAutoCompile(e.target.checked)} 
+              />
+              <span style={{ fontSize: '0.7rem', fontWeight: 900, marginLeft: '8px', color: 'var(--text-dim)' }}>LIVE RELOAD</span>
+            </label>
+          </div>
+          <div className="monaco-container">
+            <Editor
+              height="500px"
+              defaultLanguage="cpp"
+              theme={isDarkMode ? "vs-dark" : "light"}
+              value={playgroundCode}
+              onChange={(value) => setPlaygroundCode(value || '')}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                padding: { top: 20, bottom: 20 }
+              }}
+            />
+          </div>
+          <button 
+            className="action-play-button" 
+            onClick={handleCompile}
+            disabled={isCompiling}
+          >
+            {isCompiling ? 'ORDERING...' : 'ORDER FRAGMENT (COMPILE)'}
+          </button>
+
+          <div className="playground-settings" style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <h3>SACRED PARAMETERS</h3>
+            <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+              <div className="setting-item">
+                <label>WIDTH</label>
+                <input type="number" value={settings.width} onChange={e => setSettings({...settings, width: parseInt(e.target.value)})} />
+              </div>
+              <div className="setting-item">
+                <label>HEIGHT</label>
+                <input type="number" value={settings.height} onChange={e => setSettings({...settings, height: parseInt(e.target.value)})} />
+              </div>
+              <div className="setting-item">
+                <label>FPS</label>
+                <input type="number" value={settings.fps} onChange={e => setSettings({...settings, fps: parseInt(e.target.value)})} />
+              </div>
+            </div>
+          </div>
+          
+          <div className="asset-management">
+            <h3>MANIFEST ASSETS (RESOURCES/)</h3>
+            <div className="asset-actions">
+              <label className="help-trigger" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                UPLOAD ASSET
+                <input type="file" style={{ display: 'none' }} onChange={handleAssetUpload} />
+              </label>
+            </div>
+            <div className="manifested-assets-list">
+              {manifestedAssets.length > 0 ? (
+                manifestedAssets.map(asset => (
+                  <span key={asset} className="asset-tag">{asset}</span>
+                ))
+              ) : (
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>No fragments manifested yet.</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="logs-section">
+          <h3>CHRONICLE OF CREATION</h3>
+          <div className="compile-logs-wrapper">
+            <SyntaxHighlighter 
+              language="bash" 
+              style={isDarkMode ? vscDarkPlus : prism}
+              customStyle={{
+                background: 'transparent',
+                padding: '0',
+                margin: '0',
+                fontSize: '0.8rem'
+              }}
+            >
+              {compileLogs || 'Awaiting the Word...'}
+            </SyntaxHighlighter>
+          </div>
+          {compileLogs.includes('Manifestation complete.') && (
+            <button className="action-play-button" onClick={() => window.open('/wasm/playground/', '_blank')}>
+              ASCEND (RUN MANIFESTATION)
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   const renderHero = () => (
     <section className="hero-section">
@@ -330,7 +801,7 @@ function App() {
         </div>
         <div className="census-item">
           <span className="census-label">ATOMIC WEIGHT (LOC)</span>
-          <span className="census-value">{stats?.atomicWeight || '8469'}</span>
+          <span className="census-value">{stats?.atomicWeight || '8485'}</span>
         </div>
         <div className="census-item">
           <span className="census-label">SACRED COMMUNION</span>
@@ -507,6 +978,7 @@ function App() {
           <span>THE DIVINE CODE</span>
         </div>
         <div className="header-actions">
+          <button className="help-trigger" onClick={() => { setShowPlayground(true); window.scrollTo(0,0); }}>MANIFEST</button>
           <button className="help-trigger" onClick={() => setShowHelp(true)}>PROTOCOLS (?)</button>
           <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
             {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
@@ -522,7 +994,9 @@ function App() {
       )}
 
       <main className="content-area">
-        {!selectedGameDetails ? (
+        {showPlayground ? (
+          renderPlayground()
+        ) : !selectedGameDetails ? (
           <>
             {renderHero()}
             <div className="games-grid-wrapper">

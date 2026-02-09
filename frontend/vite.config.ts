@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react()],
   publicDir: 'public',
   server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+      '/wasm': 'http://localhost:3000'
+    },
     fs: {
       allow: ['./public'], // Allow serving files from the public directory
     },

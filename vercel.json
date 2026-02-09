@@ -1,7 +1,7 @@
 {
   "version": 2,
   "outputDirectory": "frontend/dist",
-  "trailingSlash": false,
+  "trailingSlash": true,
   "functions": {
     "api/index.js": {
       "includeFiles": "backend/templates/**,games/**,frontend/dist/**"
