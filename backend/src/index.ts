@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
@@ -13,6 +14,7 @@ const execAsync = promisify(exec);
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 
 app.use((req, res, next) => {
@@ -23,6 +25,11 @@ app.use((req, res, next) => {
 
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
+    // In Vercel, the root is usually the process.cwd()
+    if (process.env.VERCEL) {
+        return process.cwd();
+    }
+
     let cur = process.cwd();
     // Look for the root by checking for 'games' folder that contains 'game_shell.html'
     // This distinguishes it from any accidental 'games' folders in subdirectories.
@@ -61,9 +68,22 @@ const getFrontendDist = () => {
 const getWasmGamesSource = () => {
     const paths = [
         path.join(projectRoot, 'games'), 
-        path.join(projectRoot, 'frontend/dist/wasm')
+        path.join(projectRoot, 'frontend/dist/wasm'),
+        path.join(projectRoot, 'frontend/public/wasm'),
+        path.join(__dirname, '../../games'),
+        path.join(__dirname, '../games')
     ];
-    for (const p of paths) if (fs.existsSync(p)) return p;
+    for (const p of paths) {
+        if (fs.existsSync(p)) {
+            const items = fs.readdirSync(p);
+            // Ensure it's not an empty directory
+            if (items.length > 0) {
+                console.log(`[SACRED] Games source manifested at: ${p}`);
+                return p;
+            }
+        }
+    }
+    console.warn(`[VOID] No valid games source found. Defaulting to: ${paths[0]}`);
     return paths[0];
 };
 
@@ -176,18 +196,20 @@ async function getGamesMetadata(req: express.Request) {
   ];
 
   try {
+    console.log(`[SACRED] Resolved wasmGamesSource: ${wasmGamesSource}`);
     if (!fs.existsSync(wasmGamesSource)) {
-        console.warn(`WASM Games Source not found at: ${wasmGamesSource}. Using fallback.`);
+        console.warn(`[VOID] WASM Games Source not found at: ${wasmGamesSource}. Using fallback.`);
         return fallbackGames;
     }
     
     const gameSubdirs = await readdir(wasmGamesSource, { withFileTypes: true });
-    console.log(`Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
+    console.log(`[SACRED] Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
     
     const games: any[] = [];
     for (const dirent of gameSubdirs) {
       if (dirent.isDirectory() && dirent.name !== 'playground') {
         const gameName = dirent.name;
+        console.log(`[SACRED] Manifesting metadata for: ${gameName}`);
         const gameFolderPath = path.join(wasmGamesSource, gameName);
         let fullDescription = "Manifestation under study.";
         try { fullDescription = await readFile(path.join(gameFolderPath, 'description.md'), 'utf8'); } catch (e) {}
@@ -216,13 +238,14 @@ async function getGamesMetadata(req: express.Request) {
     }
 
     if (games.length === 0) {
-        console.warn("No valid game directories found. Using fallback.");
+        console.warn("[VOID] No valid game directories found. Using fallback.");
         return fallbackGames;
     }
 
+    console.log(`[SACRED] Total games manifested: ${games.length}`);
     return games.sort((a, b) => b.mtime - a.mtime);
   } catch (error) { 
-    console.error("Error fetching games metadata:", error);
+    console.error("[VOID] Error fetching games metadata:", error);
     return fallbackGames; 
   }
 }
@@ -279,9 +302,28 @@ app.post('/api/compile', async (req, res) => {
         const sourceFile = path.join(playgroundDir, activeFile);
         await writeFile(sourceFile, processedCode);
 
-        // Find all .cpp files in playground
+        // Find all .cpp files in playground, but only include those without a 'main' function
+        // unless it's the activeFile being currently compiled.
         const allFiles = await readdir(playgroundDir);
-        const cppFiles = allFiles.filter(f => f.endsWith('.cpp')).map(f => path.join(playgroundDir, f)).join(' ');
+        const filteredCppFiles: string[] = [];
+        
+        for (const f of allFiles) {
+            if (f.endsWith('.cpp')) {
+                const fullPath = path.join(playgroundDir, f);
+                if (f === activeFile) {
+                    filteredCppFiles.push(fullPath);
+                } else {
+                    const content = fs.readFileSync(fullPath, 'utf8');
+                    // Simple check for main() function
+                    if (!/\b(int|void)\s+main\s*\(/.test(content)) {
+                        filteredCppFiles.push(fullPath);
+                    } else {
+                        console.log(`[SACRED] Skipping ${f} - contains duplicate main.`);
+                    }
+                }
+            }
+        }
+        const cppFiles = filteredCppFiles.join(' ');
 
         const raylibPath = path.join(os.homedir(), 'raylib');
         const raylibSrcPath = path.join(raylibPath, 'src');
@@ -341,6 +383,22 @@ app.post('/api/compile', async (req, res) => {
             error: 'The logic is unsound.', 
             logs: (error.stdout || '') + (error.stderr || '') || error.message 
         });
+    }
+});
+
+app.post('/api/save-playground-file', async (req, res) => {
+    const { name, code } = req.body;
+    if (!name || !code) return res.status(400).json({ error: 'Incomplete fragment.' });
+
+    const playgroundDir = path.join(projectRoot, 'games/playground');
+    const safeName = path.basename(name);
+
+    try {
+        if (!fs.existsSync(playgroundDir)) fs.mkdirSync(playgroundDir, { recursive: true });
+        await writeFile(path.join(playgroundDir, safeName), code);
+        res.json({ success: true, message: 'Fragment preserved in the archives.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to preserve logic.' });
     }
 });
 

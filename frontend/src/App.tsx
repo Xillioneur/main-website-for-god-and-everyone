@@ -561,8 +561,11 @@ int main() {
       });
       const data = await res.json();
       setCompileLogs(data.logs || (data.success ? 'ORDER ACHIEVED.' : 'THE LOGIC IS UNSOUND.'));
+      
+      // Always fetch files to show new fragments even if compile fails
+      fetchFiles();
+
       if (data.success) {
-        fetchFiles();
         // Automatically open the manifestation in a new window
         setTimeout(() => {
           window.open('/wasm/playground/', 'manifestation_window');
@@ -573,6 +576,36 @@ int main() {
     } finally {
       setIsCompiling(false);
     }
+  };
+
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/save-playground-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: activeFileName, code: playgroundCode })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCompileLogs('FRAGMENT PRESERVED.');
+        fetchFiles();
+      } else {
+        setCompileLogs('PRESERVATION FAILED.');
+      }
+    } catch (e) {
+      setCompileLogs('COMMUNION INTERRUPTED.');
+    }
+  };
+
+  const saveNewFile = async (name: string, content: string) => {
+    try {
+      await fetch('/api/save-playground-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, code: content })
+      });
+      fetchFiles();
+    } catch (e) {}
   };
 
   const fetchFiles = async () => {
@@ -705,11 +738,13 @@ int main() {
         <div className="playground-sidebar">
           <div className="sidebar-header">
             <h3>FRAGMENTS</h3>
-            <button className="help-trigger mini-btn" onClick={() => {
+            <button className="help-trigger mini-btn" onClick={async () => {
               const name = prompt('Enter fragment name (e.g. tools.h):');
               if (name) {
+                const initialCode = '// New fragment of logic';
                 setActiveFileName(name);
-                setPlaygroundCode('// New fragment of logic');
+                setPlaygroundCode(initialCode);
+                await saveNewFile(name, initialCode);
               }
             }}>+</button>
           </div>
@@ -816,13 +851,22 @@ int main() {
               }}
             />
           </div>
-          <button 
-            className="action-play-button" 
-            onClick={handleCompile}
-            disabled={isCompiling}
-          >
-            {isCompiling ? 'ORDERING...' : 'ORDER FRAGMENT (COMPILE)'}
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <button 
+              className="action-play-button" 
+              onClick={handleCompile}
+              disabled={isCompiling}
+            >
+              {isCompiling ? 'ORDERING...' : 'ORDER FRAGMENT (COMPILE)'}
+            </button>
+            <button 
+              className="action-play-button" 
+              onClick={handleSave}
+              style={{ background: 'var(--glass-bg)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }}
+            >
+              PRESERVE (SAVE)
+            </button>
+          </div>
 
           <div className="playground-settings" style={{ marginTop: '20px', marginBottom: '20px' }}>
             <h3>SACRED PARAMETERS</h3>
