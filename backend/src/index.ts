@@ -25,17 +25,35 @@ app.use((req, res, next) => {
 
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
-    // In Vercel, the root is usually the process.cwd()
+    let cur = process.cwd();
+    
+    // In Vercel, the root might be CWD or one level up
     if (process.env.VERCEL) {
-        return process.cwd();
+        console.log(`[SACRED] Vercel env detected. CWD: ${cur}`);
+        // Check if 'games' is here
+        if (fs.existsSync(path.join(cur, 'games'))) return cur;
+        // Check if 'games' is one level up (if we are in 'api/' or 'backend/')
+        if (fs.existsSync(path.join(cur, '..', 'games'))) return path.join(cur, '..');
+        return cur; 
     }
 
-    let cur = process.cwd();
     // Look for the root by checking for 'games' folder that contains 'game_shell.html'
-    // This distinguishes it from any accidental 'games' folders in subdirectories.
-    for (let i = 0; i < 4; i++) {
+    // or the root package.json name.
+    for (let i = 0; i < 5; i++) {
         const gamesPath = path.join(cur, 'games');
+        const pkgPath = path.join(cur, 'package.json');
+        
+        let isRoot = false;
         if (fs.existsSync(gamesPath) && fs.existsSync(path.join(gamesPath, 'game_shell.html'))) {
+            isRoot = true;
+        } else if (fs.existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+                if (pkg.name === 'the-divine-code-root') isRoot = true;
+            } catch (e) {}
+        }
+
+        if (isRoot) {
             console.log(`[SACRED] Project Root manifested at: ${cur}`);
             return cur;
         }
@@ -114,6 +132,7 @@ async function getGamesMetadata(req: express.Request) {
   const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
   const protocol = host.includes('localhost') ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
+  const source = getWasmGamesSource();
 
   const fallbackGames = [
     {
@@ -196,21 +215,21 @@ async function getGamesMetadata(req: express.Request) {
   ];
 
   try {
-    console.log(`[SACRED] Resolved wasmGamesSource: ${wasmGamesSource}`);
-    if (!fs.existsSync(wasmGamesSource)) {
-        console.warn(`[VOID] WASM Games Source not found at: ${wasmGamesSource}. Using fallback.`);
+    console.log(`[SACRED] Resolved wasmGamesSource: ${source}`);
+    if (!fs.existsSync(source)) {
+        console.warn(`[VOID] WASM Games Source not found at: ${source}. Using fallback.`);
         return fallbackGames;
     }
     
-    const gameSubdirs = await readdir(wasmGamesSource, { withFileTypes: true });
-    console.log(`[SACRED] Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
+    const gameSubdirs = await readdir(source, { withFileTypes: true });
+    console.log(`[SACRED] Scanning for manifestations in: ${source} (Found ${gameSubdirs.length} items)`);
     
     const games: any[] = [];
     for (const dirent of gameSubdirs) {
       if (dirent.isDirectory() && dirent.name !== 'playground') {
         const gameName = dirent.name;
         console.log(`[SACRED] Manifesting metadata for: ${gameName}`);
-        const gameFolderPath = path.join(wasmGamesSource, gameName);
+        const gameFolderPath = path.join(source, gameName);
         let fullDescription = "Manifestation under study.";
         try { fullDescription = await readFile(path.join(gameFolderPath, 'description.md'), 'utf8'); } catch (e) {}
         let logicSnippet = "";
