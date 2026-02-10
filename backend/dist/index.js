@@ -22,15 +22,37 @@ app.use((req, res, next) => {
     next();
 });
 // POINT OF TRUTH: Paths derived from current execution directory
+const getProjectRoot = () => {
+    let cur = process.cwd();
+    // Look for the root by checking for 'games' folder that contains 'game_shell.html'
+    // This distinguishes it from any accidental 'games' folders in subdirectories.
+    for (let i = 0; i < 4; i++) {
+        const gamesPath = path_1.default.join(cur, 'games');
+        if (fs_1.default.existsSync(gamesPath) && fs_1.default.existsSync(path_1.default.join(gamesPath, 'game_shell.html'))) {
+            console.log(`[SACRED] Project Root manifested at: ${cur}`);
+            return cur;
+        }
+        cur = path_1.default.join(cur, '..');
+    }
+    console.warn(`[VOID] Project Root not found. Defaulting to: ${process.cwd()}`);
+    return process.cwd();
+};
+const projectRoot = getProjectRoot();
 const getTemplatesRoot = () => {
-    const paths = [path_1.default.join(process.cwd(), 'backend/templates'), path_1.default.join(__dirname, '../templates')];
+    const paths = [
+        path_1.default.join(projectRoot, 'backend/templates'),
+        path_1.default.join(__dirname, '../templates')
+    ];
     for (const p of paths)
         if (fs_1.default.existsSync(p))
             return p;
     return paths[0];
 };
 const getFrontendDist = () => {
-    const paths = [path_1.default.join(process.cwd(), 'frontend/dist'), path_1.default.join(__dirname, '../../frontend/dist')];
+    const paths = [
+        path_1.default.join(projectRoot, 'frontend/dist'),
+        path_1.default.join(__dirname, '../../frontend/dist')
+    ];
     for (const p of paths)
         if (fs_1.default.existsSync(p))
             return p;
@@ -38,11 +60,8 @@ const getFrontendDist = () => {
 };
 const getWasmGamesSource = () => {
     const paths = [
-        path_1.default.join(process.cwd(), 'games'),
-        path_1.default.join(__dirname, '../games'),
-        path_1.default.join(__dirname, '../../games'),
-        path_1.default.join(process.cwd(), 'frontend/dist/wasm'),
-        path_1.default.join(__dirname, '../../frontend/dist/wasm')
+        path_1.default.join(projectRoot, 'games'),
+        path_1.default.join(projectRoot, 'frontend/dist/wasm')
     ];
     for (const p of paths)
         if (fs_1.default.existsSync(p))
@@ -206,7 +225,7 @@ async function getGamesMetadata(req) {
 }
 async function getDivineCensus() {
     let census = { atomicWeight: 8485, manifestations: 4, foundations: 3, status: 'SANCTIFIED' };
-    const p = path_1.default.join(process.cwd(), 'backend/census.json');
+    const p = path_1.default.join(projectRoot, 'backend/census.json');
     if (fs_1.default.existsSync(p)) {
         try {
             census = JSON.parse(fs_1.default.readFileSync(p, 'utf8'));
@@ -239,7 +258,7 @@ app.post('/api/compile', async (req, res) => {
     const { code, settings, fileName } = req.body;
     if (!code)
         return res.status(400).json({ error: 'No code fragment provided.' });
-    const playgroundDir = path_1.default.join(process.cwd(), 'games/playground');
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const publicPlaygroundDir = path_1.default.join(frontendDist, 'wasm/playground');
     const resourcesDir = path_1.default.join(playgroundDir, 'resources');
     try {
@@ -262,22 +281,36 @@ app.post('/api/compile', async (req, res) => {
         const raylibPath = path_1.default.join(os_1.default.homedir(), 'raylib');
         const raylibSrcPath = path_1.default.join(raylibPath, 'src');
         const libRaylibPath = path_1.default.join(raylibSrcPath, 'libraylib.web.a');
-        const shellFile = path_1.default.join(process.cwd(), 'games/game_shell.html');
+        const shellFile = path_1.default.join(projectRoot, 'games/game_shell.html');
         const outputFile = path_1.default.join(playgroundDir, 'playground.html');
         let preloadFlag = "";
         if (fs_1.default.existsSync(resourcesDir) && fs_1.default.readdirSync(resourcesDir).length > 0) {
             preloadFlag = `--preload-file resources`;
         }
-        const emccCmd = `emcc ${cppFiles} -o ${outputFile} -O2 -std=c++23 -pthread -I${raylibSrcPath} -L${raylibSrcPath} ${libRaylibPath} -s USE_GLFW=3 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -s USE_SDL=2 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=2 -s MAX_WEBGL_VERSION=2 -s MIN_WEBGL_VERSION=2 --shell-file ${shellFile} -DGRAPHICS_API_OPENGL_ES3 ${preloadFlag}`;
+        const optLevel = (settings === null || settings === void 0 ? void 0 : settings.optLevel) || '2';
+        const emccCmd = `emcc ${cppFiles} -o ${outputFile} -O${optLevel} -std=c++23 -pthread -I${raylibSrcPath} -L${raylibSrcPath} ${libRaylibPath} -s USE_GLFW=3 -s ASYNCIFY -s FORCE_FILESYSTEM=1 -s USE_SDL=2 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=2 -s MAX_WEBGL_VERSION=2 -s MIN_WEBGL_VERSION=2 --shell-file ${shellFile} -DGRAPHICS_API_OPENGL_ES3 ${preloadFlag}`;
         console.log('Manifesting Fragment:', emccCmd);
         const { stdout, stderr } = await execAsync(emccCmd);
         // After compilation, copy files to public dist for serving
-        const filesToCopy = ['playground.js', 'playground.wasm', 'playground.data'];
+        // Added playground.worker.js which is required for -pthread
+        const filesToCopy = ['playground.js', 'playground.wasm', 'playground.data', 'playground.worker.js'];
         for (const file of filesToCopy) {
             const src = path_1.default.join(playgroundDir, file);
             const dest = path_1.default.join(publicPlaygroundDir, file);
-            if (fs_1.default.existsSync(src))
+            if (fs_1.default.existsSync(src)) {
                 fs_1.default.copyFileSync(src, dest);
+                console.log(`Synced: ${file} to public sanctuary.`);
+            }
+        }
+        // Also copy resources if they were preloaded
+        if (fs_1.default.existsSync(resourcesDir)) {
+            const publicResourcesDir = path_1.default.join(publicPlaygroundDir, 'resources');
+            if (!fs_1.default.existsSync(publicResourcesDir))
+                fs_1.default.mkdirSync(publicResourcesDir, { recursive: true });
+            const assets = fs_1.default.readdirSync(resourcesDir);
+            for (const asset of assets) {
+                fs_1.default.copyFileSync(path_1.default.join(resourcesDir, asset), path_1.default.join(publicResourcesDir, asset));
+            }
         }
         // Copy HTML to templates sanctuary
         const htmlSrc = path_1.default.join(playgroundDir, 'playground.html');
@@ -304,7 +337,7 @@ app.post('/api/upload-asset', async (req, res) => {
     const { name, data } = req.body;
     if (!name || !data)
         return res.status(400).json({ error: 'Incomplete fragment.' });
-    const playgroundDir = path_1.default.join(process.cwd(), 'games/playground');
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const resourcesDir = path_1.default.join(playgroundDir, 'resources');
     try {
         if (!fs_1.default.existsSync(resourcesDir))
@@ -318,8 +351,24 @@ app.post('/api/upload-asset', async (req, res) => {
         res.status(500).json({ error: 'Asset manifestation failed.' });
     }
 });
+app.post('/api/upload-code', async (req, res) => {
+    const { name, data } = req.body;
+    if (!name || !data)
+        return res.status(400).json({ error: 'Incomplete fragment.' });
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
+    try {
+        if (!fs_1.default.existsSync(playgroundDir))
+            fs_1.default.mkdirSync(playgroundDir, { recursive: true });
+        const safeName = path_1.default.basename(name);
+        await writeFile(path_1.default.join(playgroundDir, safeName), data);
+        res.json({ success: true, message: `Code ${name} manifested.` });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Code manifestation failed.' });
+    }
+});
 app.get('/api/playground-files', async (req, res) => {
-    const playgroundDir = path_1.default.join(process.cwd(), 'games/playground');
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const resourcesDir = path_1.default.join(playgroundDir, 'resources');
     try {
         const files = [];
@@ -345,7 +394,7 @@ app.get('/api/playground-file-content', async (req, res) => {
     const { name } = req.query;
     if (!name || typeof name !== 'string')
         return res.status(400).json({ error: 'No fragment name.' });
-    const playgroundDir = path_1.default.join(process.cwd(), 'games/playground');
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const safeName = path_1.default.basename(name);
     const filePath = path_1.default.join(playgroundDir, safeName);
     try {
@@ -362,7 +411,7 @@ app.delete('/api/delete-playground-file', async (req, res) => {
     const { name } = req.query;
     if (!name || typeof name !== 'string')
         return res.status(400).json({ error: 'No fragment name.' });
-    const playgroundDir = path_1.default.join(process.cwd(), 'games/playground');
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const safeName = path_1.default.basename(name);
     const filePath = path_1.default.join(playgroundDir, safeName);
     try {
@@ -378,9 +427,97 @@ app.delete('/api/delete-playground-file', async (req, res) => {
         res.status(500).json({ error: 'Failed to discard fragment.' });
     }
 });
+app.get('/api/playground-snapshots', async (req, res) => {
+    const snapshotsDir = path_1.default.join(projectRoot, 'games/playground/snapshots');
+    try {
+        if (!fs_1.default.existsSync(snapshotsDir))
+            return res.json({ success: true, snapshots: [] });
+        const files = await readdir(snapshotsDir);
+        const snapshots = files
+            .filter(f => f.endsWith('.json'))
+            .map(f => {
+            const stats = fs_1.default.statSync(path_1.default.join(snapshotsDir, f));
+            return { name: f.replace('.json', ''), timestamp: stats.mtimeMs };
+        })
+            .sort((a, b) => b.timestamp - a.timestamp);
+        res.json({ success: true, snapshots });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve snapshots.' });
+    }
+});
+app.post('/api/save-snapshot', async (req, res) => {
+    const { name, code, fileName } = req.body;
+    const snapshotsDir = path_1.default.join(projectRoot, 'games/playground/snapshots');
+    try {
+        if (!fs_1.default.existsSync(snapshotsDir))
+            fs_1.default.mkdirSync(snapshotsDir, { recursive: true });
+        const safeName = path_1.default.basename(name).replace(/\s+/g, '_');
+        const snapshot = { name, code, fileName, timestamp: Date.now() };
+        await writeFile(path_1.default.join(snapshotsDir, `${safeName}.json`), JSON.stringify(snapshot));
+        res.json({ success: true, message: 'Snapshot preserved.' });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to preserve snapshot.' });
+    }
+});
+app.get('/api/load-snapshot', async (req, res) => {
+    const { name } = req.query;
+    const snapshotsDir = path_1.default.join(projectRoot, 'games/playground/snapshots');
+    try {
+        const safeName = path_1.default.basename(name).replace(/\s+/g, '_');
+        const filePath = path_1.default.join(snapshotsDir, `${safeName}.json`);
+        if (!fs_1.default.existsSync(filePath))
+            return res.status(404).json({ error: 'Snapshot not found.' });
+        const content = await readFile(filePath, 'utf8');
+        res.json({ success: true, ...JSON.parse(content) });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to load snapshot.' });
+    }
+});
+app.get('/api/export-playground', async (req, res) => {
+    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
+    const zipPath = path_1.default.join(os_1.default.tmpdir(), `playground_export_${Date.now()}.zip`);
+    try {
+        if (!fs_1.default.existsSync(playgroundDir))
+            return res.status(404).json({ error: 'Playground empty.' });
+        // Use zip command (available on macOS/Linux)
+        // We include .html, .js, .wasm, .data and resources/
+        const cmd = `cd ${playgroundDir} && zip -r ${zipPath} playground.html playground.js playground.wasm playground.data resources/`;
+        await execAsync(cmd);
+        res.download(zipPath, 'manifestation_bundle.zip', () => {
+            if (fs_1.default.existsSync(zipPath))
+                fs_1.default.unlinkSync(zipPath);
+        });
+    }
+    catch (error) {
+        // Fallback if some files are missing (e.g. no .data)
+        try {
+            const cmd = `cd ${playgroundDir} && zip -r ${zipPath} playground.html playground.js playground.wasm resources/`;
+            await execAsync(cmd);
+            res.download(zipPath, 'manifestation_bundle.zip', () => {
+                if (fs_1.default.existsSync(zipPath))
+                    fs_1.default.unlinkSync(zipPath);
+            });
+        }
+        catch (e) {
+            res.status(500).json({ error: 'Export failed.' });
+        }
+    }
+});
 // Serve static files from frontend/dist FIRST
 // This ensures /wasm/game/game.js is served from disk, not by the template route
 app.use(express_1.default.static(frontendDist, { index: false }));
+// IMPORTANT: Serve WASM/JS/DATA files from the wasm directory
+app.use('/wasm', express_1.default.static(path_1.default.join(frontendDist, 'wasm'), {
+    setHeaders: (res, filePath) => {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        if (filePath.endsWith('.wasm')) {
+            res.setHeader('Content-Type', 'application/wasm');
+        }
+    }
+}));
 app.get('/', async (req, res) => {
     const templatePath = path_1.default.join(templatesRoot, 'index.template.html');
     if (!fs_1.default.existsSync(templatePath))
@@ -398,7 +535,8 @@ app.get('/', async (req, res) => {
 });
 app.get('/wasm/:gameId', async (req, res) => {
     const { gameId } = req.params;
-    // If gameId looks like a file (has an extension), don't serve it as a template
+    // If gameId looks like a file (has an extension), it should have been caught by static middleware.
+    // If it still reaches here, it's either a directory request or a missing file.
     if (gameId.includes('.')) {
         return res.status(404).send('Manifestation not found.');
     }

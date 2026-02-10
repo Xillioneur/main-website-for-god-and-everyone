@@ -181,6 +181,40 @@ int main() {
   const [playgroundFiles, setPlaygroundFiles] = useState<string[]>([]);
   const [activeFileName, setActiveFileName] = useState<string>('manifestation.cpp');
   const [autoCompile, setAutoCompile] = useState(false);
+  const [snapshots, setSnapshots] = useState<{name: string, timestamp: number}[]>([]);
+
+  const fetchSnapshots = async () => {
+    try {
+      const res = await fetch('/api/playground-snapshots');
+      const data = await res.json();
+      if (data.success) setSnapshots(data.snapshots);
+    } catch (e) {}
+  };
+
+  const saveSnapshot = async () => {
+    const name = prompt('Enter a name for this snapshot (e.g., "Movement Prototype"):');
+    if (!name) return;
+    try {
+      const res = await fetch('/api/save-snapshot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, code: playgroundCode, fileName: activeFileName })
+      });
+      const data = await res.json();
+      if (data.success) fetchSnapshots();
+    } catch (e) {}
+  };
+
+  const loadSnapshot = async (snapshotName: string) => {
+    try {
+      const res = await fetch(`/api/load-snapshot?name=${encodeURIComponent(snapshotName)}`);
+      const data = await res.json();
+      if (data.success) {
+        setPlaygroundCode(data.code);
+        setActiveFileName(data.fileName);
+      }
+    } catch (e) {}
+  };
   
   // Phase 2: Live Reload Logic
   useEffect(() => {
@@ -527,7 +561,13 @@ int main() {
       });
       const data = await res.json();
       setCompileLogs(data.logs || (data.success ? 'ORDER ACHIEVED.' : 'THE LOGIC IS UNSOUND.'));
-      if (data.success) fetchFiles();
+      if (data.success) {
+        fetchFiles();
+        // Automatically open the manifestation in a new window
+        setTimeout(() => {
+          window.open('/wasm/playground/', 'manifestation_window');
+        }, 500);
+      }
     } catch (e) {
       setCompileLogs('COMMUNION INTERRUPTED.');
     } finally {
@@ -561,7 +601,7 @@ int main() {
       const res = await fetch(`/api/delete-playground-file?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
-        fetchFiles();
+        setTimeout(() => fetchFiles(), 300);
         if (activeFileName === name) {
           setPlaygroundCode('// Fragment discarded.');
           setActiveFileName('manifestation.cpp');
@@ -571,32 +611,59 @@ int main() {
   };
 
   useEffect(() => {
-    if (showPlayground) fetchFiles();
+    if (showPlayground) {
+      fetchFiles();
+      fetchSnapshots();
+    }
   }, [showPlayground]);
 
-  const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFileUpload = async (file: File) => {
+    const isCode = file.name.endsWith('.cpp') || file.name.endsWith('.h') || file.name.endsWith('.hpp');
     const reader = new FileReader();
+    
     reader.onload = async (event) => {
       const data = event.target?.result as string;
       try {
-        const res = await fetch('/api/upload-asset', {
+        const endpoint = isCode ? '/api/upload-code' : '/api/upload-asset';
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: file.name, data })
         });
         const result = await res.json();
         if (result.success) {
-          setManifestedAssets(prev => [...prev, file.name]);
-          setCompileLogs(prev => prev + `\nAsset manifested: ${file.name}`);
+          // Add a small delay for filesystem sync
+          setTimeout(() => fetchFiles(), 300);
+          if (isCode) {
+            setCompileLogs(prev => prev + `\nFragment manifested: ${file.name}`);
+          } else {
+            setManifestedAssets(prev => [...new Set([...prev, file.name])]);
+            setCompileLogs(prev => prev + `\nAsset manifested: ${file.name}`);
+          }
         }
       } catch (err) {
-        setCompileLogs(prev => prev + `\nFailed to manifest asset: ${file.name}`);
+        setCompileLogs(prev => prev + `\nFailed to manifest: ${file.name}`);
       }
     };
-    reader.readAsDataURL(file);
+
+    if (isCode) {
+      reader.readAsText(file);
+    } else {
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileUpload(file);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    for (const file of files) {
+      await handleFileUpload(file);
+    }
   };
 
   const sharePlayground = () => {
@@ -620,13 +687,21 @@ int main() {
             <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.basic)}>BASIC</button>
             <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.shapes)}>GEOMETRY</button>
             <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.input)}>INPUT</button>
-            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.threeD)}>3D SPACE</button>
-            <button className="share-button" style={{ marginLeft: '20px' }} onClick={sharePlayground}>SHARE</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.threeD)}>3D</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.audio)}>AUDIO</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.texture)}>TEXTURE</button>
+            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.collision)}>COLLISION</button>
+            <button className="help-trigger" style={{ marginLeft: '20px' }} onClick={() => window.location.href='/api/export-playground'}>EXPORT BUNDLE</button>
+            <button className="share-button" style={{ marginLeft: '10px' }} onClick={sharePlayground}>SHARE</button>
           </div>
         </div>
       </div>
 
-      <div className="playground-layout">
+      <div 
+        className="playground-layout"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+      >
         <div className="playground-sidebar">
           <div className="sidebar-header">
             <h3>FRAGMENTS</h3>
@@ -646,7 +721,7 @@ int main() {
                 onClick={() => openFile(file)}
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
-                <span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {file.startsWith('resources/') ? '📦 ' : '📄 '}
                   {file.replace('resources/', '')}
                 </span>
@@ -661,6 +736,26 @@ int main() {
                 )}
               </div>
             ))}
+          </div>
+
+          <div className="sidebar-header" style={{ marginTop: '30px' }}>
+            <h3>SNAPSHOTS</h3>
+            <button className="help-trigger mini-btn" onClick={saveSnapshot}>SAVE</button>
+          </div>
+          <div className="file-list">
+            {snapshots.map(s => (
+              <div 
+                key={s.name} 
+                className="file-item"
+                onClick={() => loadSnapshot(s.name)}
+                title={new Date(s.timestamp).toLocaleString()}
+              >
+                <span>🏺 {s.name}</span>
+              </div>
+            ))}
+            {snapshots.length === 0 && (
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', padding: '10px' }}>No snapshots preserved.</span>
+            )}
           </div>
         </div>
 
@@ -683,6 +778,34 @@ int main() {
               theme={isDarkMode ? "vs-dark" : "light"}
               value={playgroundCode}
               onChange={(value) => setPlaygroundCode(value || '')}
+              onMount={(_, monaco) => {
+                // Add basic Raylib keywords to completion provider
+                monaco.languages.registerCompletionItemProvider('cpp', {
+                  provideCompletionItems: (model: any, position: any) => {
+                    const word = model.getWordUntilPosition(position);
+                    const range = {
+                      startLineNumber: position.lineNumber,
+                      endLineNumber: position.lineNumber,
+                      startColumn: word.startColumn,
+                      endColumn: word.endColumn,
+                    };
+                    const suggestions = [
+                      'InitWindow', 'SetTargetFPS', 'WindowShouldClose', 'BeginDrawing', 'EndDrawing', 
+                      'ClearBackground', 'DrawText', 'DrawCircle', 'DrawRectangle', 'DrawTriangle',
+                      'CheckCollisionRecs', 'IsKeyDown', 'IsKeyPressed', 'KEY_RIGHT', 'KEY_LEFT',
+                      'KEY_UP', 'KEY_DOWN', 'KEY_SPACE', 'RAYWHITE', 'BLACK', 'MAROON', 'GOLD',
+                      'Vector2', 'Rectangle', 'Color', 'LoadTexture', 'UnloadTexture', 'DrawTexture',
+                      'InitAudioDevice', 'LoadSound', 'UnloadSound', 'PlaySound', 'CloseAudioDevice'
+                    ].map(label => ({
+                      label,
+                      kind: monaco.languages.CompletionItemKind.Function,
+                      insertText: label,
+                      range
+                    }));
+                    return { suggestions };
+                  }
+                });
+              }}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
@@ -703,7 +826,7 @@ int main() {
 
           <div className="playground-settings" style={{ marginTop: '20px', marginBottom: '20px' }}>
             <h3>SACRED PARAMETERS</h3>
-            <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
+            <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
               <div className="setting-item">
                 <label>WIDTH</label>
                 <input type="number" value={settings.width} onChange={e => setSettings({...settings, width: parseInt(e.target.value)})} />
@@ -715,6 +838,21 @@ int main() {
               <div className="setting-item">
                 <label>FPS</label>
                 <input type="number" value={settings.fps} onChange={e => setSettings({...settings, fps: parseInt(e.target.value)})} />
+              </div>
+              <div className="setting-item">
+                <label>OPT LEVEL</label>
+                <select 
+                  value={settings.optLevel} 
+                  onChange={e => setSettings({...settings, optLevel: e.target.value})}
+                  style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid var(--glass-border)', color: 'inherit', padding: '8px', borderRadius: '6px' }}
+                >
+                  <option value="0">O0 (DEBUG)</option>
+                  <option value="1">O1 (FAST)</option>
+                  <option value="2">O2 (FASTER)</option>
+                  <option value="3">O3 (FASTEST)</option>
+                  <option value="s">Os (SIZE)</option>
+                  <option value="z">Oz (MIN SIZE)</option>
+                </select>
               </div>
             </div>
           </div>

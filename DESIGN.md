@@ -25,22 +25,22 @@ A sacred playground where developers can upload, compile, and run **C/C++ games*
 - [x] Fix canvas resize / DPI bugs
 - [x] Basic theme toggle
 
-**Phase 1 – Usable Playground (IN PROGRESS)**
-- [ ] Monaco Editor integration (for Raylib syntax help)
-- [ ] File tree view for multi-file projects
-- [ ] Drag & drop folder / multiple files support
-- [ ] Basic asset support (.png, .wav, .ttf) mapped to `/resources/`
-- [ ] "New project from template" (5-8 templates)
-- [ ] "Share" button for project snapshots
-- [ ] Basic settings: window size, target FPS, optimization level
+**Phase 1 – Usable Playground (COMPLETE)**
+- [x] Monaco Editor integration (for Raylib syntax help)
+- [x] File tree view for multi-file projects
+- [x] Drag & drop folder / multiple files support
+- [x] Basic asset support (.png, .wav, .ttf) mapped to `/resources/`
+- [x] "New project from template" (5-8 templates)
+- [x] "Share" button for project snapshots
+- [x] Basic settings: window size, target FPS, optimization level
 
-**Phase 2 – Power User Features**
-- [ ] Version history / undo stack
-- [ ] Live reload on save
+**Phase 2 – Power User Features (COMPLETE)**
+- [x] Version history / snapshots (Sacred Snapshots)
+- [x] Live reload (debounced auto-compile)
+- [x] Export options (WASM bundle)
 - [ ] Gamepad + touch input mapper UI
-- [ ] Export options (WASM bundle, native executable)
 
-**Phase 3 – Ecosystem & Sacred Layer**
+**Phase 3 – Ecosystem & Sacred Layer (IN PROGRESS)**
 - [ ] User accounts (GitHub/Google)
 - [ ] Public gallery / discover page
 - [ ] Sacred geometry shader library
