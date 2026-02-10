@@ -5,24 +5,10 @@
   "scripts": {
     "install-all": "npm install --prefix backend && npm install --prefix frontend",
     "census": "node frontend/generate-census.js",
-    "build:backend": "npm run build --prefix backend",
-    "build:frontend": "npm run build --prefix frontend",
+    "build:backend": "npm install --prefix backend && npm run build --prefix backend",
+    "build:frontend": "npm install --prefix frontend && npm run build --prefix frontend",
     "build": "npm run build:backend && npm run build:frontend",
     "manifest": "npm run census && npm run build",
-    "start": "node backend/dist/index.js",
-    "postinstall": "npm install --prefix backend && npm install --prefix frontend"
-  },
-  "dependencies": {
-    "archiver": "^7.0.1",
-    "compression": "^1.8.1",
-    "express": "^5.2.1",
-    "fs-extra": "^11.3.3"
-  },
-  "devDependencies": {
-    "@types/archiver": "^7.0.0",
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.2.0",
-    "@types/compression": "^1.8.1",
-    "typescript": "^5.9.3"
+    "start": "node backend/dist/index.js"
   }
 }

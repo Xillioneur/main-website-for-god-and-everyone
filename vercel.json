@@ -4,7 +4,7 @@
   "trailingSlash": true,
   "functions": {
     "api/index.js": {
-      "includeFiles": "backend/dist/**,backend/templates/**,backend/census.json,games/**,frontend/dist/**"
+      "includeFiles": "backend/templates/**,games/**,frontend/dist/**"
     }
   },
   "headers": [
