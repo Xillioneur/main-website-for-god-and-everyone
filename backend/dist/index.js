@@ -25,20 +25,39 @@ app.use((req, res, next) => {
 });
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
-    // In Vercel, the root is usually the process.cwd()
+    const check = (dir) => {
+        const gamesPath = path_1.default.join(dir, 'games');
+        const pkgPath = path_1.default.join(dir, 'package.json');
+        if (fs_1.default.existsSync(gamesPath) && fs_1.default.existsSync(path_1.default.join(gamesPath, 'game_shell.html')))
+            return true;
+        if (fs_1.default.existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(fs_1.default.readFileSync(pkgPath, 'utf8'));
+                if (pkg.name === 'the-divine-code-root')
+                    return true;
+            }
+            catch (e) { }
+        }
+        return false;
+    };
+    // Potential candidates
+    const candidates = [
+        process.cwd(),
+        path_1.default.join(process.cwd(), '..'),
+        __dirname,
+        path_1.default.join(__dirname, '..'),
+        path_1.default.join(__dirname, '..', '..'),
+        path_1.default.join(__dirname, '..', '..', '..')
+    ];
+    for (const cand of candidates) {
+        if (check(cand)) {
+            console.log(`[SACRED] Project Root manifested at: ${cand}`);
+            return cand;
+        }
+    }
+    // Vercel specific fallback
     if (process.env.VERCEL) {
         return process.cwd();
-    }
-    let cur = process.cwd();
-    // Look for the root by checking for 'games' folder that contains 'game_shell.html'
-    // This distinguishes it from any accidental 'games' folders in subdirectories.
-    for (let i = 0; i < 4; i++) {
-        const gamesPath = path_1.default.join(cur, 'games');
-        if (fs_1.default.existsSync(gamesPath) && fs_1.default.existsSync(path_1.default.join(gamesPath, 'game_shell.html'))) {
-            console.log(`[SACRED] Project Root manifested at: ${cur}`);
-            return cur;
-        }
-        cur = path_1.default.join(cur, '..');
     }
     console.warn(`[VOID] Project Root not found. Defaulting to: ${process.cwd()}`);
     return process.cwd();
@@ -108,6 +127,7 @@ async function getGamesMetadata(req) {
     const host = req.get('x-forwarded-host') || req.get('host') || 'thedivinecode.vercel.app';
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
+    const source = getWasmGamesSource();
     const fallbackGames = [
         {
             id: 'divine',
@@ -188,19 +208,19 @@ async function getGamesMetadata(req) {
         }
     ];
     try {
-        console.log(`[SACRED] Resolved wasmGamesSource: ${wasmGamesSource}`);
-        if (!fs_1.default.existsSync(wasmGamesSource)) {
-            console.warn(`[VOID] WASM Games Source not found at: ${wasmGamesSource}. Using fallback.`);
+        console.log(`[SACRED] Resolved wasmGamesSource: ${source}`);
+        if (!fs_1.default.existsSync(source)) {
+            console.warn(`[VOID] WASM Games Source not found at: ${source}. Using fallback.`);
             return fallbackGames;
         }
-        const gameSubdirs = await readdir(wasmGamesSource, { withFileTypes: true });
-        console.log(`[SACRED] Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
+        const gameSubdirs = await readdir(source, { withFileTypes: true });
+        console.log(`[SACRED] Scanning for manifestations in: ${source} (Found ${gameSubdirs.length} items)`);
         const games = [];
         for (const dirent of gameSubdirs) {
             if (dirent.isDirectory() && dirent.name !== 'playground') {
                 const gameName = dirent.name;
                 console.log(`[SACRED] Manifesting metadata for: ${gameName}`);
-                const gameFolderPath = path_1.default.join(wasmGamesSource, gameName);
+                const gameFolderPath = path_1.default.join(source, gameName);
                 let fullDescription = "Manifestation under study.";
                 try {
                     fullDescription = await readFile(path_1.default.join(gameFolderPath, 'description.md'), 'utf8');

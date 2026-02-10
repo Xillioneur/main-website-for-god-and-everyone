@@ -25,40 +25,41 @@ app.use((req, res, next) => {
 
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
-    let cur = process.cwd();
-    
-    // In Vercel, the root might be CWD or one level up
-    if (process.env.VERCEL) {
-        console.log(`[SACRED] Vercel env detected. CWD: ${cur}`);
-        // Check if 'games' is here
-        if (fs.existsSync(path.join(cur, 'games'))) return cur;
-        // Check if 'games' is one level up (if we are in 'api/' or 'backend/')
-        if (fs.existsSync(path.join(cur, '..', 'games'))) return path.join(cur, '..');
-        return cur; 
-    }
-
-    // Look for the root by checking for 'games' folder that contains 'game_shell.html'
-    // or the root package.json name.
-    for (let i = 0; i < 5; i++) {
-        const gamesPath = path.join(cur, 'games');
-        const pkgPath = path.join(cur, 'package.json');
-        
-        let isRoot = false;
-        if (fs.existsSync(gamesPath) && fs.existsSync(path.join(gamesPath, 'game_shell.html'))) {
-            isRoot = true;
-        } else if (fs.existsSync(pkgPath)) {
+    const check = (dir: string) => {
+        const gamesPath = path.join(dir, 'games');
+        const pkgPath = path.join(dir, 'package.json');
+        if (fs.existsSync(gamesPath) && fs.existsSync(path.join(gamesPath, 'game_shell.html'))) return true;
+        if (fs.existsSync(pkgPath)) {
             try {
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                if (pkg.name === 'the-divine-code-root') isRoot = true;
+                if (pkg.name === 'the-divine-code-root') return true;
             } catch (e) {}
         }
+        return false;
+    };
 
-        if (isRoot) {
-            console.log(`[SACRED] Project Root manifested at: ${cur}`);
-            return cur;
+    // Potential candidates
+    const candidates = [
+        process.cwd(),
+        path.join(process.cwd(), '..'),
+        __dirname,
+        path.join(__dirname, '..'),
+        path.join(__dirname, '..', '..'),
+        path.join(__dirname, '..', '..', '..')
+    ];
+
+    for (const cand of candidates) {
+        if (check(cand)) {
+            console.log(`[SACRED] Project Root manifested at: ${cand}`);
+            return cand;
         }
-        cur = path.join(cur, '..');
     }
+
+    // Vercel specific fallback
+    if (process.env.VERCEL) {
+        return process.cwd();
+    }
+
     console.warn(`[VOID] Project Root not found. Defaulting to: ${process.cwd()}`);
     return process.cwd();
 };
