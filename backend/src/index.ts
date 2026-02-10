@@ -1,5 +1,4 @@
 import express from 'express';
-import compression from 'compression';
 import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
@@ -14,7 +13,6 @@ const execAsync = promisify(exec);
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 
 app.use((req, res, next) => {
@@ -25,23 +23,14 @@ app.use((req, res, next) => {
 
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
-    // In Vercel, the root is usually the process.cwd()
-    if (process.env.VERCEL) {
-        return process.cwd();
-    }
-
     let cur = process.cwd();
-    // Look for the root by checking for 'games' folder that contains 'game_shell.html'
-    // This distinguishes it from any accidental 'games' folders in subdirectories.
-    for (let i = 0; i < 4; i++) {
-        const gamesPath = path.join(cur, 'games');
-        if (fs.existsSync(gamesPath) && fs.existsSync(path.join(gamesPath, 'game_shell.html'))) {
-            console.log(`[SACRED] Project Root manifested at: ${cur}`);
+    // Look for the root by checking for 'package.json' or 'games' folder
+    for (let i = 0; i < 3; i++) {
+        if (fs.existsSync(path.join(cur, 'games')) && fs.existsSync(path.join(cur, 'package.json'))) {
             return cur;
         }
         cur = path.join(cur, '..');
     }
-    console.warn(`[VOID] Project Root not found. Defaulting to: ${process.cwd()}`);
     return process.cwd();
 };
 
@@ -68,22 +57,9 @@ const getFrontendDist = () => {
 const getWasmGamesSource = () => {
     const paths = [
         path.join(projectRoot, 'games'), 
-        path.join(projectRoot, 'frontend/dist/wasm'),
-        path.join(projectRoot, 'frontend/public/wasm'),
-        path.join(__dirname, '../../games'),
-        path.join(__dirname, '../games')
+        path.join(projectRoot, 'frontend/dist/wasm')
     ];
-    for (const p of paths) {
-        if (fs.existsSync(p)) {
-            const items = fs.readdirSync(p);
-            // Ensure it's not an empty directory
-            if (items.length > 0) {
-                console.log(`[SACRED] Games source manifested at: ${p}`);
-                return p;
-            }
-        }
-    }
-    console.warn(`[VOID] No valid games source found. Defaulting to: ${paths[0]}`);
+    for (const p of paths) if (fs.existsSync(p)) return p;
     return paths[0];
 };
 
@@ -196,20 +172,18 @@ async function getGamesMetadata(req: express.Request) {
   ];
 
   try {
-    console.log(`[SACRED] Resolved wasmGamesSource: ${wasmGamesSource}`);
     if (!fs.existsSync(wasmGamesSource)) {
-        console.warn(`[VOID] WASM Games Source not found at: ${wasmGamesSource}. Using fallback.`);
+        console.warn(`WASM Games Source not found at: ${wasmGamesSource}. Using fallback.`);
         return fallbackGames;
     }
     
     const gameSubdirs = await readdir(wasmGamesSource, { withFileTypes: true });
-    console.log(`[SACRED] Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
+    console.log(`Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
     
     const games: any[] = [];
     for (const dirent of gameSubdirs) {
       if (dirent.isDirectory() && dirent.name !== 'playground') {
         const gameName = dirent.name;
-        console.log(`[SACRED] Manifesting metadata for: ${gameName}`);
         const gameFolderPath = path.join(wasmGamesSource, gameName);
         let fullDescription = "Manifestation under study.";
         try { fullDescription = await readFile(path.join(gameFolderPath, 'description.md'), 'utf8'); } catch (e) {}
@@ -238,21 +212,20 @@ async function getGamesMetadata(req: express.Request) {
     }
 
     if (games.length === 0) {
-        console.warn("[VOID] No valid game directories found. Using fallback.");
+        console.warn("No valid game directories found. Using fallback.");
         return fallbackGames;
     }
 
-    console.log(`[SACRED] Total games manifested: ${games.length}`);
     return games.sort((a, b) => b.mtime - a.mtime);
   } catch (error) { 
-    console.error("[VOID] Error fetching games metadata:", error);
+    console.error("Error fetching games metadata:", error);
     return fallbackGames; 
   }
 }
 
 async function getDivineCensus() {
     let census = { atomicWeight: 8485, manifestations: 4, foundations: 3, status: 'SANCTIFIED' };
-    const p = path.join(projectRoot, 'backend/census.json');
+    const p = path.join(process.cwd(), 'backend/census.json');
     if (fs.existsSync(p)) { try { census = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) {} }
     const sacredStates = ["GATHERING GRACE", "HARMONIZING THREADS", "PARRYING THE VOID", "MANIFESTING LOGOS", "ASCENDING...", "STILLNESS ACHIEVED", "DIVINE RECKONING ACTIVE", "LATENCY: IMMACULATE", "UPTIME: ETERNAL", "ATOMS ALIGNED"];
     return { ...census, communion: '@liwawil', status: sacredStates[Math.floor(Math.random() * sacredStates.length)] };
@@ -326,8 +299,7 @@ app.post('/api/compile', async (req, res) => {
         const { stdout, stderr } = await execAsync(emccCmd);
         
         // After compilation, copy files to public dist for serving
-        // Added playground.worker.js which is required for -pthread
-        const filesToCopy = ['playground.js', 'playground.wasm', 'playground.data', 'playground.worker.js'];
+        const filesToCopy = ['playground.js', 'playground.wasm', 'playground.data'];
         for (const file of filesToCopy) {
             const src = path.join(playgroundDir, file);
             const dest = path.join(publicPlaygroundDir, file);
@@ -465,81 +437,6 @@ app.delete('/api/delete-playground-file', async (req, res) => {
     }
 });
 
-app.get('/api/playground-snapshots', async (req, res) => {
-    const snapshotsDir = path.join(projectRoot, 'games/playground/snapshots');
-    try {
-        if (!fs.existsSync(snapshotsDir)) return res.json({ success: true, snapshots: [] });
-        const files = await readdir(snapshotsDir);
-        const snapshots = files
-            .filter(f => f.endsWith('.json'))
-            .map(f => {
-                const stats = fs.statSync(path.join(snapshotsDir, f));
-                return { name: f.replace('.json', ''), timestamp: stats.mtimeMs };
-            })
-            .sort((a, b) => b.timestamp - a.timestamp);
-        res.json({ success: true, snapshots });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve snapshots.' });
-    }
-});
-
-app.post('/api/save-snapshot', async (req, res) => {
-    const { name, code, fileName } = req.body;
-    const snapshotsDir = path.join(projectRoot, 'games/playground/snapshots');
-    try {
-        if (!fs.existsSync(snapshotsDir)) fs.mkdirSync(snapshotsDir, { recursive: true });
-        const safeName = path.basename(name).replace(/\s+/g, '_');
-        const snapshot = { name, code, fileName, timestamp: Date.now() };
-        await writeFile(path.join(snapshotsDir, `${safeName}.json`), JSON.stringify(snapshot));
-        res.json({ success: true, message: 'Snapshot preserved.' });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to preserve snapshot.' });
-    }
-});
-
-app.get('/api/load-snapshot', async (req, res) => {
-    const { name } = req.query;
-    const snapshotsDir = path.join(projectRoot, 'games/playground/snapshots');
-    try {
-        const safeName = path.basename(name as string).replace(/\s+/g, '_');
-        const filePath = path.join(snapshotsDir, `${safeName}.json`);
-        if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Snapshot not found.' });
-        const content = await readFile(filePath, 'utf8');
-        res.json({ success: true, ...JSON.parse(content) });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to load snapshot.' });
-    }
-});
-
-app.get('/api/export-playground', async (req, res) => {
-    const playgroundDir = path.join(projectRoot, 'games/playground');
-    const zipPath = path.join(os.tmpdir(), `playground_export_${Date.now()}.zip`);
-    
-    try {
-        if (!fs.existsSync(playgroundDir)) return res.status(404).json({ error: 'Playground empty.' });
-        
-        // Use zip command (available on macOS/Linux)
-        // We include .html, .js, .wasm, .data and resources/
-        const cmd = `cd ${playgroundDir} && zip -r ${zipPath} playground.html playground.js playground.wasm playground.data resources/`;
-        await execAsync(cmd);
-        
-        res.download(zipPath, 'manifestation_bundle.zip', () => {
-            if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-        });
-    } catch (error) {
-        // Fallback if some files are missing (e.g. no .data)
-        try {
-            const cmd = `cd ${playgroundDir} && zip -r ${zipPath} playground.html playground.js playground.wasm resources/`;
-            await execAsync(cmd);
-            res.download(zipPath, 'manifestation_bundle.zip', () => {
-                if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-            });
-        } catch (e) {
-            res.status(500).json({ error: 'Export failed.' });
-        }
-    }
-});
-
 // Serve static files from frontend/dist FIRST
 // This ensures /wasm/game/game.js is served from disk, not by the template route
 app.use(express.static(frontendDist, { index: false }));
@@ -547,7 +444,6 @@ app.use(express.static(frontendDist, { index: false }));
 // IMPORTANT: Serve WASM/JS/DATA files from the wasm directory
 app.use('/wasm', express.static(path.join(frontendDist, 'wasm'), {
   setHeaders: (res, filePath) => {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     if (filePath.endsWith('.wasm')) {
       res.setHeader('Content-Type', 'application/wasm');
     }

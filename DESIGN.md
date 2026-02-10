@@ -34,13 +34,13 @@ A sacred playground where developers can upload, compile, and run **C/C++ games*
 - [x] "Share" button for project snapshots
 - [x] Basic settings: window size, target FPS, optimization level
 
-**Phase 2 – Power User Features (COMPLETE)**
-- [x] Version history / snapshots (Sacred Snapshots)
-- [x] Live reload (debounced auto-compile)
-- [x] Export options (WASM bundle)
+**Phase 2 – Power User Features (IN PROGRESS)**
+- [ ] Version history / undo stack
+- [ ] Live reload on save
 - [ ] Gamepad + touch input mapper UI
+- [ ] Export options (WASM bundle, native executable)
 
-**Phase 3 – Ecosystem & Sacred Layer (IN PROGRESS)**
+**Phase 3 – Ecosystem & Sacred Layer**
 - [ ] User accounts (GitHub/Google)
 - [ ] Public gallery / discover page
 - [ ] Sacred geometry shader library

@@ -601,7 +601,7 @@ int main() {
       const res = await fetch(`/api/delete-playground-file?name=${encodeURIComponent(name)}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
-        setTimeout(() => fetchFiles(), 300);
+        fetchFiles();
         if (activeFileName === name) {
           setPlaygroundCode('// Fragment discarded.');
           setActiveFileName('manifestation.cpp');
@@ -632,8 +632,7 @@ int main() {
         });
         const result = await res.json();
         if (result.success) {
-          // Add a small delay for filesystem sync
-          setTimeout(() => fetchFiles(), 300);
+          fetchFiles();
           if (isCode) {
             setCompileLogs(prev => prev + `\nFragment manifested: ${file.name}`);
           } else {
@@ -691,8 +690,7 @@ int main() {
             <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.audio)}>AUDIO</button>
             <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.texture)}>TEXTURE</button>
             <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.collision)}>COLLISION</button>
-            <button className="help-trigger" style={{ marginLeft: '20px' }} onClick={() => window.location.href='/api/export-playground'}>EXPORT BUNDLE</button>
-            <button className="share-button" style={{ marginLeft: '10px' }} onClick={sharePlayground}>SHARE</button>
+            <button className="share-button" style={{ marginLeft: '20px' }} onClick={sharePlayground}>SHARE</button>
           </div>
         </div>
       </div>
