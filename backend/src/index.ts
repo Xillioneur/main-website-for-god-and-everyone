@@ -124,6 +124,34 @@ const getWasmGamesSource = () => {
     return paths[0];
 };
 
+const getPlaygroundDir = () => {
+    const baseDir = path.join(projectRoot, 'games/playground');
+    if (process.env.VERCEL) {
+        const tmpDir = path.join('/tmp', 'playground');
+        if (!fs.existsSync(tmpDir)) {
+            console.log(`[SACRED] Initializing writable playground at: ${tmpDir}`);
+            try {
+                fs.mkdirSync(tmpDir, { recursive: true });
+                if (fs.existsSync(baseDir)) {
+                    // Copy basic structure if needed, or just let it be empty/initialized by first save
+                    const files = fs.readdirSync(baseDir);
+                    for (const f of files) {
+                        const src = path.join(baseDir, f);
+                        if (fs.statSync(src).isFile()) {
+                            fs.copyFileSync(src, path.join(tmpDir, f));
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(`[VOID] Failed to initialize /tmp/playground:`, e);
+            }
+        }
+        return tmpDir;
+    }
+    return baseDir;
+};
+
+const playgroundDir = getPlaygroundDir();
 const templatesRoot = getTemplatesRoot();
 const frontendDist = getFrontendDist();
 const wasmGamesSource = getWasmGamesSource();
@@ -321,7 +349,6 @@ app.post('/api/compile', async (req, res) => {
     const { code, settings, fileName } = req.body;
     if (!code) return res.status(400).json({ error: 'No code fragment provided.' });
 
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const publicPlaygroundDir = path.join(frontendDist, 'wasm/playground');
     const resourcesDir = path.join(playgroundDir, 'resources');
     
@@ -428,7 +455,6 @@ app.post('/api/save-playground-file', async (req, res) => {
     const { name, code } = req.body;
     if (!name || !code) return res.status(400).json({ error: 'Incomplete fragment.' });
 
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const safeName = path.basename(name);
 
     try {
@@ -445,7 +471,6 @@ app.post('/api/upload-asset', async (req, res) => {
     const { name, data } = req.body;
     if (!name || !data) return res.status(400).json({ error: 'Incomplete fragment.' });
 
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const resourcesDir = path.join(playgroundDir, 'resources');
 
     try {
@@ -465,8 +490,6 @@ app.post('/api/upload-code', async (req, res) => {
     const { name, data } = req.body;
     if (!name || !data) return res.status(400).json({ error: 'Incomplete fragment.' });
 
-    const playgroundDir = path.join(projectRoot, 'games/playground');
-
     try {
         if (!fs.existsSync(playgroundDir)) fs.mkdirSync(playgroundDir, { recursive: true });
         const safeName = path.basename(name);
@@ -478,7 +501,6 @@ app.post('/api/upload-code', async (req, res) => {
 });
 
 app.get('/api/playground-files', async (req, res) => {
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const resourcesDir = path.join(playgroundDir, 'resources');
     
     try {
@@ -505,7 +527,6 @@ app.get('/api/playground-file-content', async (req, res) => {
     const { name } = req.query;
     if (!name || typeof name !== 'string') return res.status(400).json({ error: 'No fragment name.' });
 
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const safeName = path.basename(name);
     const filePath = path.join(playgroundDir, safeName);
 
@@ -522,7 +543,6 @@ app.delete('/api/delete-playground-file', async (req, res) => {
     const { name } = req.query;
     if (!name || typeof name !== 'string') return res.status(400).json({ error: 'No fragment name.' });
 
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const safeName = path.basename(name);
     const filePath = path.join(playgroundDir, safeName);
 
@@ -585,7 +605,6 @@ app.get('/api/load-snapshot', async (req, res) => {
 });
 
 app.get('/api/export-playground', async (req, res) => {
-    const playgroundDir = path.join(projectRoot, 'games/playground');
     const zipPath = path.join(os.tmpdir(), `playground_export_${Date.now()}.zip`);
     
     try {

@@ -117,6 +117,34 @@ const getWasmGamesSource = () => {
     console.warn(`[VOID] No valid games source found. Defaulting to: ${paths[0]}`);
     return paths[0];
 };
+const getPlaygroundDir = () => {
+    const baseDir = path_1.default.join(projectRoot, 'games/playground');
+    if (process.env.VERCEL) {
+        const tmpDir = path_1.default.join('/tmp', 'playground');
+        if (!fs_1.default.existsSync(tmpDir)) {
+            console.log(`[SACRED] Initializing writable playground at: ${tmpDir}`);
+            try {
+                fs_1.default.mkdirSync(tmpDir, { recursive: true });
+                if (fs_1.default.existsSync(baseDir)) {
+                    // Copy basic structure if needed, or just let it be empty/initialized by first save
+                    const files = fs_1.default.readdirSync(baseDir);
+                    for (const f of files) {
+                        const src = path_1.default.join(baseDir, f);
+                        if (fs_1.default.statSync(src).isFile()) {
+                            fs_1.default.copyFileSync(src, path_1.default.join(tmpDir, f));
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                console.error(`[VOID] Failed to initialize /tmp/playground:`, e);
+            }
+        }
+        return tmpDir;
+    }
+    return baseDir;
+};
+const playgroundDir = getPlaygroundDir();
 const templatesRoot = getTemplatesRoot();
 const frontendDist = getFrontendDist();
 const wasmGamesSource = getWasmGamesSource();
@@ -311,7 +339,6 @@ app.post('/api/compile', async (req, res) => {
     const { code, settings, fileName } = req.body;
     if (!code)
         return res.status(400).json({ error: 'No code fragment provided.' });
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const publicPlaygroundDir = path_1.default.join(frontendDist, 'wasm/playground');
     const resourcesDir = path_1.default.join(playgroundDir, 'resources');
     try {
@@ -409,7 +436,6 @@ app.post('/api/save-playground-file', async (req, res) => {
     const { name, code } = req.body;
     if (!name || !code)
         return res.status(400).json({ error: 'Incomplete fragment.' });
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const safeName = path_1.default.basename(name);
     try {
         if (!fs_1.default.existsSync(playgroundDir))
@@ -426,7 +452,6 @@ app.post('/api/upload-asset', async (req, res) => {
     const { name, data } = req.body;
     if (!name || !data)
         return res.status(400).json({ error: 'Incomplete fragment.' });
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const resourcesDir = path_1.default.join(playgroundDir, 'resources');
     try {
         if (!fs_1.default.existsSync(resourcesDir))
@@ -444,7 +469,6 @@ app.post('/api/upload-code', async (req, res) => {
     const { name, data } = req.body;
     if (!name || !data)
         return res.status(400).json({ error: 'Incomplete fragment.' });
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     try {
         if (!fs_1.default.existsSync(playgroundDir))
             fs_1.default.mkdirSync(playgroundDir, { recursive: true });
@@ -457,7 +481,6 @@ app.post('/api/upload-code', async (req, res) => {
     }
 });
 app.get('/api/playground-files', async (req, res) => {
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const resourcesDir = path_1.default.join(playgroundDir, 'resources');
     try {
         const files = [];
@@ -483,7 +506,6 @@ app.get('/api/playground-file-content', async (req, res) => {
     const { name } = req.query;
     if (!name || typeof name !== 'string')
         return res.status(400).json({ error: 'No fragment name.' });
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const safeName = path_1.default.basename(name);
     const filePath = path_1.default.join(playgroundDir, safeName);
     try {
@@ -500,7 +522,6 @@ app.delete('/api/delete-playground-file', async (req, res) => {
     const { name } = req.query;
     if (!name || typeof name !== 'string')
         return res.status(400).json({ error: 'No fragment name.' });
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const safeName = path_1.default.basename(name);
     const filePath = path_1.default.join(playgroundDir, safeName);
     try {
@@ -566,7 +587,6 @@ app.get('/api/load-snapshot', async (req, res) => {
     }
 });
 app.get('/api/export-playground', async (req, res) => {
-    const playgroundDir = path_1.default.join(projectRoot, 'games/playground');
     const zipPath = path_1.default.join(os_1.default.tmpdir(), `playground_export_${Date.now()}.zip`);
     try {
         if (!fs_1.default.existsSync(playgroundDir))
