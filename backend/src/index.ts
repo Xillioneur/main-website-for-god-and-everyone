@@ -26,19 +26,23 @@ app.use((req, res, next) => {
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
     const check = (dir: string) => {
-        const gamesPath = path.join(dir, 'games');
-        const pkgPath = path.join(dir, 'package.json');
-        if (fs.existsSync(gamesPath) && fs.existsSync(path.join(gamesPath, 'game_shell.html'))) return true;
-        if (fs.existsSync(pkgPath)) {
-            try {
+        try {
+            if (!fs.existsSync(dir)) return false;
+            const gamesPath = path.join(dir, 'games');
+            const pkgPath = path.join(dir, 'package.json');
+            const hasGames = fs.existsSync(gamesPath) && fs.existsSync(path.join(gamesPath, 'game_shell.html'));
+            let hasPkg = false;
+            if (fs.existsSync(pkgPath)) {
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                if (pkg.name === 'the-divine-code-root') return true;
-            } catch (e) {}
+                if (pkg.name === 'the-divine-code-root') hasPkg = true;
+            }
+            console.log(`[SACRED] Checking candidate: ${dir} -> games: ${hasGames}, pkg: ${hasPkg}`);
+            return hasGames || hasPkg;
+        } catch (e) {
+            return false;
         }
-        return false;
     };
 
-    // Potential candidates
     const candidates = [
         process.cwd(),
         path.join(process.cwd(), '..'),
@@ -48,6 +52,8 @@ const getProjectRoot = () => {
         path.join(__dirname, '..', '..', '..')
     ];
 
+    console.log(`[SACRED] Commencing Root Search. CWD: ${process.cwd()}, DIRNAME: ${__dirname}`);
+
     for (const cand of candidates) {
         if (check(cand)) {
             console.log(`[SACRED] Project Root manifested at: ${cand}`);
@@ -55,8 +61,8 @@ const getProjectRoot = () => {
         }
     }
 
-    // Vercel specific fallback
     if (process.env.VERCEL) {
+        console.warn(`[VOID] Project Root not found in candidates. VERCEL detected, using CWD: ${process.cwd()}`);
         return process.cwd();
     }
 
@@ -71,7 +77,13 @@ const getTemplatesRoot = () => {
         path.join(projectRoot, 'backend/templates'),
         path.join(__dirname, '../templates')
     ];
-    for (const p of paths) if (fs.existsSync(p)) return p;
+    for (const p of paths) {
+        if (fs.existsSync(p)) {
+            console.log(`[SACRED] Templates Root manifested at: ${p}`);
+            return p;
+        }
+    }
+    console.warn(`[VOID] No templates root found. Defaulting to: ${paths[0]}`);
     return paths[0];
 };
 
@@ -80,7 +92,13 @@ const getFrontendDist = () => {
         path.join(projectRoot, 'frontend/dist'),
         path.join(__dirname, '../../frontend/dist')
     ];
-    for (const p of paths) if (fs.existsSync(p)) return p;
+    for (const p of paths) {
+        if (fs.existsSync(p)) {
+            console.log(`[SACRED] Frontend Dist manifested at: ${p}`);
+            return p;
+        }
+    }
+    console.warn(`[VOID] No frontend dist found. Defaulting to: ${paths[0]}`);
     return paths[0];
 };
 

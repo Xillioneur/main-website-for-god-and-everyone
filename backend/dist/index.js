@@ -26,21 +26,25 @@ app.use((req, res, next) => {
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
     const check = (dir) => {
-        const gamesPath = path_1.default.join(dir, 'games');
-        const pkgPath = path_1.default.join(dir, 'package.json');
-        if (fs_1.default.existsSync(gamesPath) && fs_1.default.existsSync(path_1.default.join(gamesPath, 'game_shell.html')))
-            return true;
-        if (fs_1.default.existsSync(pkgPath)) {
-            try {
+        try {
+            if (!fs_1.default.existsSync(dir))
+                return false;
+            const gamesPath = path_1.default.join(dir, 'games');
+            const pkgPath = path_1.default.join(dir, 'package.json');
+            const hasGames = fs_1.default.existsSync(gamesPath) && fs_1.default.existsSync(path_1.default.join(gamesPath, 'game_shell.html'));
+            let hasPkg = false;
+            if (fs_1.default.existsSync(pkgPath)) {
                 const pkg = JSON.parse(fs_1.default.readFileSync(pkgPath, 'utf8'));
                 if (pkg.name === 'the-divine-code-root')
-                    return true;
+                    hasPkg = true;
             }
-            catch (e) { }
+            console.log(`[SACRED] Checking candidate: ${dir} -> games: ${hasGames}, pkg: ${hasPkg}`);
+            return hasGames || hasPkg;
         }
-        return false;
+        catch (e) {
+            return false;
+        }
     };
-    // Potential candidates
     const candidates = [
         process.cwd(),
         path_1.default.join(process.cwd(), '..'),
@@ -49,14 +53,15 @@ const getProjectRoot = () => {
         path_1.default.join(__dirname, '..', '..'),
         path_1.default.join(__dirname, '..', '..', '..')
     ];
+    console.log(`[SACRED] Commencing Root Search. CWD: ${process.cwd()}, DIRNAME: ${__dirname}`);
     for (const cand of candidates) {
         if (check(cand)) {
             console.log(`[SACRED] Project Root manifested at: ${cand}`);
             return cand;
         }
     }
-    // Vercel specific fallback
     if (process.env.VERCEL) {
+        console.warn(`[VOID] Project Root not found in candidates. VERCEL detected, using CWD: ${process.cwd()}`);
         return process.cwd();
     }
     console.warn(`[VOID] Project Root not found. Defaulting to: ${process.cwd()}`);
@@ -68,9 +73,13 @@ const getTemplatesRoot = () => {
         path_1.default.join(projectRoot, 'backend/templates'),
         path_1.default.join(__dirname, '../templates')
     ];
-    for (const p of paths)
-        if (fs_1.default.existsSync(p))
+    for (const p of paths) {
+        if (fs_1.default.existsSync(p)) {
+            console.log(`[SACRED] Templates Root manifested at: ${p}`);
             return p;
+        }
+    }
+    console.warn(`[VOID] No templates root found. Defaulting to: ${paths[0]}`);
     return paths[0];
 };
 const getFrontendDist = () => {
@@ -78,9 +87,13 @@ const getFrontendDist = () => {
         path_1.default.join(projectRoot, 'frontend/dist'),
         path_1.default.join(__dirname, '../../frontend/dist')
     ];
-    for (const p of paths)
-        if (fs_1.default.existsSync(p))
+    for (const p of paths) {
+        if (fs_1.default.existsSync(p)) {
+            console.log(`[SACRED] Frontend Dist manifested at: ${p}`);
             return p;
+        }
+    }
+    console.warn(`[VOID] No frontend dist found. Defaulting to: ${paths[0]}`);
     return paths[0];
 };
 const getWasmGamesSource = () => {
