@@ -23,15 +23,11 @@ app.use((req, res, next) => {
 });
 // POINT OF TRUTH: Paths derived from current execution directory
 const getProjectRoot = () => {
-    let cur = process.cwd();
-    // Look for the root by checking for 'package.json' or 'games' folder
-    for (let i = 0; i < 3; i++) {
-        if (fs_1.default.existsSync(path_1.default.join(cur, 'games')) && fs_1.default.existsSync(path_1.default.join(cur, 'package.json'))) {
-            return cur;
-        }
-        cur = path_1.default.join(cur, '..');
-    }
-    return process.cwd();
+    // If we are in backend/src or backend/dist, we need to go up
+    let current = process.cwd();
+    if (current.endsWith('backend'))
+        return path_1.default.join(current, '..');
+    return current;
 };
 const projectRoot = getProjectRoot();
 const getTemplatesRoot = () => {
@@ -400,6 +396,54 @@ app.get('/api/playground-file-content', async (req, res) => {
     }
     catch (error) {
         res.status(500).json({ error: 'Failed to read fragment.' });
+    }
+});
+app.get('/api/playground-snapshots', async (req, res) => {
+    const snapshotsDir = path_1.default.join(projectRoot, 'games/playground/snapshots');
+    try {
+        if (!fs_1.default.existsSync(snapshotsDir))
+            fs_1.default.mkdirSync(snapshotsDir, { recursive: true });
+        const files = await readdir(snapshotsDir);
+        const snapshots = files.filter(f => f.endsWith('.json')).map(f => {
+            const stats = fs_1.default.statSync(path_1.default.join(snapshotsDir, f));
+            return { name: f.replace('.json', ''), timestamp: stats.mtimeMs };
+        });
+        res.json({ success: true, snapshots });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve snapshots.' });
+    }
+});
+app.post('/api/save-snapshot', async (req, res) => {
+    const { name, code, fileName } = req.body;
+    if (!name || !code)
+        return res.status(400).json({ error: 'Incomplete snapshot data.' });
+    const snapshotsDir = path_1.default.join(projectRoot, 'games/playground/snapshots');
+    try {
+        if (!fs_1.default.existsSync(snapshotsDir))
+            fs_1.default.mkdirSync(snapshotsDir, { recursive: true });
+        const snapshotPath = path_1.default.join(snapshotsDir, `${name}.json`);
+        await writeFile(snapshotPath, JSON.stringify({ name, code, fileName, timestamp: Date.now() }));
+        res.json({ success: true, message: 'Snapshot preserved.' });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to preserve snapshot.' });
+    }
+});
+app.get('/api/load-snapshot', async (req, res) => {
+    const { name } = req.query;
+    if (!name || typeof name !== 'string')
+        return res.status(400).json({ error: 'No snapshot name.' });
+    const snapshotsDir = path_1.default.join(projectRoot, 'games/playground/snapshots');
+    try {
+        const snapshotPath = path_1.default.join(snapshotsDir, `${name}.json`);
+        if (!fs_1.default.existsSync(snapshotPath))
+            return res.status(404).json({ error: 'Snapshot not found.' });
+        const data = JSON.parse(await readFile(snapshotPath, 'utf8'));
+        res.json({ success: true, ...data });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to load snapshot.' });
     }
 });
 app.delete('/api/delete-playground-file', async (req, res) => {

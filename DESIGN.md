@@ -25,16 +25,16 @@ A sacred playground where developers can upload, compile, and run **C/C++ games*
 - [x] Fix canvas resize / DPI bugs
 - [x] Basic theme toggle
 
-**Phase 1 – Usable Playground (COMPLETE)**
-- [x] Monaco Editor integration (for Raylib syntax help)
-- [x] File tree view for multi-file projects
-- [x] Drag & drop folder / multiple files support
-- [x] Basic asset support (.png, .wav, .ttf) mapped to `/resources/`
-- [x] "New project from template" (5-8 templates)
-- [x] "Share" button for project snapshots
-- [x] Basic settings: window size, target FPS, optimization level
+**Phase 1 – Usable Playground (IN PROGRESS)**
+- [ ] Monaco Editor integration (for Raylib syntax help)
+- [ ] File tree view for multi-file projects
+- [ ] Drag & drop folder / multiple files support
+- [ ] Basic asset support (.png, .wav, .ttf) mapped to `/resources/`
+- [ ] "New project from template" (5-8 templates)
+- [ ] "Share" button for project snapshots
+- [ ] Basic settings: window size, target FPS, optimization level
 
-**Phase 2 – Power User Features (IN PROGRESS)**
+**Phase 2 – Power User Features**
 - [ ] Version history / undo stack
 - [ ] Live reload on save
 - [ ] Gamepad + touch input mapper UI

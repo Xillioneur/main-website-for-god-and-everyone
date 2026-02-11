@@ -938,10 +938,8 @@ body.light-mode .code-block {
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   padding: 20px;
-  max-height: 800px;
+  max-height: 700px;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
 }
 
 .sidebar-header {
@@ -949,8 +947,6 @@ body.light-mode .code-block {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--glass-border);
 }
 
 .sidebar-header h3 {
@@ -968,11 +964,11 @@ body.light-mode .code-block {
 .file-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .file-item {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -981,9 +977,6 @@ body.light-mode .code-block {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .file-item:hover {
@@ -995,24 +988,6 @@ body.light-mode .code-block {
   background: var(--accent);
   color: var(--primary-bg);
   font-weight: 700;
-}
-
-.file-item.active .delete-btn {
-  color: var(--primary-bg);
-}
-
-.delete-btn {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.file-item:hover .delete-btn {
-  opacity: 0.5;
-}
-
-.delete-btn:hover {
-  opacity: 1 !important;
-  color: #ff3b30 !important;
 }
 
 .monaco-container {
