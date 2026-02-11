@@ -757,6 +757,14 @@ body.light-mode .code-block {
   color: var(--accent);
 }
 
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  width: 100%;
+}
+
 .status-glow {
   color: var(--accent);
   text-shadow: 0 0 15px var(--accent);

@@ -156,6 +156,7 @@ function App() {
   const [selectedGameDetails, setSelectedGameDetails] = useState<Game | null>(null);
   const [activeVirtue, setActiveVirtue] = useState<string>('ALL');
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
   const [showPlayground, setShowPlayground] = useState(false);
   const [playgroundCode, setPlaygroundCode] = useState<string>(`#include "raylib.h"
@@ -281,91 +282,6 @@ int main() {
 
     CloseWindow();
     return 0;
-}`,
-    audio: `#include "raylib.h"
-
-int main() {
-    InitWindow(800, 450, "The Harmony of Logic");
-    InitAudioDevice();
-    Sound fx = LoadSound("resources/target.wav");
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose()) {
-        if (IsKeyPressed(KEY_SPACE)) PlaySound(fx);
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawText("PRESS SPACE TO INVOKE SOUND", 200, 200, 20, MAROON);
-        EndDrawing();
-    }
-
-    UnloadSound(fx);
-    CloseAudioDevice();
-    CloseWindow();
-    return 0;
-}`,
-    texture: `#include "raylib.h"
-
-int main() {
-    InitWindow(800, 450, "The Icon of Truth");
-    Texture2D tex = LoadTexture("resources/preview.png");
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(BLACK);
-        DrawTexture(tex, 400 - tex.width/2, 225 - tex.height/2, WHITE);
-        DrawText("TEXTURE MANIFESTED", 10, 10, 20, RAYWHITE);
-        EndDrawing();
-    }
-
-    UnloadTexture(tex);
-    CloseWindow();
-    return 0;
-}`,
-    collision: `#include "raylib.h"
-
-int main() {
-    InitWindow(800, 450, "The Boundary of Being");
-    Rectangle player = { 400, 225, 50, 50 };
-    Rectangle wall = { 200, 100, 200, 200 };
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose()) {
-        if (IsKeyDown(KEY_RIGHT)) player.x += 4;
-        if (IsKeyDown(KEY_LEFT)) player.x -= 4;
-        if (IsKeyDown(KEY_UP)) player.y -= 4;
-        if (IsKeyDown(KEY_DOWN)) player.y += 4;
-
-        bool collision = CheckCollisionRecs(player, wall);
-
-        BeginDrawing();
-        ClearBackground(RAYWHITE);
-        DrawRectangleRec(wall, GRAY);
-        DrawRectangleRec(player, collision ? RED : BLUE);
-        DrawText(collision ? "COLLISION DETECTED" : "NAVIGATE THE VOID", 10, 10, 20, DARKGRAY);
-        EndDrawing();
-    }
-
-    CloseWindow();
-    return 0;
-}`,
-    shader: `#include "raylib.h"
-
-int main() {
-    InitWindow(800, 450, "The Light of Logos");
-    // Shaders require external .fs files, usually preloaded
-    // This is a placeholder for the shader manifestation study
-    SetTargetFPS(60);
-
-    while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(BLACK);
-        DrawText("SHADER LOGIC UNDER STUDY", 200, 200, 20, GOLD);
-        EndDrawing();
-    }
-
-    CloseWindow();
-    return 0;
 }`
   };
 
@@ -406,58 +322,82 @@ int main() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Phase 4 & 11: Navigation & Shortcuts
+  // Navigation & Shortcuts
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
       const gameId = params.get('manifest');
-      if (gameId && games.length > 0) {
+      if (gameId && (games.length > 0 || foundations.length > 0)) {
         const game = games.concat(foundations).find(g => g.id === gameId);
         if (game) setSelectedGameDetails(game);
         else setSelectedGameDetails(null);
       } else {
         setSelectedGameDetails(null);
       }
+      
+      if (window.location.pathname === '/manifest') {
+        setShowPlayground(true);
+      } else {
+        setShowPlayground(false);
+      }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') backToList();
       if (e.key === '?' || e.key === '/') {
-        if (!selectedGameDetails) setShowHelp(prev => !prev);
+        if (!selectedGameDetails && !showPlayground) setShowHelp(prev => !prev);
       }
     };
 
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('keydown', handleKeyDown);
     
+    // Initial path check
+    if (window.location.pathname === '/manifest') {
+      setShowPlayground(true);
+    }
+    
     return () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [games, foundations, selectedGameDetails]);
+  }, [games, foundations, selectedGameDetails, showPlayground]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sharedCode = params.get('code');
     if (sharedCode) {
       try {
-        setPlaygroundCode(atob(sharedCode));
+        // More robust base64 decoding for Unicode
+        const decoded = decodeURIComponent(escape(atob(sharedCode)));
+        setPlaygroundCode(decoded);
         setShowPlayground(true);
       } catch (e) {
-        console.error("Failed to decode shared code.");
+        try {
+            setPlaygroundCode(atob(sharedCode));
+            setShowPlayground(true);
+        } catch (e2) {
+            console.error("Failed to decode shared code.");
+        }
       }
     }
     
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         setError(null);
         const [gamesRes, statsRes] = await Promise.all([
           fetch('/api/games'),
           fetch('/api/stats')
         ]);
         
-        if (!gamesRes.ok) throw new Error('Interrupt');
+        if (!gamesRes.ok) throw new Error('Communication Interrupted');
         const gamesData: Game[] = await gamesRes.json();
+        
+        if (!Array.isArray(gamesData)) {
+            throw new Error('Malformed Manifestation Data');
+        }
+
         setGames(gamesData.filter(g => g.type === 'MANIFESTATION'));
         setFoundations(gamesData.filter(g => g.type === 'FOUNDATION'));
         setFilteredGames(gamesData.filter(g => g.type === 'MANIFESTATION'));
@@ -467,7 +407,10 @@ int main() {
           setStats(statsData);
         }
       } catch (e: any) {
+        console.error("Fetch error:", e);
         setError('A momentary cloud has passed over the connection.');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
@@ -511,9 +454,22 @@ int main() {
     setShowPlayground(false);
     const url = new URL(window.location.href);
     url.searchParams.delete('manifest');
-    window.history.pushState({}, '', url);
+    url.searchParams.delete('code');
+    
+    if (window.location.pathname === '/manifest') {
+      window.history.pushState({}, '', '/');
+    } else {
+      window.history.pushState({}, '', url);
+    }
+    
     setError(null);
     setShowHelp(false);
+  };
+
+  const openManifest = () => {
+    setShowPlayground(true);
+    window.history.pushState({}, '', '/manifest');
+    window.scrollTo(0, 0);
   };
 
   const handleCompile = async () => {
@@ -600,11 +556,15 @@ int main() {
   };
 
   const sharePlayground = () => {
-    const encodedCode = btoa(playgroundCode);
-    const url = new URL(window.location.href);
-    url.searchParams.set('code', encodedCode);
-    navigator.clipboard.writeText(url.toString());
-    alert('Manifestation link copied to clipboard.');
+    try {
+        const encodedCode = btoa(unescape(encodeURIComponent(playgroundCode)));
+        const url = new URL(window.location.origin + '/manifest');
+        url.searchParams.set('code', encodedCode);
+        navigator.clipboard.writeText(url.toString());
+        alert('Manifestation link copied to clipboard.');
+    } catch (e) {
+        alert('Failed to share this fragment of logic.');
+    }
   };
 
   // --- RENDER HELPERS ---
@@ -616,11 +576,11 @@ int main() {
         <div className="title-share-row">
           <h2>MANIFEST LOGOS</h2>
           <div className="example-selector">
-            <span style={{ fontSize: '0.7rem', fontWeight: 900, marginRight: '10px' }}>SELECT TEMPLATE:</span>
-            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.basic)}>BASIC</button>
-            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.shapes)}>GEOMETRY</button>
-            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.input)}>INPUT</button>
-            <button className="help-trigger" onClick={() => setPlaygroundCode(playgroundExamples.threeD)}>3D SPACE</button>
+            <span style={{ fontSize: '0.7rem', fontWeight: 900, marginRight: '10px', color: 'var(--text-dim)' }}>TEMPLATES:</span>
+            <button className="help-trigger" onClick={() => { setPlaygroundCode(playgroundExamples.basic); setActiveFileName('manifestation.cpp'); }}>BASIC</button>
+            <button className="help-trigger" onClick={() => { setPlaygroundCode(playgroundExamples.shapes); setActiveFileName('geometry.cpp'); }}>GEOMETRY</button>
+            <button className="help-trigger" onClick={() => { setPlaygroundCode(playgroundExamples.input); setActiveFileName('input.cpp'); }}>INPUT</button>
+            <button className="help-trigger" onClick={() => { setPlaygroundCode(playgroundExamples.threeD); setActiveFileName('space.cpp'); }}>3D</button>
             <button className="share-button" style={{ marginLeft: '20px' }} onClick={sharePlayground}>SHARE</button>
           </div>
         </div>
@@ -633,13 +593,17 @@ int main() {
             <button className="help-trigger mini-btn" onClick={() => {
               const name = prompt('Enter fragment name (e.g. tools.h):');
               if (name) {
+                if (!name.endsWith('.cpp') && !name.endsWith('.h') && !name.endsWith('.hpp')) {
+                    alert('Fragment must be .cpp, .h, or .hpp');
+                    return;
+                }
                 setActiveFileName(name);
-                setPlaygroundCode('// New fragment of logic');
+                setPlaygroundCode('// New fragment of logic\n');
               }
             }}>+</button>
           </div>
           <div className="file-list">
-            {playgroundFiles.map(file => (
+            {playgroundFiles.length > 0 ? playgroundFiles.map(file => (
               <div 
                 key={file} 
                 className={`file-item ${activeFileName === file ? 'active' : ''}`}
@@ -660,7 +624,9 @@ int main() {
                   </button>
                 )}
               </div>
-            ))}
+            )) : (
+                <div className="file-item active">📄 {activeFileName}</div>
+            )}
           </div>
         </div>
 
@@ -681,6 +647,7 @@ int main() {
               height="500px"
               defaultLanguage="cpp"
               theme={isDarkMode ? "vs-dark" : "light"}
+              loading={<div className="loading-container"><div className="status-glow">INVOKING EDITOR...</div></div>}
               value={playgroundCode}
               onChange={(value) => setPlaygroundCode(value || '')}
               options={{
@@ -706,15 +673,15 @@ int main() {
             <div className="settings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px' }}>
               <div className="setting-item">
                 <label>WIDTH</label>
-                <input type="number" value={settings.width} onChange={e => setSettings({...settings, width: parseInt(e.target.value)})} />
+                <input type="number" value={settings.width} onChange={e => setSettings({...settings, width: parseInt(e.target.value) || 800})} />
               </div>
               <div className="setting-item">
                 <label>HEIGHT</label>
-                <input type="number" value={settings.height} onChange={e => setSettings({...settings, height: parseInt(e.target.value)})} />
+                <input type="number" value={settings.height} onChange={e => setSettings({...settings, height: parseInt(e.target.value) || 450})} />
               </div>
               <div className="setting-item">
                 <label>FPS</label>
-                <input type="number" value={settings.fps} onChange={e => setSettings({...settings, fps: parseInt(e.target.value)})} />
+                <input type="number" value={settings.fps} onChange={e => setSettings({...settings, fps: parseInt(e.target.value) || 60})} />
               </div>
             </div>
           </div>
@@ -756,7 +723,7 @@ int main() {
             </SyntaxHighlighter>
           </div>
           {compileLogs.includes('Manifestation complete.') && (
-            <button className="action-play-button" onClick={() => window.open('/wasm/playground/', '_blank')}>
+            <button className="action-play-button animate-in" onClick={() => window.open('/wasm/playground/', '_blank')}>
               ASCEND (RUN MANIFESTATION)
             </button>
           )}
@@ -978,7 +945,7 @@ int main() {
           <span>THE DIVINE CODE</span>
         </div>
         <div className="header-actions">
-          <button className="help-trigger" onClick={() => { setShowPlayground(true); window.scrollTo(0,0); }}>MANIFEST</button>
+          <button className="help-trigger" onClick={openManifest}>MANIFEST</button>
           <button className="help-trigger" onClick={() => setShowHelp(true)}>PROTOCOLS (?)</button>
           <button className="theme-toggle-minimal" onClick={() => setIsDarkMode(!isDarkMode)}>
             {isDarkMode ? 'CLARITY' : 'OBSCURITY'}
@@ -994,7 +961,11 @@ int main() {
       )}
 
       <main className="content-area">
-        {showPlayground ? (
+        {isLoading ? (
+          <div className="loading-container">
+            <div className="status-glow" style={{ fontSize: '1.5rem', fontWeight: 900 }}>INVOKING THE DIVINE CODE...</div>
+          </div>
+        ) : showPlayground ? (
           renderPlayground()
         ) : !selectedGameDetails ? (
           <>

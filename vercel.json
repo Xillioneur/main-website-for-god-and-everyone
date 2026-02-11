@@ -4,7 +4,7 @@
   "trailingSlash": true,
   "functions": {
     "api/index.js": {
-      "includeFiles": "backend/templates/**,games/**,frontend/dist/**"
+      "includeFiles": "backend/templates/**,backend/dist/**,games/**,frontend/dist/**"
     }
   },
   "headers": [
@@ -28,6 +28,10 @@
       "destination": "/api/index.js"
     },
     {
+      "source": "/manifest",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/index.js"
     },
@@ -45,7 +49,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/$1"
+      "destination": "/api/index.js"
     }
   ]
 }

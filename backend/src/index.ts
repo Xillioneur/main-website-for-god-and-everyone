@@ -160,6 +160,13 @@ async function getGamesMetadata(req: express.Request) {
         return fallbackGames;
     }
     
+    // Check if it's actually a directory
+    const sourceStat = await fs.promises.stat(wasmGamesSource);
+    if (!sourceStat.isDirectory()) {
+        console.warn(`WASM Games Source is not a directory: ${wasmGamesSource}. Using fallback.`);
+        return fallbackGames;
+    }
+
     const gameSubdirs = await readdir(wasmGamesSource, { withFileTypes: true });
     console.log(`Scanning for manifestations in: ${wasmGamesSource} (Found ${gameSubdirs.length} items)`);
     
@@ -169,9 +176,20 @@ async function getGamesMetadata(req: express.Request) {
         const gameName = dirent.name;
         const gameFolderPath = path.join(wasmGamesSource, gameName);
         let fullDescription = "Manifestation under study.";
-        try { fullDescription = await readFile(path.join(gameFolderPath, 'description.md'), 'utf8'); } catch (e) {}
+        try { 
+            const descPath = path.join(gameFolderPath, 'description.md');
+            if (fs.existsSync(descPath)) {
+                fullDescription = await readFile(descPath, 'utf8'); 
+            }
+        } catch (e) {}
+        
         let logicSnippet = "";
-        try { logicSnippet = await readFile(path.join(gameFolderPath, 'logic_snippet.txt'), 'utf8'); } catch (e) {}
+        try { 
+            const snippetPath = path.join(gameFolderPath, 'logic_snippet.txt');
+            if (fs.existsSync(snippetPath)) {
+                logicSnippet = await readFile(snippetPath, 'utf8'); 
+            }
+        } catch (e) {}
 
         let mtime = Date.now();
         try {
@@ -208,8 +226,15 @@ async function getGamesMetadata(req: express.Request) {
 
 async function getDivineCensus() {
     let census = { atomicWeight: 8485, manifestations: 4, foundations: 3, status: 'SANCTIFIED' };
-    const p = path.join(process.cwd(), 'backend/census.json');
-    if (fs.existsSync(p)) { try { census = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) {} }
+    try {
+        const p = path.join(process.cwd(), 'backend/census.json');
+        if (fs.existsSync(p)) {
+            const data = await readFile(p, 'utf8');
+            census = JSON.parse(data);
+        }
+    } catch (e) {
+        console.error("Error reading census:", e);
+    }
     const sacredStates = ["GATHERING GRACE", "HARMONIZING THREADS", "PARRYING THE VOID", "MANIFESTING LOGOS", "ASCENDING...", "STILLNESS ACHIEVED", "DIVINE RECKONING ACTIVE", "LATENCY: IMMACULATE", "UPTIME: ETERNAL", "ATOMS ALIGNED"];
     return { ...census, communion: '@liwawil', status: sacredStates[Math.floor(Math.random() * sacredStates.length)] };
 }
